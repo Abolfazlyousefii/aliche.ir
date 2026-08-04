@@ -2,8 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarToggles = document.querySelectorAll('[data-admin-sidebar-toggle]');
     const sidebarClosers = document.querySelectorAll('[data-admin-sidebar-close]');
 
-    const openSidebar = () => document.body.classList.add('admin-sidebar-open');
-    const closeSidebar = () => document.body.classList.remove('admin-sidebar-open');
+    const setSidebarState = (isOpen) => {
+        document.body.classList.toggle('admin-sidebar-open', isOpen);
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+        sidebarToggles.forEach((button) => button.setAttribute('aria-expanded', String(isOpen)));
+    };
+    const openSidebar = () => setSidebarState(true);
+    const closeSidebar = () => setSidebarState(false);
 
     sidebarToggles.forEach((button) => {
         button.addEventListener('click', () => {

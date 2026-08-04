@@ -11,6 +11,9 @@
 
 <div class="admin-panel-card">
     <div class="row g-3">
+        <div class="col-12 admin-form-section-heading">
+            <span>۱</span><div><strong>اطلاعات پایه خبر</strong><small>عنوان، نشانی، دسته‌بندی و ارتباط سازمانی</small></div>
+        </div>
         <div class="col-md-8">
             <label class="form-label" for="title">عنوان خبر</label>
             <input class="form-control" id="title" name="title" value="{{ old('title', $post?->title) }}" required>
@@ -47,6 +50,9 @@
                 @endforeach
             </select>
         </div>
+        <div class="col-12 admin-form-section-heading">
+            <span>۲</span><div><strong>وضعیت و انتشار</strong><small>چرخه بررسی، زمان انتشار و جایگاه نمایش</small></div>
+        </div>
         <div class="col-md-6">
             <label class="form-label" for="status">وضعیت</label>
             <select class="form-control" id="status" name="status" required>
@@ -73,6 +79,9 @@
             </select>
             <small class="text-muted">هر خبر فقط یکی از جایگاه‌های صفحه اصلی را می‌گیرد و در آرشیو عمومی نیز نمایش داده می‌شود.</small>
         </div>
+        <div class="col-12 admin-form-section-heading">
+            <span>۳</span><div><strong>محتوای خبر</strong><small>خلاصه و متن کامل برای انتشار</small></div>
+        </div>
         <div class="col-12">
             <label class="form-label" for="excerpt">خلاصه خبر</label>
             <textarea class="form-control js-rich-editor" id="excerpt" name="excerpt" rows="3">{{ old('excerpt', $post?->excerpt) }}</textarea>
@@ -80,6 +89,9 @@
         <div class="col-12">
             <label class="form-label" for="body">متن کامل خبر</label>
             <textarea class="form-control js-rich-editor" id="body" name="body" rows="12">{{ old('body', $post?->body) }}</textarea>
+        </div>
+        <div class="col-12 admin-form-section-heading">
+            <span>۴</span><div><strong>رسانه</strong><small>تصویر شاخص، گالری و کپشن تصاویر</small></div>
         </div>
         <div class="col-md-6">
             <label class="form-label" for="featured_image">تصویر شاخص</label>
@@ -130,9 +142,15 @@
                 </div>
             </div>
         @endif
+        <div class="col-12 admin-form-section-heading">
+            <span>۵</span><div><strong>تنظیمات تکمیلی</strong><small>اطلاعات مرتبط با فرایند بررسی محتوا</small></div>
+        </div>
         <div class="col-12">
             <label class="form-label" for="rejected_reason">دلیل رد خبر</label>
             <textarea class="form-control" id="rejected_reason" name="rejected_reason" rows="3">{{ old('rejected_reason', $post?->rejected_reason) }}</textarea>
+        </div>
+        <div class="col-12 admin-form-section-heading">
+            <span>۶</span><div><strong>سئو</strong><small>عنوان، توضیحات و کلیدواژه‌های متا</small></div>
         </div>
         <div class="col-md-4">
             <label class="form-label" for="meta_title">عنوان متا</label>

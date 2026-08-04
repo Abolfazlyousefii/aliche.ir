@@ -45,12 +45,12 @@
 <h4>اطلاعات تماس</h4>
 @if($contactInfo->isNotEmpty())
 @foreach($contactInfo as $contact)
-<div class="footer-contact-item"><span class="fc-icon">{{ $contact['icon'] ?? '•' }}</span><span>{!! fa_number($contact['value'] ?? '') !!}</span></div>
+<div class="footer-contact-item"><span class="fc-icon"><svg aria-hidden="true" class="ui-icon" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 8v6m0-10v1"/></svg></span><span>{!! fa_number($contact['value'] ?? '') !!}</span></div>
 @endforeach
 @else
-<div class="footer-contact-item"><span class="fc-icon">📍</span><span>{{ $address }}</span></div>
-<div class="footer-contact-item"><span class="fc-icon">📞</span><span>{!! $phone !!}</span></div>
-<div class="footer-contact-item"><span class="fc-icon">✉️</span><span>{{ $email }}</span></div>
+<div class="footer-contact-item"><span class="fc-icon"><svg aria-hidden="true" class="ui-icon" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-12A7 7 0 1 0 5 9c0 5.8 7 12 7 12Zm0-9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z"/></svg></span><span>{{ $address }}</span></div>
+<div class="footer-contact-item"><span class="fc-icon"><svg aria-hidden="true" class="ui-icon" viewBox="0 0 24 24"><path d="M7.1 3.5 4.8 5.8c-.8.8.2 3.8 3.1 6.7s5.9 3.9 6.7 3.1l2.3-2.3 3.3 3.3-1.5 1.5c-2.3 2.3-7.5.7-12-3.8S.6 4.6 2.9 2.3L4.4.8l2.7 2.7Z"/></svg></span><span>{!! $phone !!}</span></div>
+<div class="footer-contact-item"><span class="fc-icon"><svg aria-hidden="true" class="ui-icon" viewBox="0 0 24 24"><path d="M3 5h18v14H3V5Zm1.5 1.5L12 13l7.5-6.5M4.5 17.5l5.3-5m9.7 5-5.3-5"/></svg></span><span>{{ $email }}</span></div>
 @endif
 </div>
 </div>

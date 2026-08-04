@@ -3,11 +3,11 @@
 @section('title', 'داشبورد مدیریت')
 
 @section('content')
-<section class="admin-welcome-card">
+<section class="admin-welcome-card admin-dashboard-heading">
     <div>
         <p class="admin-eyebrow">نمای کلی امروز</p>
-        <h2>به پنل مدیریت اتاق اصناف مرکز استان گلستان خوش آمدید</h2>
-        <p>از این بخش می‌توانید وضعیت محتوای سایت، پیام‌ها، شکایات و فعالیت‌های مهم را به‌صورت خلاصه مشاهده کنید.</p>
+        <h2>داشبورد مدیریت</h2>
+        <p>وضعیت محتوای سایت، پیام‌ها و فعالیت‌های نیازمند پیگیری</p>
     </div>
     <div class="admin-date-card">
         <span>امروز</span>
@@ -17,7 +17,7 @@
 
 <section class="admin-stats-grid" aria-label="آمار کلی پنل مدیریت">
     <article class="admin-stat-card stat-warning">
-        <div class="admin-stat-icon">✅</div>
+        <div class="admin-stat-icon">@include('admin.components.icon', ['name' => 'check'])</div>
         <div>
             <span>محتواهای در انتظار تایید</span>
             <strong>{{ number_format($pendingApprovalsCount) }}</strong>
@@ -25,7 +25,7 @@
     </article>
 
     <article class="admin-stat-card stat-danger">
-        <div class="admin-stat-icon">📨</div>
+        <div class="admin-stat-icon">@include('admin.components.icon', ['name' => 'complaint'])</div>
         <div>
             <span>شکایت‌های جدید</span>
             <strong>{{ number_format($openComplaintsCount) }}</strong>
@@ -33,7 +33,7 @@
     </article>
 
     <article class="admin-stat-card stat-primary">
-        <div class="admin-stat-icon">🏢</div>
+        <div class="admin-stat-icon">@include('admin.components.icon', ['name' => 'building'])</div>
         <div>
             <span>تعداد اتحادیه‌ها</span>
             <strong>{{ number_format($unionsCount) }}</strong>
@@ -41,7 +41,7 @@
     </article>
 
     <article class="admin-stat-card stat-success">
-        <div class="admin-stat-icon">🤝</div>
+        <div class="admin-stat-icon">@include('admin.components.icon', ['name' => 'handshake'])</div>
         <div>
             <span>تعداد اعضا</span>
             <strong>{{ number_format($membersCount) }}</strong>
@@ -49,7 +49,7 @@
     </article>
 
     <article class="admin-stat-card stat-info">
-        <div class="admin-stat-icon">☎️</div>
+        <div class="admin-stat-icon">@include('admin.components.icon', ['name' => 'phone'])</div>
         <div>
             <span>پیام‌های تماس خوانده‌نشده</span>
             <strong>{{ number_format($unreadContactMessagesCount) }}</strong>
@@ -57,7 +57,7 @@
     </article>
 
     <article class="admin-stat-card stat-purple">
-        <div class="admin-stat-icon">💬</div>
+        <div class="admin-stat-icon">@include('admin.components.icon', ['name' => 'sms'])</div>
         <div>
             <span>پیامک‌های ارسال‌شده</span>
             <strong>{{ number_format($sentSmsRecipientCount) }}</strong>

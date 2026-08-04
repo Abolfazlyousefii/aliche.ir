@@ -315,11 +315,19 @@
     $bannerAdItems = collect($bannerAdvertisements ?? collect())->take(4);
 @endphp
 @foreach($bannerAdItems as $ad)
+@if(filled($ad['url'] ?? null))
 <a class="ad-banner" href="{{ $ad['url'] }}" target="{{ $ad['target'] }}">
 <img alt="تبلیغات" src="{{ $ad['image'] }}"/>
 <div class="ad-banner-overlay"></div>
 <div class="ad-banner-text">{{ $ad['title'] }}</div>
 </a>
+@else
+<div class="ad-banner ad-banner-placeholder">
+<img alt="تبلیغات" src="{{ $ad['image'] }}"/>
+<div class="ad-banner-overlay"></div>
+<div class="ad-banner-text">{{ $ad['title'] }}</div>
+</div>
+@endif
 @endforeach
 </section>
 

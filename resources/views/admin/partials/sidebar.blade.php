@@ -1,18 +1,18 @@
 @php
     $adminMenuGroups = [
         [
-            'title' => 'داشبورد', 'icon' => '🏠', 'route' => 'admin.dashboard', 'match' => 'admin.dashboard', 'permission' => 'dashboard.view',
+            'title' => 'داشبورد', 'icon' => 'home', 'route' => 'admin.dashboard', 'match' => 'admin.dashboard', 'permission' => 'dashboard.view',
             'children' => [],
         ],
         [
-            'title' => 'صفحات', 'icon' => '📄', 'route' => 'admin.pages.index', 'match' => 'admin.pages.*', 'permission' => 'pages.view',
+            'title' => 'صفحات', 'icon' => 'file', 'route' => 'admin.pages.index', 'match' => 'admin.pages.*', 'permission' => 'pages.view',
             'children' => [
                 ['title' => 'صفحه جدید', 'route' => 'admin.pages.create', 'match' => 'admin.pages.create', 'permission' => 'pages.create'],
                 ['title' => 'همه صفحه‌ها', 'route' => 'admin.pages.index', 'match' => 'admin.pages.index', 'permission' => 'pages.view'],
             ],
         ],
         [
-            'title' => 'اخبار', 'icon' => '📰', 'route' => 'admin.posts.index', 'match' => 'admin.posts.*', 'permission' => 'posts.view',
+            'title' => 'اخبار', 'icon' => 'news', 'route' => 'admin.posts.index', 'match' => 'admin.posts.*', 'permission' => 'posts.view',
             'children' => [
                 ['title' => 'خبر جدید', 'route' => 'admin.posts.create', 'match' => 'admin.posts.create', 'permission' => 'posts.create'],
                 ['title' => 'همه خبرها', 'route' => 'admin.posts.index', 'match' => 'admin.posts.index', 'permission' => 'posts.view'],
@@ -20,7 +20,7 @@
             ],
         ],
         [
-            'title' => 'رسانه‌ها', 'icon' => '🖼️', 'route' => 'admin.media.index', 'match' => ['admin.media.*', 'admin.galleries.*', 'admin.videos.*'],
+            'title' => 'رسانه‌ها', 'icon' => 'image', 'route' => 'admin.media.index', 'match' => ['admin.media.*', 'admin.galleries.*', 'admin.videos.*'],
             'children' => [
                 ['title' => 'کتابخانه تصاویر', 'route' => 'admin.media.index', 'match' => 'admin.media.*', 'permission' => 'media.view'],
                 ['title' => 'گالری جدید', 'permission' => 'galleries.create', 'route' => 'admin.galleries.create', 'match' => 'admin.galleries.create'],
@@ -31,14 +31,14 @@
             ],
         ],
         [
-            'title' => 'اعضای اتاق اصناف', 'icon' => '👥', 'route' => 'admin.chamber_members.index', 'match' => 'admin.chamber_members.*',
+            'title' => 'اعضای اتاق اصناف', 'icon' => 'users', 'route' => 'admin.chamber_members.index', 'match' => 'admin.chamber_members.*',
             'children' => [
                 ['title' => 'عضو جدید', 'permission' => 'chamber_members.create', 'route' => 'admin.chamber_members.create', 'match' => 'admin.chamber_members.create'],
                 ['title' => 'همه اعضا', 'route' => 'admin.chamber_members.index', 'match' => 'admin.chamber_members.index'],
             ],
         ],
         [
-            'title' => 'اتحادیه‌ها', 'icon' => '🏢', 'route' => 'admin.unions.index', 'match' => ['admin.unions.*', 'admin.union_members.*', 'admin.union-types.*'],
+            'title' => 'اتحادیه‌ها', 'icon' => 'building', 'route' => 'admin.unions.index', 'match' => ['admin.unions.*', 'admin.union_members.*', 'admin.union-types.*'],
             'children' => [
                 ['title' => 'اتحادیه جدید', 'permission' => 'unions.create', 'route' => 'admin.unions.create', 'match' => 'admin.unions.create'],
                 ['title' => 'همه اتحادیه‌ها', 'route' => 'admin.unions.index', 'match' => 'admin.unions.index'],
@@ -48,7 +48,7 @@
             ],
         ],
         [
-            'title' => 'ارتباطات', 'icon' => '✉️', 'route' => 'admin.messages.inbox', 'match' => ['admin.messages.*', 'admin.sms.*', 'admin.contact_messages.*', 'admin.complaints.*'],
+            'title' => 'ارتباطات', 'icon' => 'mail', 'route' => 'admin.messages.inbox', 'match' => ['admin.messages.*', 'admin.sms.*', 'admin.contact_messages.*', 'admin.complaints.*'],
             'badge' => $unreadMessagesCount ?? 0,
             'children' => [
                 ['title' => 'پیام‌های داخلی', 'route' => 'admin.messages.inbox', 'match' => 'admin.messages.*', 'badge' => $unreadMessagesCount ?? 0],
@@ -59,7 +59,7 @@
             ],
         ],
         [
-            'title' => 'تنظیمات و بخش‌ها', 'icon' => '⚙️', 'route' => 'admin.settings.edit', 'match' => ['admin.settings.*', 'admin.menus.*', 'admin.systems.*', 'admin.electronic_services.*', 'admin.home_sections.*', 'admin.header_settings.*', 'admin.footer_settings.*', 'admin.announcements.*', 'admin.congratulation_messages.*', 'admin.tourism.*', 'admin.commissions.*', 'admin.advertisements.*', 'admin.advertisement_positions.*'],
+            'title' => 'تنظیمات و بخش‌ها', 'icon' => 'settings', 'route' => 'admin.settings.edit', 'match' => ['admin.settings.*', 'admin.menus.*', 'admin.systems.*', 'admin.electronic_services.*', 'admin.home_sections.*', 'admin.header_settings.*', 'admin.footer_settings.*', 'admin.announcements.*', 'admin.congratulation_messages.*', 'admin.tourism.*', 'admin.commissions.*', 'admin.advertisements.*', 'admin.advertisement_positions.*'],
             'children' => [
                 ['title' => 'سامانه‌ها', 'permission' => 'systems.view', 'route' => 'admin.systems.index', 'match' => 'admin.systems.*'],
                 ['title' => 'سامانه جدید', 'permission' => 'systems.create', 'route' => 'admin.systems.create', 'match' => 'admin.systems.create'],
@@ -76,7 +76,7 @@
             ],
         ],
         [
-            'title' => 'کاربران', 'icon' => '🔐', 'route' => 'admin.users.index', 'match' => ['admin.users.*', 'admin.roles.*', 'admin.permissions.*'],
+            'title' => 'کاربران', 'icon' => 'shield', 'route' => 'admin.users.index', 'match' => ['admin.users.*', 'admin.roles.*', 'admin.permissions.*'],
             'children' => [
                 ['title' => 'کاربران', 'route' => 'admin.users.index', 'match' => 'admin.users.*'],
                 ['title' => 'نقش‌ها و دسترسی‌ها', 'route' => 'admin.roles.index', 'match' => ['admin.roles.*', 'admin.permissions.*']],
@@ -158,6 +158,7 @@
     <nav class="admin-sidebar-nav">
         @foreach ($adminMenuGroups as $item)
             @php
+                $menuIcon = $item['icon'] ?? 'file';
                 $matchPatterns = (array) ($item['match'] ?? $item['route']);
                 $isActive = collect($matchPatterns)->contains(fn ($pattern) => request()->routeIs($pattern));
                 $children = collect($item['children'] ?? [])->filter(fn ($child) => $canSeeMenuItem($child));
@@ -171,17 +172,17 @@
             @continue(! $canSeeParent && $children->isEmpty())
             @if ($children->isEmpty())
                 <a class="admin-nav-link {{ $isActive ? 'is-active' : '' }}" href="{{ route($item['route'], $item['params'] ?? []) }}" @if($isActive) aria-current="page" @endif>
-                    <span class="admin-nav-icon">{{ $item['icon'] }}</span>
+                    <span class="admin-nav-icon">@include('admin.components.icon', ['name' => $menuIcon])</span>
                     <span>{{ $item['title'] }}</span>
                     @if ($badge > 0)<span class="badge bg-danger ms-auto">{{ $badge }}</span>@endif
                 </a>
             @else
                 <details class="admin-nav-dropdown" {{ $isActive ? 'open' : '' }}>
                     <summary class="admin-nav-link {{ $isActive ? 'is-active' : '' }}">
-                        <span class="admin-nav-icon">{{ $item['icon'] }}</span>
+                        <span class="admin-nav-icon">@include('admin.components.icon', ['name' => $menuIcon])</span>
                         <span>{{ $item['title'] }}</span>
                         @if ($badge > 0)<span class="badge bg-danger ms-auto">{{ $badge }}</span>@endif
-                        <span class="admin-nav-caret">⌄</span>
+                        <span class="admin-nav-caret">@include('admin.components.icon', ['name' => 'chevron'])</span>
                     </summary>
                     <div class="admin-nav-submenu">
                         @foreach ($children as $child)

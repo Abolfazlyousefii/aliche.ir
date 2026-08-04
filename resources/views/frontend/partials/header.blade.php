@@ -40,7 +40,7 @@
 
 <div class="header-left-actions" aria-label="راه‌های دسترسی سریع هدر">
 @forelse($headerButtons as $button)
-<a class="header-service-pill" href="{{ $button['url'] }}" target="{{ $button['target'] ?? '_self' }}" @if(($button['target'] ?? '_self') === '_blank') rel="noopener" @endif><span>{{ $button['icon'] ?? '' }}</span> {{ $button['title'] }}</a>
+<a class="header-service-pill" href="{{ $button['url'] }}" target="{{ $button['target'] ?? '_self' }}" @if(($button['target'] ?? '_self') === '_blank') rel="noopener" @endif><svg aria-hidden="true" class="ui-icon" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm3 4h8M8 12h8M8 16h5"/></svg><span>{{ $button['title'] }}</span></a>
 @empty
 @if($topItems->isNotEmpty())
 @php($topItem = $topItems->first())
@@ -77,6 +77,17 @@
 <li class="nav-item"><a class="nav-link" href="{{ route('contact.create') }}">تماس با ما</a></li>
 @endif
 </ul>
+<div class="header-mobile-actions" aria-label="راه‌های تماس و خدمات">
+@forelse($headerButtons as $button)
+<a href="{{ $button['url'] }}" target="{{ $button['target'] ?? '_self' }}" @if(($button['target'] ?? '_self') === '_blank') rel="noopener" @endif><svg aria-hidden="true" class="ui-icon" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm3 4h8M8 12h8M8 16h5"/></svg><span>{{ $button['title'] }}</span></a>
+@empty
+@if($topItems->isNotEmpty())
+@php($topItem = $topItems->first())
+<a href="{{ $topItem->resolved_url }}" target="{{ $topItem->target }}"><svg aria-hidden="true" class="ui-icon" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm3 4h8M8 12h8M8 16h5"/></svg><span>{{ $topItem->title }}</span></a>
+@endif
+@endforelse
+<a href="tel:{{ preg_replace('/[^0-9+]/', '', $phone) }}"><svg aria-hidden="true" class="ui-icon" viewBox="0 0 24 24"><path d="M7.1 3.5 4.8 5.8c-.8.8.2 3.8 3.1 6.7s5.9 3.9 6.7 3.1l2.3-2.3 3.3 3.3-1.5 1.5c-2.3 2.3-7.5.7-12-3.8S.6 4.6 2.9 2.3L4.4.8l2.7 2.7Z"/></svg><span>{{ $contactText }}: {{ fa_number($phone) }}</span></a>
+</div>
 </div>
 <button aria-controls="headerSearchPanel" aria-expanded="false" aria-label="جستجو در سایت" class="search-trigger" type="button">
 <span class="visually-hidden">جستجو</span>

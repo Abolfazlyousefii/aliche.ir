@@ -11,7 +11,7 @@
         <form method="POST" action="{{ route('admin.media.store') }}" enctype="multipart/form-data" class="admin-wp-upload" data-media-dropzone>@csrf
             <input id="mediaFiles" class="admin-wp-upload-input" type="file" name="files[]" accept="image/*" multiple required>
             <label for="mediaFiles" class="admin-wp-dropzone">
-                <span class="admin-wp-upload-icon">☁️</span>
+                <span class="admin-wp-upload-icon">@include('admin.components.icon', ['name' => 'upload'])</span>
                 <strong>پرونده‌ها را اینجا رها کنید</strong>
                 <small>یا برای انتخاب چند تصویر کلیک کنید؛ مشابه بارگذاری رسانه در وردپرس.</small>
             </label>
