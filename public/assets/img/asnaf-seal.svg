@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="110" height="110" viewBox="0 0 110 110" role="img" aria-label="نشان اتاق اصناف گرگان">
+  <circle cx="55" cy="55" r="52" fill="#111"/>
+  <circle cx="55" cy="55" r="40" fill="#fff"/>
+  <circle cx="55" cy="55" r="31" fill="#f3f3f3" stroke="#111" stroke-width="2"/>
+  <path d="M32 70h46v11H32zM38 55h34v10H38zM45 37h20v14H45z" fill="#111"/>
+  <path d="M30 84h50" stroke="#111" stroke-width="4" stroke-linecap="round"/>
+</svg>

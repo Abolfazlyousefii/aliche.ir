@@ -1,0 +1,4 @@
+<?php
+namespace Database\Seeders;
+use App\Models\Advertisement;use App\Models\AdvertisementPosition;use Illuminate\Database\Seeder;
+class AdvertisementSeeder extends Seeder{public function run():void{$positions=['home_top'=>'بالای صفحه اصلی','home_middle'=>'میانه صفحه اصلی','sidebar'=>'سایدبار صفحات داخلی','footer'=>'فوتر','guild_page'=>'صفحه اتحادیه','post_page'=>'صفحه خبر'];foreach($positions as $key=>$title){$pos=AdvertisementPosition::updateOrCreate(['key'=>$key],['title'=>$title,'description'=>'جایگاه تبلیغاتی '.$title,'width'=>970,'height'=>250,'is_active'=>true]);for($i=1;$i<=2;$i++){Advertisement::updateOrCreate(['position_id'=>$pos->id,'title'=>'تبلیغ '.$i.' '.$title],['image'=>'assets/img/asnaf-gorgan-default.jpg','link'=>route('contact.create'),'target'=>'_self','starts_at'=>now()->subDay(),'expires_at'=>now()->addMonths(3),'sort_order'=>$i,'is_active'=>true]);}}}}

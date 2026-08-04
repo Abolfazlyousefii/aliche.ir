@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="78" viewBox="0 0 320 78" role="img" aria-label="اتاق اصناف مرکز استان گلستان">
+  <rect width="320" height="78" fill="none"/>
+  <g transform="translate(282 39)">
+    <circle r="27" fill="#111"/>
+    <circle r="20" fill="#fff" opacity=".95"/>
+    <path d="M-12 8h24v7h-24zM-9-2h18v7H-9zM-5-13h10v8H-5z" fill="#111"/>
+  </g>
+  <text x="242" y="32" direction="rtl" text-anchor="end" font-family="Tahoma, Arial, sans-serif" font-size="22" font-weight="700" fill="#111">اتاق اصناف</text>
+  <text x="242" y="58" direction="rtl" text-anchor="end" font-family="Tahoma, Arial, sans-serif" font-size="18" fill="#4a4a4a">مرکز استان گلستان</text>
+</svg>

@@ -1,0 +1,4 @@
+<?php
+namespace Database\Seeders;
+use App\Models\GuildUnion;use App\Models\UnionMember;use Illuminate\Database\Seeder;
+class UnionMemberSeeder extends Seeder{public function run():void{foreach(GuildUnion::orderBy('id')->get() as $ui=>$union){for($i=1;$i<=4;$i++){UnionMember::updateOrCreate(['union_id'=>$union->id,'membership_code'=>'G'.$union->id.'-'.$i],['full_name'=>'عضو صنفی '.$i.' '.$union->name,'national_code'=>'001'.str_pad((string)($union->id*10+$i),7,'0',STR_PAD_LEFT),'mobile'=>'0911'.str_pad((string)($union->id*1000+$i),7,'0',STR_PAD_LEFT),'phone'=>$union->phone,'business_name'=>'واحد صنفی '.$i.' '.$union->name,'business_license_number'=>'LIC-'.$union->id.'-'.$i,'address'=>'گرگان، محدوده بازار، پلاک '.($i+10),'status'=>'active','description'=>'عضو فعال برای نمایش در صفحه اتحادیه','attachments'=>[],'is_active'=>true]);}}}}

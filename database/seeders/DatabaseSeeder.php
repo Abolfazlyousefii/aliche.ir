@@ -1,0 +1,4 @@
+<?php
+namespace Database\Seeders;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;use Illuminate\Database\Seeder;
+class DatabaseSeeder extends Seeder{use WithoutModelEvents;public function run():void{$this->call([RolePermissionSeeder::class,AdminUserSeeder::class,SiteSettingSeeder::class,PriceSeeder::class,HomeSectionSeeder::class,CategorySeeder::class,UnionSeeder::class,UnionMemberSeeder::class,ChamberMemberSeeder::class,UnionCommissionSeeder::class,PostSeeder::class,AnnouncementSeeder::class,GallerySeeder::class,VideoSeeder::class,TourismPlaceSeeder::class,ElectronicServiceSeeder::class,SystemSeeder::class,CommissionSeeder::class,AdvertisementSeeder::class,OrgLinkSeeder::class,CongratulationMessageSeeder::class,ComplaintSeeder::class,InternalMessageSeeder::class,MenuSeeder::class]);}}

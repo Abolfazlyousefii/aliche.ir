@@ -1,0 +1,6 @@
+@extends('admin.layouts.app')
+@section('title', 'اعضای اتاق اصناف')
+@section('content')
+<div class="admin-page-toolbar"><div><p class="admin-eyebrow">اعضای اتاق اصناف</p><h2>مدیریت اعضا</h2></div><a class="admin-primary-btn" href="{{ route('admin.chamber_members.create') }}">عضو جدید</a></div>
+<div class="admin-panel-card"><div class="table-responsive"><table class="table align-middle"><thead><tr><th>عکس</th><th>نام</th><th>سمت</th><th>ترتیب</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody>@forelse($members as $member)<tr><td><img src="{{ $member->photo_url }}" alt="{{ $member->full_name }}" style="width:64px;height:64px;object-fit:cover;border-radius:14px"></td><td><strong>{{ $member->full_name }}</strong></td><td>{{ $member->position }}</td><td>{{ $member->sort_order }}</td><td>{{ $member->is_active ? 'فعال' : 'غیرفعال' }}</td><td class="admin-actions"><a href="{{ route('admin.chamber_members.edit', $member) }}">ویرایش</a><form action="{{ route('admin.chamber_members.destroy', $member) }}" method="POST">@csrf @method('DELETE')<button type="submit">حذف</button></form></td></tr>@empty<tr><td colspan="6" class="text-center text-muted">هنوز عضوی ثبت نشده است.</td></tr>@endforelse</tbody></table></div>{{ $members->links() }}</div>
+@endsection

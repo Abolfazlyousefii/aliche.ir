@@ -1,0 +1,9 @@
+@extends('admin.layouts.app')
+@section('title', 'جزئیات جلسه کمیسیون')
+@section('content')
+<div class="admin-page-toolbar"><div><p class="admin-eyebrow">جلسه کمیسیون</p><h2>{{ $session->title }}</h2></div><div class="admin-actions"><a class="admin-secondary-btn" href="{{ route('admin.commissions.sessions.index', $commission) }}">جلسات</a>@if(request()->user()->hasPermission('commissions.edit'))<a class="admin-primary-btn" href="{{ route('admin.commissions.sessions.edit', [$commission,$session]) }}">ویرایش</a>@endif</div></div>
+<div class="admin-panel-card"><p><strong>کمیسیون:</strong> {{ $commission->title }}</p><p><strong>تاریخ جلسه:</strong> {{ jalali_datetime($session->session_date) ?: '—' }}</p><p><strong>وضعیت:</strong> {{ $session->status_label }}</p><p><strong>انتشار:</strong> {{ jalali_datetime($session->published_at) ?: '—' }}</p><p><strong>دلیل رد:</strong> {{ $session->rejected_reason ?: '—' }}</p><p><strong>فعال:</strong> {{ $session->is_active ? 'بله' : 'خیر' }}</p></div>
+<div class="admin-panel-card mt-3"><h3>توضیحات</h3><div>{!! $session->description ?: '—' !!}</div></div>
+@if($session->minutes_file || !empty($session->attachments))<div class="admin-panel-card mt-3"><h3>فایل‌ها</h3>@if($session->minutes_file)<p><a href="{{ Storage::url($session->minutes_file) }}" target="_blank">دانلود صورتجلسه</a></p>@endif @foreach($session->attachments ?? [] as $file)<p><a href="{{ Storage::url($file['path'] ?? '') }}" target="_blank">{{ $file['name'] ?? 'دانلود فایل' }}</a></p>@endforeach</div>@endif
+@if(!empty($session->images))<div class="admin-panel-card mt-3"><h3>تصاویر</h3><div class="row g-3">@foreach($session->images as $file)<div class="col-md-3"><img src="{{ Storage::url($file['path'] ?? '') }}" alt="{{ $file['name'] ?? $session->title }}" style="width:100%;height:150px;object-fit:cover;border-radius:12px"></div>@endforeach</div></div>@endif
+@endsection

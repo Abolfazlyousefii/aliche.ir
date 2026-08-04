@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>گردشگری گرگان | اتاق اصناف شهرستان گرگان</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/asnaf-favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;850;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<header id="header" class="site-header">
+  <div class="site-container header-inner">
+    <div class="header-hamburger" aria-label="منو" role="button" tabindex="0"><span class="hh-bar"></span></div>
+    <a href="index.html" class="header-logo" aria-label="اتاق اصناف شهرستان گرگان">
+      <img src="assets/img/asnaf-logo.svg" alt="لوگوی اتاق اصناف شهرستان گرگان"/>
+    </a>
+    <div class="header-actions">
+      <button class="search-trigger" aria-label="جستجو" aria-expanded="false"></button>
+      <a href="index.html#friendship" class="header-cta-link">تماس با ما</a>
+    </div>
+    <div id="headerSearchPanel" class="header-search-panel" hidden>
+      <form class="header-search-form" role="search">
+        <input id="siteSearchInput" class="header-search-input" type="search" placeholder="جستجو در سایت…"/>
+      </form>
+      <div class="header-search-results" aria-live="polite"></div>
+    </div>
+  </div>
+  <nav id="mainNav" class="top-nav">
+    <div class="site-container top-nav-inner">
+      <ul class="top-nav-list">
+        <li class="top-nav-item"><a href="index.html" class="top-nav-link">خانه</a></li>
+        <li class="top-nav-item has-top-submenu">
+          <button class="top-nav-link" aria-expanded="false">اصناف و اتحادیه‌ها</button>
+          <div class="top-submenu">
+            <a href="guild.html">معرفی اتحادیه طلا</a>
+            <a href="archive.html">آرشیو اتحادیه‌ها</a>
+          </div>
+        </li>
+        <li class="top-nav-item"><a href="archive.html" class="top-nav-link">اخبار و مقالات</a></li>
+        <li class="top-nav-item"><a href="gallery.html" class="top-nav-link">گالری تصاویر</a></li>
+        <li class="top-nav-item"><a href="tourism.html" class="top-nav-link">گردشگری</a></li>
+        <li class="top-nav-item"><a href="blank.html" class="top-nav-link">خدمات الکترونیک</a></li>
+        <li class="top-nav-item"><a href="index.html#friendship" class="top-nav-link">تماس با ما</a></li>
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<section class="page-header page-header-alt page-header-tourism">
+  <div class="site-container">
+    <h1>گردشگری در گرگان</h1>
+    <nav class="breadcrumb">
+      <a href="index.html">خانه</a>
+      <span>گردشگری گرگان</span>
+    </nav>
+  </div>
+</section>
+
+<section class="tourism-intro">
+  <div class="site-container">
+    <div class="tourism-intro-grid">
+      <div class="tourism-intro-text">
+        <h2>به شهر گرگان خوش آمدید</h2>
+        <p>گرگان، مرکز استان گلستان، با پیشینه‌ای غنی از تاریخ و فرهنگ، یکی از مقاصد جذاب گردشگری در شمال ایران است. از جنگل‌های انبوه و آبشارهای خروشان گرفته تا بناهای تاریخی و بازارهای سنتی، گرگان پذیرای گردشگران و مسافران عزیز است.</p>
+        <p>اتاق اصناف شهرستان گرگان با همراهی اتحادیه‌های صنفی، همواره در خدمت فعالان حوزه گردشگری و مسافران محترم می‌باشد.</p>
+        <div class="tourism-stats">
+          <div class="tourism-stat"><strong>۲۵۰+</strong><span>جاذبه گردشگری</span></div>
+          <div class="tourism-stat"><strong>۶۵۰+</strong><span>واحد اقامتی</span></div>
+          <div class="tourism-stat"><strong>۱۲۰۰+</strong><span>صنف مرتبط</span></div>
+        </div>
+      </div>
+      <div class="tourism-intro-img">
+        <img src="assets/img/asnaf-gorgan-default.jpg" alt="گرگان" loading="lazy"/>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tourism-attractions">
+  <div class="site-container">
+    <div class="section-heading section-heading-centered">
+      <h2>جاذبه‌های گردشگری</h2>
+      <p>با معروف‌ترین جاذبه‌های طبیعی، تاریخی و تفریحی گرگان آشنا شوید</p>
+    </div>
+    <div class="tabs" data-tab-group="tour-attractions" role="tablist">
+      <button class="tab-pill active" data-tab-target="tour-nature" type="button">جاذبه‌های طبیعی</button>
+      <button class="tab-pill" data-tab-target="tour-historic" type="button">جاذبه‌های تاریخی</button>
+      <button class="tab-pill" data-tab-target="tour-modern" type="button">تفریحی و مدرن</button>
+    </div>
+    <div class="tab-panels" data-tab-panels="tour-attractions">
+      <div class="tab-panel active" data-tab-panel="tour-nature">
+        <div class="tourism-grid tourism-grid-lg">
+          <div class="tourism-card tourism-card-lg">
+            <a href="#">
+              <div class="tourism-img-wrap">
+                <img src="assets/img/asnaf-gorgan-default.jpg" alt="جنگل النگدره" loading="lazy"/>
+                <div class="tourism-badge">طبیعت</div>
+              </div>
+            </a>
+            <div class="tourism-card-body">
+              <h3>جنگل النگدره</h3>
+              <p>یکی از زیباترین و بکرترین جنگل‌های استان گلستان در جنوب شرقی گرگان واقع شده و با طبیعت سرسبز، هوای خنک و چشمه‌سارهای زلال، مقصدی ایده‌آل برای طبیعت‌گردان است.</p>
+              <div class="tourism-card-footer"><span>📍 جنوب شرقی گرگان</span><span>🌲 جنگل انبوه</span></div>
+            </div>
+          </div>
+          <div class="tourism-card tourism-card-lg">
+            <a href="#">
+              <div class="tourism-img-wrap">
+                <img src="assets/img/asnaf-gorgan-default.jpg" alt="پارک ملی گلستان" loading="lazy"/>
+                <div class="tourism-badge">طبیعت</div>
+              </div>
+            </a>
+            <div class="tourism-card-body">
+              <h3>پارک ملی گلستان</h3>
+              <p>قدیمی‌ترین پارک ملی ایران با مساحتی بیش از ۹۰۰ کیلومتر مربع و تنوع زیستی فوق‌العاده شامل پستانداران، پرندگان و گونه‌های گیاهی کمیاب.</p>
+              <div class="tourism-card-footer"><span>📍 شرق گلستان</span><span>🦌 ذخیره‌گاه زیست‌کره</span></div>
+            </div>
+          </div>
+          <div class="tourism-card tourism-card-lg">
+            <a href="#">
+              <div class="tourism-img-wrap">
+                <img src="assets/img/asnaf-gorgan-default.jpg" alt="آبشار کبودوال" loading="lazy"/>
+                <div class="tourism-badge">طبیعت</div>
+              </div>
+            </a>
+            <div class="tourism-card-body">
+              <h3>آبشار کبودوال</h3>
+              <p>آبشار دیدنی و خنک در دل جنگل‌های انبوه استان گلستان با ارتفاعی چشمگیر که در فصل بهار و تابستان جلوهای باشکوه دارد.</p>
+              <div class="tourism-card-footer"><span>📍 علی‌آباد کتول</span><span>💧 آبشار فصلی</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel" data-tab-panel="tour-historic">
+        <div class="tourism-grid tourism-grid-lg">
+          <div class="tourism-card tourism-card-lg">
+            <a href="#">
+              <div class="tourism-img-wrap">
+                <img src="assets/img/asnaf-gorgan-default.jpg" alt="برج گنبد قابوس" loading="lazy"/>
+                <div class="tourism-badge">تاریخی</div>
+              </div>
+            </a>
+            <div class="tourism-card-body">
+              <h3>برج گنبد قابوس</h3>
+              <p>بلندترین برج تمام آجری جهان و یکی از شاهکارهای معماری دوران اسلامی که در فهرست میراث جهانی یونسکو به ثبت رسیده است.</p>
+              <div class="tourism-card-footer"><span>📍 گنبد کاووس</span><span>🏛 یونسکو</span></div>
+            </div>
+          </div>
+          <div class="tourism-card tourism-card-lg">
+            <a href="#">
+              <div class="tourism-img-wrap">
+                <img src="assets/img/asnaf-gorgan-default.jpg" alt="دیوار دفاعی گرگان" loading="lazy"/>
+                <div class="tourism-badge">تاریخی</div>
+              </div>
+            </a>
+            <div class="tourism-card-body">
+              <h3>دیوار دفاعی گرگان (مار سرخ)</h3>
+              <p>پس از دیوار چین، طولانی‌ترین دیوار جهان با ۲۰۰ کیلومتر طول که در دوره ساسانیان ساخته شده و از اسرارآمیزترین بناهای تاریخی ایران است.</p>
+              <div class="tourism-card-footer"><span>📍 شمال استان گلستان</span><span>🏛 دوره ساسانی</span></div>
+            </div>
+          </div>
+          <div class="tourism-card tourism-card-lg">
+            <a href="#">
+              <div class="tourism-img-wrap">
+                <img src="assets/img/asnaf-gorgan-default.jpg" alt="مسجد جامع گرگان" loading="lazy"/>
+                <div class="tourism-badge">تاریخی</div>
+              </div>
+            </a>
+            <div class="tourism-card-body">
+              <h3>مسجد جامع گرگان</h3>
+              <p>مسجدی با معماری زیبای دوره سلجوقیان در مرکز بافت تاریخی گرگان که با آجرکاری‌های نفیس و کتیبه‌های ارزشمند تزئین شده است.</p>
+              <div class="tourism-card-footer"><span>📍 مرکز شهر گرگان</span><span>🏛 دوره سلجوقی</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel" data-tab-panel="tour-modern">
+        <div class="tourism-grid tourism-grid-lg">
+          <div class="tourism-card tourism-card-lg">
+            <a href="#">
+              <div class="tourism-img-wrap">
+                <img src="assets/img/asnaf-gorgan-default.jpg" alt="بازار بزرگ گرگان" loading="lazy"/>
+                <div class="tourism-badge">خرید</div>
+              </div>
+            </a>
+            <div class="tourism-card-body">
+              <h3>بازار بزرگ گرگان</h3>
+              <p>بازاری سنتی با راسته‌های طاق‌دار و حجره‌های متعدد که انواع محصولات محلی، صنایع دستی و سوغات استان گلستان را عرضه می‌کند.</p>
+              <div class="tourism-card-footer"><span>📍 مرکز شهر گرگان</span><span>🛍 بازار سنتی</span></div>
+            </div>
+          </div>
+          <div class="tourism-card tourism-card-lg">
+            <a href="#">
+              <div class="tourism-img-wrap">
+                <img src="assets/img/asnaf-gorgan-default.jpg" alt="مجتمع تجاری گلستان" loading="lazy"/>
+                <div class="tourism-badge">خرید</div>
+              </div>
+            </a>
+            <div class="tourism-card-body">
+              <h3>مجتمع تجاری گلستان</h3>
+              <p>مرکز خرید مدرن و بزرگ با برندهای معتبر، فروشگاه‌های متنوع، هایپرمارکت و مجموعه تفریحی و رستوران‌های متنوع.</p>
+              <div class="tourism-card-footer"><span>📍 بلوار گلستان</span><span>🛍 مرکز خرید مدرن</span></div>
+            </div>
+          </div>
+          <div class="tourism-card tourism-card-lg">
+            <a href="#">
+              <div class="tourism-img-wrap">
+                <img src="assets/img/asnaf-gorgan-default.jpg" alt="هتل شیرخان" loading="lazy"/>
+                <div class="tourism-badge">اقامت</div>
+              </div>
+            </a>
+            <div class="tourism-card-body">
+              <h3>هتل شیرخان گرگان</h3>
+              <p>هتل چهار ستاره با امکانات مدرن، رستوران، کافی‌شاپ و دسترسی آسان به مراکز دیدنی و تجاری شهر گرگان.</p>
+              <div class="tourism-card-footer"><span>📍 خیابان شیرخان</span><span>🏨 هتل ۴ ستاره</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tourism-gallery">
+  <div class="site-container">
+    <div class="section-heading section-heading-centered">
+      <h2>گالری تصاویر گردشگری</h2>
+      <p>تصاویری از زیبایی‌های طبیعی و تاریخی گرگان</p>
+    </div>
+    <div class="tourism-gallery-grid" data-gallery-group="tourism-gallery">
+      <div class="tourism-gallery-item" data-gallery-item="assets/img/asnaf-gorgan-default.jpg"><img src="assets/img/asnaf-gorgan-default.jpg" alt="تصویر طبیعت" loading="lazy"/></div>
+      <div class="tourism-gallery-item" data-gallery-item="assets/img/asnaf-gorgan-default.jpg"><img src="assets/img/asnaf-gorgan-default.jpg" alt="تصویر طبیعت" loading="lazy"/></div>
+      <div class="tourism-gallery-item" data-gallery-item="assets/img/asnaf-gorgan-default.jpg"><img src="assets/img/asnaf-gorgan-default.jpg" alt="تصویر طبیعت" loading="lazy"/></div>
+      <div class="tourism-gallery-item" data-gallery-item="assets/img/asnaf-gorgan-default.jpg"><img src="assets/img/asnaf-gorgan-default.jpg" alt="تصویر طبیعت" loading="lazy"/></div>
+      <div class="tourism-gallery-item" data-gallery-item="assets/img/asnaf-gorgan-default.jpg"><img src="assets/img/asnaf-gorgan-default.jpg" alt="تصویر طبیعت" loading="lazy"/></div>
+      <div class="tourism-gallery-item" data-gallery-item="assets/img/asnaf-gorgan-default.jpg"><img src="assets/img/asnaf-gorgan-default.jpg" alt="تصویر طبیعت" loading="lazy"/></div>
+    </div>
+  </div>
+</section>
+
+<section class="tourism-cta">
+  <div class="site-container">
+    <div class="tourism-cta-box">
+      <h2>اصناف مرتبط با گردشگری</h2>
+      <p>اتاق اصناف شهرستان گرگان با اتحادیه‌های هتل‌داران، رستوران‌داران، صنایع دستی و آژانس‌های مسافرتی در خدمت فعالان این حوزه است.</p>
+      <a href="guild.html" class="cta-button">مشاهده اتحادیه‌های صنفی</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+<div class="site-container">
+<div class="footer-main">
+<div class="footer-col footer-brand-col">
+<img alt="اتاق اصناف شهرستان گرگان" src="assets/img/asnaf-footer-mark.svg"/>
+<p>اتاق اصناف شهرستان گرگان به عنوان نماینده جامعه صنفی شهرستان، پشتیبان کسب‌وکارهای صنفی، ناظر بر فعالیت اتحادیه‌های صنفی و تسهیل‌گر تعامل با دستگاه‌های اجرایی و نظارتی در راستای توسعه اقتصاد شهری می‌باشد. این اتاق با هدف حمایت از حقوق صنوف، ارتقای کیفیت خدمات و تسهیل فرآیندهای کسب‌وکار در سطح شهرستان گرگان فعالیت می‌نماید.</p>
+</div>
+<div class="footer-col">
+<h4>دسترسی سریع</h4>
+<ul>
+<li><a href="index.html">صفحه اصلی</a></li>
+<li><a href="archive.html">آرشیو اخبار</a></li>
+<li><a href="guild.html">اتحادیه‌های صنفی</a></li>
+<li><a href="gallery.html">گالری تصاویر</a></li>
+<li><a href="tourism.html">گردشگری</a></li>
+<li><a href="index.html#friendship">تماس با ما</a></li>
+</ul>
+</div>
+<div class="footer-col">
+<h4>اطلاعات تماس</h4>
+<div class="footer-contact-item"><span class="fc-icon">📍</span><span>گرگان، خیابان مطهری جنوبی، روبروی پمپ بنزین، ساختمان اتاق اصناف</span></div>
+<div class="footer-contact-item"><span class="fc-icon">📞</span><span>۰۱۷-۳۲۱۵۲۹۱۲<br/>۰۱۷-۳۲۱۵۴۷۶۷</span></div>
+<div class="footer-contact-item"><span class="fc-icon">✉️</span><span>info@asnaf-gorgan.ir</span></div>
+</div>
+</div>
+<div class="footer-divider"></div>
+<div class="footer-orgs">
+<a href="index.html">اتاق اصناف شهرستان گرگان</a><a href="#">اتاق اصناف ایران</a><a href="#">سامانه نوین اصناف</a><a href="#">سامانه آموزش اصناف</a><a href="#">اداره صمت گلستان</a><a href="#">کمیسیون نظارت</a><a href="#">تعزیرات حکومتی</a><a href="#">شهرداری گرگان</a><a href="#">سازمان بازرسی</a><a href="#">فرم‌ها و بخشنامه‌ها</a>
+</div>
+<div class="footer-divider"></div>
+<div class="footer-bottom">
+<div class="footer-social">
+<a href="#" aria-label="اینستاگرام">📷</a>
+<a href="#" aria-label="تلگرام">✈️</a>
+<a href="#" aria-label="واتساپ">💬</a>
+<a href="#" aria-label="ایتا">📱</a>
+<a href="#" aria-label="بله">🔵</a>
+<a href="#" aria-label="روبیکا">🟣</a>
+</div>
+<div class="footer-copy">تمام حقوق مادی و معنوی این وبسایت متعلق به اتاق اصناف شهرستان گرگان می‌باشد</div>
+</div>
+</div>
+</footer>
+
+<div class="lightbox">
+  <button class="lightbox-close" aria-label="بستن">✕</button>
+  <button class="lightbox-nav lightbox-prev" aria-label="قبلی">‹</button>
+  <button class="lightbox-nav lightbox-next" aria-label="بعدی">›</button>
+  <img class="lightbox-img" src="" alt="تصویر بزرگ"/>
+  <div class="lightbox-counter"></div>
+</div>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
