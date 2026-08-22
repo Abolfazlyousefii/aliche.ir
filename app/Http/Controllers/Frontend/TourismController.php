@@ -3,52 +3,60 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
 use App\Models\TourismPlace;
 use App\Services\SettingService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use App\Services\SlugRedirectService;
 use Illuminate\View\View;
 
 class TourismController extends Controller
 {
-    public function index(Request $request, SettingService $settings): View
+    public function index(Request $request, SettingService $settings): View|JsonResponse
     {
-        $category = trim((string) $request->query('category'));
-        $search = trim((string) $request->query('search'));
+        $types = $this->directoryTypes();
+        $requestedType = trim((string) $request->query('type'));
+        $activeType = array_key_exists($requestedType, $types) ? $requestedType : null;
 
-        $placesQuery = TourismPlace::query()
-            ->published()
-            ->with('category')
-            ->when($category !== '', fn ($query) => $query->whereHas('category', fn ($query) => $query
-                ->where('slug', $category)
-                ->when(ctype_digit($category), fn ($query) => $query->orWhere('id', (int) $category))))
-            ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
-                ->where('title', 'like', "%{$search}%")
-                ->orWhere('short_description', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%")
-                ->orWhere('address', 'like', "%{$search}%")))
+        $baseQuery = TourismPlace::query()->published();
+        $databaseCounts = (clone $baseQuery)
+            ->selectRaw('tourism_type, COUNT(*) as aggregate')
+            ->groupBy('tourism_type')
+            ->pluck('aggregate', 'tourism_type');
+
+        $typeCounts = collect($types)->mapWithKeys(fn ($label, $type) => [
+            $type => (int) ($databaseCounts[$type] ?? 0),
+        ])->all();
+        $typeCounts = ['all' => (int) $databaseCounts->sum()] + $typeCounts;
+
+        $places = (clone $baseQuery)
+            ->when($activeType, fn ($query) => $query->where('tourism_type', $activeType))
             ->orderBy('sort_order')
-            ->latest('published_at');
+            ->latest('published_at')
+            ->get();
 
-        $places = $placesQuery->get();
-        $tourismPanels = $this->categoryPanels($places);
-        $tourismNature = $tourismPanels->first()['items'] ?? collect();
-        $tourismHistoric = $tourismPanels->skip(1)->first()['items'] ?? collect();
-        $tourismShop = $tourismPanels->skip(2)->first()['items'] ?? collect();
-        $galleryPlaces = $places->take(6);
+        $allPlaces = $activeType
+            ? (clone $baseQuery)->orderBy('sort_order')->latest('published_at')->get()
+            : $places;
+        $galleryItems = $this->galleryItems($allPlaces);
+        $introImageUrl = $this->introImageUrl($settings->group('tourism'), $allPlaces);
 
-        return view('frontend.tourism.index', [
-            'places' => $places,
-            'tourismNature' => $tourismNature,
-            'tourismPanels' => $tourismPanels,
-            'tourismHistoric' => $tourismHistoric,
-            'tourismShop' => $tourismShop,
-            'galleryPlaces' => $galleryPlaces,
-            'categories' => $this->categories(),
-            'activeCategory' => $category,
-            'search' => $search,
+        $viewData = compact(
+            'places', 'types', 'typeCounts', 'activeType', 'galleryItems', 'introImageUrl'
+        );
+
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'html' => view('frontend.tourism.partials.results', $viewData)->render(),
+                'total' => $places->count(),
+                'active_type' => $activeType,
+                'type_counts' => $typeCounts,
+                'url' => $activeType ? route('tourism.index', ['type' => $activeType]) : route('tourism.index'),
+            ]);
+        }
+
+        return view('frontend.tourism.index', $viewData + [
             'tourismSettings' => $settings->group('tourism'),
         ]);
     }
@@ -92,35 +100,35 @@ class TourismController extends Controller
         ]);
     }
 
-    private function categories()
+    private function directoryTypes(): array
     {
-        return Category::query()
-            ->active()
-            ->where('type', 'tourism')
-            ->orderBy('sort_order')
-            ->orderBy('title')
-            ->get();
+        return [
+            'nature' => 'طبیعت‌گردی',
+            'historic' => 'تاریخی و فرهنگی',
+            'shopping' => 'بازار و خرید',
+        ];
     }
 
-    private function categoryPanels($places)
+    private function galleryItems($places): array
     {
-        $categories = $this->categories();
-        $panels = $categories->mapWithKeys(fn (Category $category) => [
-            'tour-category-'.$category->id => [
-                'label' => $category->title,
-                'items' => $places->where('category_id', $category->id)->values(),
-            ],
-        ])->filter(fn (array $panel) => $panel['items']->isNotEmpty());
+        return $places->flatMap(fn (TourismPlace $place) => $place->gallery_items)
+            ->concat($places->map(fn (TourismPlace $place) => $place->directory_image_url ? [
+                'url' => $place->directory_image_url,
+                'caption' => $place->title,
+            ] : null)->filter())
+            ->unique('url')
+            ->take(6)
+            ->values()
+            ->all();
+    }
 
-        if ($panels->isNotEmpty()) {
-            return $panels;
-        }
+    private function introImageUrl(array $settings, $places): string
+    {
+        $settingImage = $settings['tourism.intro_image'] ?? null;
+        $settingUrl = $settingImage ? image_url($settingImage, '') : '';
 
-        return collect([
-            'tour-all' => [
-                'label' => 'همه جاذبه‌ها',
-                'items' => $places,
-            ],
-        ]);
+        return $settingUrl
+            ?: (string) $places->first(fn (TourismPlace $place) => $place->directory_image_url)?->directory_image_url
+            ?: asset('assets/img/tourism-placeholder.svg');
     }
 }

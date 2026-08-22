@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\GuildUnion;
+use App\Services\SlugService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -13,6 +14,14 @@ class UpdateUnionRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $slug = $this->input('slug');
+        if ($slug !== null && ! filter_var($slug, FILTER_VALIDATE_URL)) {
+            $this->merge(['slug' => app(SlugService::class)->make((string) $slug, '')]);
+        }
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -21,9 +30,9 @@ class UpdateUnionRequest extends FormRequest
 
         return [
             'title' => ['required', 'string', 'max:190'],
-            'slug' => ['nullable', 'string', 'max:190', 'regex:/^[\p{Arabic}\p{L}\p{N}\-]+$/u', Rule::unique('unions', 'slug')->ignore($unionId)],
-            'logo' => ['nullable', 'image', 'max:2048'],
-            'cover_image' => ['nullable', 'image', 'max:4096'],
+            'slug' => ['nullable', 'string', 'max:190', 'regex:/^[\p{Arabic}A-Za-z0-9\-]+$/u', Rule::unique('unions', 'slug')->ignore($unionId)],
+            'logo' => ['nullable', 'image', 'max:5120'],
+            'cover_image' => ['nullable', 'image', 'max:5120'],
             'description' => ['nullable', 'string'],
             'short_description' => ['nullable', 'string', 'max:1000'],
             'address' => ['nullable', 'string', 'max:1000'],
@@ -32,10 +41,11 @@ class UpdateUnionRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:190'],
             'website' => ['nullable', 'url', 'max:190'],
             'manager_name' => ['nullable', 'string', 'max:190'],
+            'manager_position' => ['nullable', 'string', 'max:190'],
+            'manager_description' => ['nullable', 'string', 'max:3000'],
             'union_type' => ['nullable', 'string', 'max:190'],
             'union_type_id' => ['nullable', 'exists:union_types,id'],
-            'category_id' => ['nullable', 'exists:categories,id'],
-            'manager_image' => ['nullable', 'image', 'max:2048'],
+            'manager_image' => ['nullable', 'image', 'max:5120'],
             'working_hours' => ['nullable', 'string', 'max:500'],
             'social_links' => ['nullable', 'array'],
             'social_links.*' => ['nullable', 'url', 'max:190'],
@@ -51,7 +61,7 @@ class UpdateUnionRequest extends FormRequest
             'selected_posts' => ['nullable', 'array'],
             'selected_posts.*' => ['nullable', 'integer', 'exists:posts,id'],
             'price_list_mode' => ['required', Rule::in(['image', 'table'])],
-            'price_list_image' => ['nullable', 'image', 'max:4096'],
+            'price_list_image' => ['nullable', 'image', 'max:5120'],
             'complaint_enabled' => ['required', 'boolean'],
             'congratulations_enabled' => ['required', 'boolean'],
             'news_enabled' => ['required', 'boolean'],
@@ -120,5 +130,27 @@ class UpdateUnionRequest extends FormRequest
             'related.prices.*.is_active' => ['nullable', 'boolean'],
             'related.prices.*.delete' => ['nullable', 'boolean'],
         ];
+    }
+
+    public function messages(): array
+    {
+        $messages = [
+            'slug.regex' => 'اسلاگ فقط می‌تواند شامل حروف فارسی یا انگلیسی، عدد و خط تیره باشد.',
+            'slug.max' => 'اسلاگ نمی‌تواند بیشتر از ۱۹۰ کاراکتر باشد.',
+            'logo.max' => 'حجم لوگوی اتحادیه نباید بیشتر از ۵ مگابایت باشد.',
+            'cover_image.max' => 'حجم تصویر اصلی اتحادیه نباید بیشتر از ۵ مگابایت باشد.',
+            'manager_image.max' => 'حجم تصویر رئیس اتحادیه نباید بیشتر از ۵ مگابایت باشد.',
+            'price_list_image.max' => 'حجم تصویر نرخنامه نباید بیشتر از ۵ مگابایت باشد.',
+        ];
+        foreach (['logo', 'cover_image', 'manager_image', 'price_list_image'] as $field) {
+            $messages[$field.'.image'] = 'فایل انتخاب‌شده باید یک تصویر معتبر باشد.';
+        }
+
+        return $messages;
+    }
+
+    public function attributes(): array
+    {
+        return ['title' => 'عنوان اتحادیه', 'slug' => 'اسلاگ', 'logo' => 'لوگوی اتحادیه', 'cover_image' => 'تصویر اصلی اتحادیه', 'manager_image' => 'تصویر رئیس اتحادیه', 'price_list_image' => 'تصویر نرخنامه'];
     }
 }

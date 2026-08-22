@@ -3,16 +3,16 @@
 namespace App\Services;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class SlugService
 {
     public function make(?string $value, string $fallback = 'content'): string
     {
         $slug = trim((string) $value);
-        $slug = str_replace(['_', '‌'], ['-', ' '], $slug);
-        $slug = preg_replace('/[^\p{Arabic}\p{L}\p{N}\s\-]+/u', '', $slug) ?: '';
-        $slug = preg_replace('/[\s\-]+/u', '-', trim($slug, '-')) ?: '';
+        $slug = preg_replace('/[\p{Pd}_\s\x{200C}]+/u', '-', $slug) ?: '';
+        $slug = preg_replace('/[^\p{Arabic}\p{L}\p{N}\-]+/u', '', $slug) ?: '';
+        $slug = preg_replace('/-+/u', '-', trim($slug, '-')) ?: '';
+
         return mb_strtolower($slug ?: $fallback, 'UTF-8');
     }
 

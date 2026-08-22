@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Support\PublicFileUrl;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class TourismPlace extends Model
@@ -86,11 +87,44 @@ class TourismPlace extends Model
             $path = is_array($image) ? ($image['path'] ?? $image['image'] ?? null) : $image;
             $caption = is_array($image) ? ($image['caption'] ?? $this->title) : $this->title;
 
-            return [
-                'url' => $this->resolveImageUrl($path),
+            $url = $this->resolveDirectoryImageUrl($path);
+
+            return $url ? [
+                'url' => $url,
                 'caption' => $caption ?: $this->title,
-            ];
-        })->values()->all();
+            ] : null;
+        })->filter()->values()->all();
+    }
+
+    public function getDirectoryImageUrlAttribute(): ?string
+    {
+        return $this->resolveDirectoryImageUrl($this->image)
+            ?: $this->resolveDirectoryImageUrl($this->featured_image);
+    }
+
+    private function resolveDirectoryImageUrl(?string $image): ?string
+    {
+        $image = trim((string) $image);
+
+        if ($image === '' || Str::contains($image, 'asnaf-gorgan-default.jpg')) {
+            return null;
+        }
+
+        if (Str::startsWith($image, ['http://', 'https://'])) {
+            return PublicFileUrl::make($image, '');
+        }
+
+        if (Str::startsWith($image, ['assets/'])) {
+            return is_file(public_path($image)) ? asset($image) : null;
+        }
+
+        $path = PublicFileUrl::normalizeStoragePath($image);
+        $exists = Storage::disk('public')->exists($path)
+            || is_file(storage_path('app/public/'.$path))
+            || is_file(public_path('media-files/'.$path))
+            || is_file(public_path('uploaded-media/'.$path));
+
+        return $exists ? route('media.public.legacy', ['path' => $path]) : null;
     }
 
     private function resolveImageUrl(?string $image): string

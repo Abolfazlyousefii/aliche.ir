@@ -5,23 +5,30 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\GuildUnion;
 use App\Models\Post;
-use App\Models\Category;
 use App\Services\SlugRedirectService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PostController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $search = trim((string) $request->query('search'));
-        $categoryId = $request->query('category_id');
-        $unionId = $request->query('union_id');
-        $date = $request->query('date');
+        $categoryId = $this->positiveInteger($request->query('category_id'));
+        $unionId = $this->positiveInteger($request->query('union_id'));
+        $date = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $request->query('date'))
+            ? (string) $request->query('date')
+            : null;
+
+        $publishedNews = fn ($query) => $query
+            ->published()
+            ->editorial();
 
         $posts = Post::query()
             ->published()
+            ->editorial()
             ->with(['category', 'union', 'galleries'])
             ->withCount('galleries')
             ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
@@ -35,21 +42,50 @@ class PostController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return view('frontend.posts.index', [
+        $viewData = [
             'posts' => $posts,
-            'categories' => Category::query()
-                ->active()
-                ->where('type', 'news')
-                ->withCount(['posts as published_posts_count' => fn ($query) => $query->published()])
-                ->orderBy('sort_order')
-                ->orderBy('title')
-                ->get(),
-            'unions' => GuildUnion::query()->where('is_active', true)->orderBy('title')->orderBy('name')->get(),
             'search' => $search,
             'categoryId' => $categoryId,
             'unionId' => $unionId,
             'date' => $date,
+            'hasActiveFilters' => $search !== '' || $categoryId || $unionId || $date,
+        ];
+
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'html' => view('frontend.posts.partials.results', $viewData)->render(),
+                'current_page' => $posts->currentPage(),
+                'last_page' => $posts->lastPage(),
+                'total' => $posts->total(),
+                'from' => $posts->firstItem(),
+                'to' => $posts->lastItem(),
+                'url' => $request->fullUrl(),
+            ]);
+        }
+
+        return view('frontend.posts.index', array_merge($viewData, [
+            'unions' => GuildUnion::query()
+                ->active()
+                ->where(fn ($query) => $query
+                    ->whereHas('posts', $publishedNews)
+                    ->when($unionId, fn ($query) => $query->orWhere(
+                        $query->getModel()->getQualifiedKeyName(),
+                        $unionId
+                    )))
+                ->withCount(['posts as published_news_count' => $publishedNews])
+                ->orderBy('title')
+                ->orderBy('name')
+                ->get(),
+        ]));
+    }
+
+    private function positiveInteger(mixed $value): ?int
+    {
+        $value = filter_var($value, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1],
         ]);
+
+        return $value === false ? null : $value;
     }
 
     public function legacy(string $slug): RedirectResponse
@@ -79,6 +115,7 @@ class PostController extends Controller
 
         $relatedPosts = Post::query()
             ->published()
+            ->editorial()
             ->whereKeyNot($post->id)
             ->with(['category', 'galleries'])
             ->withCount('galleries')
@@ -89,12 +126,14 @@ class PostController extends Controller
 
         $previousPost = Post::query()
             ->published()
+            ->editorial()
             ->where('published_at', '<', $post->published_at)
             ->orderByDesc('published_at')
             ->first();
 
         $nextPost = Post::query()
             ->published()
+            ->editorial()
             ->where('published_at', '>', $post->published_at)
             ->orderBy('published_at')
             ->first();

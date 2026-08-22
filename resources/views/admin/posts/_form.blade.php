@@ -2,6 +2,7 @@
     $selectedStatus = old('status', $post?->status ?? 'draft');
     $selectedType = old('type', $post?->type ?? 'news');
     $selectedHomepagePosition = old('homepage_position', $post?->homepage_position ?? 'normal');
+    $isImportantNews = (bool) old('is_important', $post?->is_important ?? false);
     $keywordSource = old('meta_keywords', $post?->meta_keywords ?? '');
     $metaKeywords = collect(is_array($keywordSource) ? $keywordSource : preg_split('/[,\n،]+/u', (string) $keywordSource))
         ->map(fn ($keyword) => trim((string) $keyword))
@@ -11,9 +12,6 @@
 
 <div class="admin-panel-card">
     <div class="row g-3">
-        <div class="col-12 admin-form-section-heading">
-            <span>۱</span><div><strong>اطلاعات پایه خبر</strong><small>عنوان، نشانی، دسته‌بندی و ارتباط سازمانی</small></div>
-        </div>
         <div class="col-md-8">
             <label class="form-label" for="title">عنوان خبر</label>
             <input class="form-control" id="title" name="title" value="{{ old('title', $post?->title) }}" required>
@@ -38,7 +36,7 @@
             <select class="form-control js-union-select" id="union_id" name="union_id" data-placeholder="خبر عمومی / بدون اتحادیه">
                 <option value="">خبر عمومی / بدون اتحادیه</option>
                 @foreach ($unions as $union)
-                    <option value="{{ $union->id }}" @selected((string) old('union_id', $post?->union_id) === (string) $union->id)>{{ $union->display_title }}</option>
+                    <option value="{{ $union->id }}" @selected((string) old('union_id', $post?->union_id) === (string) $union->id)>{{ $union->display_title }}{{ $union->is_active ? '' : ' — غیرفعال' }}</option>
                 @endforeach
             </select>
         </div>
@@ -49,9 +47,6 @@
                     <option value="{{ $type }}" @selected($selectedType === $type)>{{ $typeLabels[$type] ?? $type }}</option>
                 @endforeach
             </select>
-        </div>
-        <div class="col-12 admin-form-section-heading">
-            <span>۲</span><div><strong>وضعیت و انتشار</strong><small>چرخه بررسی، زمان انتشار و جایگاه نمایش</small></div>
         </div>
         <div class="col-md-6">
             <label class="form-label" for="status">وضعیت</label>
@@ -79,8 +74,17 @@
             </select>
             <small class="text-muted">هر خبر فقط یکی از جایگاه‌های صفحه اصلی را می‌گیرد و در آرشیو عمومی نیز نمایش داده می‌شود.</small>
         </div>
-        <div class="col-12 admin-form-section-heading">
-            <span>۳</span><div><strong>محتوای خبر</strong><small>خلاصه و متن کامل برای انتشار</small></div>
+        <div class="col-md-8">
+            <div class="border rounded-3 p-3 h-100 bg-light">
+                <input type="hidden" name="is_important" value="0">
+                <div class="form-check form-switch m-0">
+                    <input class="form-check-input" id="is_important" name="is_important" type="checkbox" value="1" @checked($isImportantNews)>
+                    <label class="form-check-label fw-bold" for="is_important">نمایش در بخش «اخبار مهم هفته» صفحه اصلی</label>
+                </div>
+                <small class="text-muted d-block mt-2">
+                    جدیدترین خبر انتخاب‌شده به‌صورت خبر اصلی تصویری و شش خبر بعدی به‌صورت فهرست متنی نمایش داده می‌شوند.
+                </small>
+            </div>
         </div>
         <div class="col-12">
             <label class="form-label" for="excerpt">خلاصه خبر</label>
@@ -89,9 +93,6 @@
         <div class="col-12">
             <label class="form-label" for="body">متن کامل خبر</label>
             <textarea class="form-control js-rich-editor" id="body" name="body" rows="12">{{ old('body', $post?->body) }}</textarea>
-        </div>
-        <div class="col-12 admin-form-section-heading">
-            <span>۴</span><div><strong>رسانه</strong><small>تصویر شاخص، گالری و کپشن تصاویر</small></div>
         </div>
         <div class="col-md-6">
             <label class="form-label" for="featured_image">تصویر شاخص</label>
@@ -142,15 +143,9 @@
                 </div>
             </div>
         @endif
-        <div class="col-12 admin-form-section-heading">
-            <span>۵</span><div><strong>تنظیمات تکمیلی</strong><small>اطلاعات مرتبط با فرایند بررسی محتوا</small></div>
-        </div>
         <div class="col-12">
             <label class="form-label" for="rejected_reason">دلیل رد خبر</label>
             <textarea class="form-control" id="rejected_reason" name="rejected_reason" rows="3">{{ old('rejected_reason', $post?->rejected_reason) }}</textarea>
-        </div>
-        <div class="col-12 admin-form-section-heading">
-            <span>۶</span><div><strong>سئو</strong><small>عنوان، توضیحات و کلیدواژه‌های متا</small></div>
         </div>
         <div class="col-md-4">
             <label class="form-label" for="meta_title">عنوان متا</label>

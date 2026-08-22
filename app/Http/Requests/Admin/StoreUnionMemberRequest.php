@@ -19,6 +19,7 @@ class StoreUnionMemberRequest extends FormRequest
         return [
             'union_id' => $this->unionRule(),
             'full_name' => ['required', 'string', 'max:190'],
+            'position' => ['nullable', 'string', 'max:190'],
             'national_code' => ['nullable', 'string', 'max:20'],
             'mobile' => ['nullable', 'string', 'max:50'],
             'phone' => ['nullable', 'string', 'max:50'],
@@ -30,6 +31,7 @@ class StoreUnionMemberRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:2000'],
             'attachments' => ['nullable', 'array'],
             'attachments.*' => ['file', 'max:10240'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['required', 'boolean'],
         ];
     }

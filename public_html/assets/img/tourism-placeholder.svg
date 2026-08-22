@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="title desc">
+  <title id="title">تصویر جایگزین گردشگری</title>
+  <desc id="desc">نماد ساده کوه، خورشید و موقعیت مکانی</desc>
+  <rect width="800" height="450" fill="#eef5f1"/>
+  <circle cx="628" cy="112" r="48" fill="#c6dfd0"/>
+  <path d="M90 348 278 156l122 128 78-82 232 146H90Z" fill="#9fc7b0"/>
+  <path d="m90 348 188-192 70 74-117 118H90Z" fill="#6ca184"/>
+  <path d="M400 151c-42 0-76 33-76 74 0 57 76 132 76 132s76-75 76-132c0-41-34-74-76-74Zm0 108a35 35 0 1 1 0-70 35 35 0 0 1 0 70Z" fill="#225b43"/>
+</svg>

@@ -13,13 +13,15 @@ class HomeUnionsDisplayTest extends TestCase
 
     public function test_active_unions_are_displayed_on_home_page(): void
     {
-        $unionType = UnionType::query()->create([
-            'title' => 'اتحادیه‌های خدماتی',
-            'slug' => GuildUnion::TYPE_SERVICE,
-            'icon' => '🧰',
-            'sort_order' => 10,
-            'is_active' => true,
-        ]);
+        $unionType = UnionType::query()->firstOrCreate(
+            ['slug' => GuildUnion::TYPE_SERVICE],
+            [
+                'title' => 'اتحادیه‌های خدماتی',
+                'icon' => '🧰',
+                'sort_order' => 10,
+                'is_active' => true,
+            ]
+        );
 
         GuildUnion::query()->create([
             'name' => 'اتحادیه تست خدمات',

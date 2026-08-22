@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
-use App\Models\Category;
+use App\Models\AnnouncementCategory;
 use App\Models\GuildUnion;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use App\Services\SlugRedirectService;
@@ -13,11 +14,13 @@ use Illuminate\View\View;
 
 class AnnouncementController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $search = trim((string) $request->query('search'));
-        $categoryId = $request->query('category_id');
-        $unionId = $request->query('union_id');
+        $categoryId = $this->positiveInteger($request->query('category_id'));
+        $unionId = $this->positiveInteger($request->query('union_id'));
+
+        $publishedAnnouncements = fn ($query) => $query->published();
 
         $announcements = Announcement::query()
             ->published()
@@ -34,14 +37,54 @@ class AnnouncementController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return view('frontend.announcements.index', [
+        $viewData = [
             'announcements' => $announcements,
-            'categories' => Category::query()->active()->where('type', 'news')->orderBy('sort_order')->orderBy('title')->get(),
-            'unions' => GuildUnion::query()->where('is_active', true)->orderBy('title')->orderBy('name')->get(),
             'search' => $search,
             'categoryId' => $categoryId,
             'unionId' => $unionId,
+            'hasActiveFilters' => $search !== '' || $categoryId || $unionId,
+        ];
+
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'html' => view('frontend.announcements.partials.results', $viewData)->render(),
+                'current_page' => $announcements->currentPage(),
+                'last_page' => $announcements->lastPage(),
+                'total' => $announcements->total(),
+                'from' => $announcements->firstItem(),
+                'to' => $announcements->lastItem(),
+                'url' => $request->fullUrl(),
+            ]);
+        }
+
+        return view('frontend.announcements.index', array_merge($viewData, [
+            'categories' => AnnouncementCategory::query()
+                ->where('is_active', true)
+                ->whereHas('announcements', $publishedAnnouncements)
+                ->orderBy('sort_order')
+                ->orderBy('title')
+                ->get(),
+            'unions' => GuildUnion::query()
+                ->where('is_active', true)
+                ->where(fn ($query) => $query
+                    ->whereHas('announcements', $publishedAnnouncements)
+                    ->when($unionId, fn ($query) => $query->orWhere(
+                        $query->getModel()->getQualifiedKeyName(),
+                        $unionId
+                    )))
+                ->orderBy('title')
+                ->orderBy('name')
+                ->get(),
+        ]));
+    }
+
+    private function positiveInteger(mixed $value): ?int
+    {
+        $value = filter_var($value, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1],
         ]);
+
+        return $value === false ? null : $value;
     }
 
     public function show(string $slug): View|RedirectResponse

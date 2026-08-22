@@ -5,22 +5,20 @@ namespace App\Services;
 use App\Models\Media;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Throwable;
 
 class MediaLibraryService
 {
-    public function storeImage(UploadedFile $file, string $directory, string $disk = 'public', ?int $uploadedBy = null, ?string $title = null, ?string $altText = null): Media
-    {
-        $path = $file->store($directory, $disk);
+    public function storeImage(
+        UploadedFile $file,
+        string $directory,
+        string $disk = 'public',
+        ?int $uploadedBy = null,
+        ?string $title = null,
+        ?string $altText = null
+    ): Media {
+        $path = $this->optimizeAndStore($file, $directory, $disk);
 
-        return $this->recordStoredImage($file, $path, $disk, $uploadedBy, $title, $altText);
-    }
-
-    public function recordStoredImage(UploadedFile $file, string $path, string $disk = 'public', ?int $uploadedBy = null, ?string $title = null, ?string $altText = null): Media
-    {
-        [$width, $height] = @getimagesize($file->getRealPath()) ?: [null, null];
-
-        $this->mirrorPublicDiskFile($path, $disk);
+        [$width, $height] = $this->imageSize($path, $disk);
 
         return Media::query()->firstOrCreate(
             ['path' => $path],
@@ -28,76 +26,84 @@ class MediaLibraryService
                 'file_name' => basename($path),
                 'original_name' => $file->getClientOriginalName(),
                 'disk' => $disk,
-                'mime_type' => $file->getMimeType(),
-                'extension' => $file->extension() ?: $file->getClientOriginalExtension(),
-                'size' => $file->getSize(),
+                'mime_type' => 'image/webp',
+                'extension' => 'webp',
+                'size' => Storage::disk($disk)->size($path),
                 'width' => $width,
                 'height' => $height,
                 'alt_text' => $altText,
                 'title' => $title ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
                 'uploaded_by' => $uploadedBy,
-                'hash' => is_file($file->getRealPath()) ? hash_file('sha256', $file->getRealPath()) : null,
+                'hash' => hash_file('sha256', $file->getRealPath()),
             ]
         );
     }
 
-    public function publicUrl(string $path): string
+    private function optimizeAndStore(UploadedFile $file, string $directory, string $disk): string
     {
-        return Storage::disk('public')->url($path);
+        $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $path = $directory.'/'.uniqid($name.'-').'.webp';
+
+        $imageInfo = getimagesize($file->getRealPath());
+
+        if (!$imageInfo) {
+            throw new \RuntimeException('فایل تصویر معتبر نیست.');
+        }
+
+        [$width, $height] = $imageInfo;
+
+        $source = match ($imageInfo['mime']) {
+            'image/jpeg' => imagecreatefromjpeg($file->getRealPath()),
+            'image/png' => imagecreatefrompng($file->getRealPath()),
+            'image/webp' => imagecreatefromwebp($file->getRealPath()),
+            'image/gif' => imagecreatefromgif($file->getRealPath()),
+            default => null,
+        };
+
+        if (!$source) {
+            throw new \RuntimeException('فرمت تصویر پشتیبانی نمی‌شود.');
+        }
+
+        $maxWidth = 1600;
+
+        if ($width > $maxWidth) {
+            $ratio = $maxWidth / $width;
+            $newWidth = $maxWidth;
+            $newHeight = (int) ($height * $ratio);
+
+            $canvas = imagecreatetruecolor($newWidth, $newHeight);
+
+            imagealphablending($canvas, false);
+            imagesavealpha($canvas, true);
+
+            imagecopyresampled(
+                $canvas,
+                $source,
+                0,0,0,0,
+                $newWidth,
+                $newHeight,
+                $width,
+                $height
+            );
+
+            imagedestroy($source);
+            $source = $canvas;
+        }
+
+        ob_start();
+        imagewebp($source, null, 82);
+        $content = ob_get_clean();
+
+        imagedestroy($source);
+
+        Storage::disk($disk)->put($path, $content);
+
+        return $path;
     }
 
-    private function mirrorPublicDiskFile(string $path, string $disk = 'public'): void
+    private function imageSize(string $path, string $disk): array
     {
-        if ($disk !== 'public') {
-            return;
-        }
-
-        $source = Storage::disk('public')->path($path);
-
-        if (! is_file($source)) {
-            return;
-        }
-
-        foreach ($this->publicMirrorTargets($path) as $target) {
-            if ($this->isSameFileLocation($source, $target)) {
-                continue;
-            }
-
-            try {
-                if (! is_dir(dirname($target))) {
-                    mkdir(dirname($target), 0755, true);
-                }
-
-                copy($source, $target);
-            } catch (Throwable) {
-                // The canonical file is already saved on the public disk; ignore
-                // mirror failures so uploads are not blocked by server layout.
-            }
-        }
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function publicMirrorTargets(string $path): array
-    {
-        return [
-            public_path('storage/'.$path),
-            public_path('media/'.$path),
-            public_path('media-files/'.$path),
-            public_path('uploaded-media/'.$path),
-        ];
-    }
-
-    private function isSameFileLocation(string $source, string $target): bool
-    {
-        $sourceRealPath = realpath($source);
-        $targetDirectoryRealPath = realpath(dirname($target));
-
-        if ($sourceRealPath === false || $targetDirectoryRealPath === false) {
-            return false;
-        }
-
-        return $sourceRealPath === $targetDirectoryRealPath.DIRECTORY_SEPARATOR.basename($target);
+        $temp = Storage::disk($disk)->path($path);
+        return @getimagesize($temp) ?: [null, null];
     }
 }

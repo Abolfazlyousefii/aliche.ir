@@ -1,114 +1,71 @@
 @extends('frontend.layouts.app')
 
 @section('title', 'گردشگری گرگان | اتاق اصناف مرکز استان گلستان')
-@section('meta_description', 'معرفی جاذبه‌های گردشگری، تاریخی و بازارهای گرگان')
+@section('meta_description', 'معرفی جاذبه‌های طبیعی، تاریخی، بازارها و خدمات گردشگری شهر گرگان به همراه اطلاعات بازدید و راه‌های دسترسی.')
+@section('canonical', route('tourism.index'))
 
 @section('content')
-<section class="page-header page-header-alt page-header-tourism">
-  <div class="site-container">
-    <h1>گردشگری در گرگان</h1>
-    <nav class="breadcrumb">
-      <a href="{{ route('home') }}">خانه</a>
-      <span>گردشگری گرگان</span>
-    </nav>
-  </div>
-</section>
+<main class="tourism-directory-page" data-tourism-directory>
+  <section class="page-header page-header-alt page-header-tourism tourism-directory-header">
+    <div class="site-container">
+      <h1>گردشگری گرگان</h1>
+      <p>راهنمای جاذبه‌های طبیعی، تاریخی، بازارها و خدمات گردشگری شهر گرگان</p>
+      <nav class="breadcrumb" aria-label="مسیر راهنما">
+        <a href="{{ route('home') }}">خانه</a>
+        <span aria-current="page">گردشگری گرگان</span>
+      </nav>
+    </div>
+  </section>
 
-<section class="tourism-intro">
-  <div class="site-container">
-    <div class="tourism-intro-grid">
-      <div class="tourism-intro-text">
-        <h2>{{ $tourismSettings['tourism.intro_title'] ?? 'به شهر گرگان خوش آمدید' }}</h2>
-        <p>{{ plain_text($tourismSettings['tourism.intro_text'] ?? 'گرگان با جاذبه‌های طبیعی، تاریخی و بازارهای متنوع، یکی از مقصدهای مهم گردشگری استان گلستان است.') }}</p>
-        <p>{{ plain_text($tourismSettings['tourism.intro_subtext'] ?? 'اتاق اصناف مرکز استان گلستان با همراهی اتحادیه‌های صنفی، پشتیبان فعالان حوزه گردشگری و مسافران محترم است.') }}</p>
-        <div class="tourism-stats">
-          <div class="tourism-stat"><strong>{{ $places->count() }}</strong><span>جاذبه ثبت‌شده</span></div>
-          <div class="tourism-stat"><strong>{{ $tourismNature->count() }}</strong><span>طبیعت‌گردی</span></div>
-          <div class="tourism-stat"><strong>{{ $tourismShop->count() }}</strong><span>بازار و خرید</span></div>
+  <section class="tourism-directory-intro" aria-labelledby="tourism-intro-title">
+    <div class="site-container tourism-directory-intro-grid">
+      <div class="tourism-directory-intro-copy">
+        <span class="tourism-directory-eyebrow">راهنمای شهر گرگان</span>
+        <h2 id="tourism-intro-title">{{ $tourismSettings['tourism.intro_title'] ?? 'به شهر گرگان خوش آمدید' }}</h2>
+        <p>{{ plain_text($tourismSettings['tourism.intro_text'] ?? 'گرگان با طبیعت هیرکانی، بافت تاریخی و بازارهای فعال، یکی از مقصدهای مهم گردشگری استان گلستان است.') }}</p>
+        @if(filled($tourismSettings['tourism.intro_subtext'] ?? null))
+          <p class="tourism-directory-intro-subtext">{{ plain_text($tourismSettings['tourism.intro_subtext']) }}</p>
+        @endif
+        <div class="tourism-directory-intro-actions">
+          <a class="tourism-directory-primary-action" href="#tourism-attractions">مشاهده جاذبه‌ها</a>
+          @if(($typeCounts['shopping'] ?? 0) > 0)
+            <a class="tourism-directory-secondary-action" href="{{ route('tourism.index', ['type' => 'shopping']) }}#tourism-attractions">بازار و خرید</a>
+          @endif
+        </div>
+        <div class="tourism-directory-stats" aria-label="آمار جاذبه‌های فعال">
+          <div class="tourism-directory-stat"><strong>{{ $typeCounts['all'] }}</strong><span>جاذبه فعال</span></div>
+          <div class="tourism-directory-stat"><strong>{{ $typeCounts['nature'] }}</strong><span>طبیعت‌گردی</span></div>
+          <div class="tourism-directory-stat"><strong>{{ $typeCounts['historic'] }}</strong><span>تاریخی و فرهنگی</span></div>
+          <div class="tourism-directory-stat"><strong>{{ $typeCounts['shopping'] }}</strong><span>بازار و خرید</span></div>
         </div>
       </div>
-      <div class="tourism-intro-img">
-        <img src="{{ $places->first()?->home_image_url ?? asset('assets/img/asnaf-gorgan-default.jpg') }}" alt="گرگان" loading="lazy"/>
+      <figure class="tourism-directory-intro-media">
+        <img src="{{ $introImageUrl }}" alt="نمایی از جاذبه‌های گردشگری گرگان" decoding="async">
+      </figure>
+    </div>
+  </section>
+
+  <section class="tourism-directory-attractions" id="tourism-attractions" aria-labelledby="tourism-results-title">
+    <div class="site-container">
+      <div class="tourism-directory-section-heading">
+        <div><span>انتخاب مقصد</span><h2 id="tourism-results-title" tabindex="-1">جاذبه‌های گردشگری</h2></div>
+        <p>جاذبه‌های فعال را بر اساس نوع مقصد مرور کنید.</p>
+      </div>
+      @include('frontend.tourism.partials.type-tabs')
+      <p class="tourism-directory-status" data-tourism-status role="status" aria-live="polite"></p>
+      @include('frontend.tourism.partials.results')
+    </div>
+  </section>
+
+  @include('frontend.tourism.partials.gallery')
+
+  <section class="tourism-directory-cta" aria-labelledby="tourism-cta-title">
+    <div class="site-container">
+      <div class="tourism-directory-cta-box">
+        <div><h2 id="tourism-cta-title">اصناف و خدمات مرتبط با گردشگری</h2><p>معرفی اتحادیه‌ها و خدمات مورد نیاز مسافران و فعالان گردشگری</p></div>
+        <a href="{{ route('guilds.index') }}">مشاهده اتحادیه‌های صنفی</a>
       </div>
     </div>
-  </div>
-</section>
-
-<section class="tourism-attractions">
-  <div class="site-container">
-    <div class="section-heading section-heading-centered">
-      <h2>جاذبه‌های گردشگری</h2>
-      <p>با معروف‌ترین جاذبه‌های طبیعی، تاریخی و تفریحی گرگان آشنا شوید</p>
-    </div>
-    <div class="tabs" data-tab-group="tour-attractions" role="tablist">
-      @foreach ($tourismPanels as $panel => $panelData)
-        <button class="tab-pill {{ $loop->first ? 'active' : '' }}" data-tab-target="{{ $panel }}" type="button">{{ $panelData['label'] }}</button>
-      @endforeach
-    </div>
-    <div class="tab-panels" data-tab-panels="tour-attractions">
-      @foreach ($tourismPanels as $panel => $panelData)
-        @php($panelPlaces = $panelData['items'])
-        <div class="tab-panel {{ $loop->first ? 'active' : '' }}" data-tab-panel="{{ $panel }}">
-          <div class="tourism-grid tourism-grid-lg">
-            @forelse ($panelPlaces as $place)
-              <div class="tourism-card tourism-card-lg">
-                <a href="{{ route('tourism.show', $place->slug) }}">
-                  <div class="tourism-img-wrap">
-                    <img src="{{ $place->home_image_url }}" alt="{{ $place->title }}" loading="lazy"/>
-                    <div class="tourism-badge">{{ $place->home_badge }}</div>
-                  </div>
-                </a>
-                <div class="tourism-card-body">
-                  <h3>{{ $place->title }}</h3>
-                  <p>{{ plain_text($place->home_description, 150) ?: 'توضیحی برای این جاذبه ثبت نشده است.' }}</p>
-                  <div class="tourism-card-footer"><span>{{ $place->home_badge }}</span></div>
-                </div>
-              </div>
-            @empty
-              <div class="tourism-card tourism-card-lg">
-                <a href="{{ route('tourism.index') }}">
-                  <div class="tourism-img-wrap">
-                    <img src="{{ asset('assets/img/asnaf-gorgan-default.jpg') }}" alt="موردی موجود نیست" loading="lazy"/>
-                    <div class="tourism-badge">گردشگری</div>
-                  </div>
-                </a>
-                <div class="tourism-card-body">
-                  <h3>موردی موجود نیست</h3>
-                  <p>در حال حاضر آیتمی برای این دسته گردشگری ثبت نشده است.</p>
-                  <div class="tourism-card-footer"><span>گردشگری</span></div>
-                </div>
-              </div>
-            @endforelse
-          </div>
-        </div>
-      @endforeach
-    </div>
-  </div>
-</section>
-
-<section class="tourism-gallery">
-  <div class="site-container">
-    <div class="section-heading section-heading-centered">
-      <h2>گالری تصاویر گردشگری</h2>
-      <p>تصاویری از زیبایی‌های طبیعی و تاریخی گرگان</p>
-    </div>
-    <div class="tourism-gallery-grid" data-gallery-group="tourism-gallery">
-      @forelse ($galleryPlaces as $place)
-        <div class="tourism-gallery-item" data-gallery-item="{{ $place->home_image_url }}"><img src="{{ $place->home_image_url }}" alt="{{ $place->title }}" loading="lazy"/></div>
-      @empty
-        <div class="tourism-gallery-item" data-gallery-item="{{ asset('assets/img/asnaf-gorgan-default.jpg') }}"><img src="{{ asset('assets/img/asnaf-gorgan-default.jpg') }}" alt="موردی موجود نیست" loading="lazy"/></div>
-      @endforelse
-    </div>
-  </div>
-</section>
-
-<section class="tourism-cta">
-  <div class="site-container">
-    <div class="tourism-cta-box">
-      <h2>اصناف مرتبط با گردشگری</h2>
-      <p>اتاق اصناف مرکز استان گلستان با اتحادیه‌های هتل‌داران، رستوران‌داران، صنایع دستی و آژانس‌های مسافرتی در خدمت فعالان این حوزه است.</p>
-      <a href="{{ route('guilds.index') }}" class="cta-button">مشاهده اتحادیه‌های صنفی</a>
-    </div>
-  </div>
-</section>
+  </section>
+</main>
 @endsection

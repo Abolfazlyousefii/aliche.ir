@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class GuildUnion extends Model
 {
@@ -34,6 +35,8 @@ class GuildUnion extends Model
         'email',
         'website',
         'manager_name',
+        'manager_position',
+        'manager_description',
         'union_type',
         'union_type_id',
         'category_id',
@@ -126,8 +129,7 @@ class GuildUnion extends Model
             'show_commissions' => 'نمایش کمیسیون‌ها',
             'show_commission_tasks' => 'نمایش وظایف کمیسیون‌ها',
             'show_rules' => 'نمایش قوانین و دستورالعمل‌ها',
-            'show_news_slider' => 'نمایش اسلایدر خبری',
-            'show_news' => 'نمایش آخرین اخبار',
+            'show_news' => 'نمایش اخبار اتحادیه',
             'show_articles' => 'نمایش مقاله‌ها',
             'show_prices' => 'نمایش نرخ‌نامه',
             'show_complaint' => 'نمایش ثبت شکایت',
@@ -172,6 +174,14 @@ class GuildUnion extends Model
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class, 'union_id');
+    }
+
+    public function latestPublishedNews(): HasOne
+    {
+        return $this->hasOne(Post::class, 'union_id')
+            ->editorial()
+            ->published()
+            ->latestOfMany('published_at');
     }
 
     public function selectedPosts(): BelongsToMany
@@ -252,6 +262,16 @@ class GuildUnion extends Model
     public function getCoverImageUrlAttribute(): string
     {
         return PublicFileUrl::make($this->cover_image);
+    }
+
+    public function getPrimaryImageAttribute(): ?string
+    {
+        return $this->cover_image ?: $this->logo ?: null;
+    }
+
+    public function getPrimaryImageUrlAttribute(): string
+    {
+        return PublicFileUrl::make($this->primary_image);
     }
 
     public function getManagerImageUrlAttribute(): string

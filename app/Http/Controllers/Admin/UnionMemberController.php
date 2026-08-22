@@ -113,6 +113,7 @@ class UnionMemberController extends Controller
         return [
             'union_id' => $validated['union_id'],
             'full_name' => $validated['full_name'],
+            'position' => $validated['position'] ?? null,
             'national_code' => $validated['national_code'] ?? null,
             'mobile' => $validated['mobile'] ?? null,
             'phone' => $validated['phone'] ?? null,
@@ -122,6 +123,7 @@ class UnionMemberController extends Controller
             'address' => $validated['address'] ?? null,
             'status' => $validated['status'],
             'description' => $validated['description'] ?? null,
+            'sort_order' => (int) ($validated['sort_order'] ?? 0),
             'is_active' => (bool) $validated['is_active'],
         ];
     }

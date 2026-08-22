@@ -24,7 +24,7 @@ class UnionTypeController extends Controller
 
     public function create(): View
     {
-        return view('admin.union_types.create', ['unionType' => null]);
+        return view('admin.union_types.create', ['unionType' => null, 'iconOptions' => UnionType::iconOptions()]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -38,7 +38,7 @@ class UnionTypeController extends Controller
 
     public function edit(UnionType $unionType): View
     {
-        return view('admin.union_types.edit', compact('unionType'));
+        return view('admin.union_types.edit', ['unionType' => $unionType, 'iconOptions' => UnionType::iconOptions()]);
     }
 
     public function update(Request $request, UnionType $unionType): RedirectResponse
@@ -74,7 +74,7 @@ class UnionTypeController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:190'],
             'slug' => ['nullable', 'string', 'max:190', Rule::unique('union_types', 'slug')->ignore($unionType?->id)],
-            'icon' => ['nullable', 'string', 'max:50'],
+            'icon' => ['nullable', 'string', Rule::in(array_keys(UnionType::iconOptions()))],
             'image' => ['nullable', 'image', 'max:4096'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['required', 'boolean'],

@@ -1,4 +1,4 @@
-﻿<div class="admin-panel-card">
+<div class="admin-panel-card">
     <div class="row g-3">
         <div class="col-md-6">
             <label class="form-label" for="title">عنوان</label>
@@ -9,8 +9,17 @@
             <input class="form-control" id="slug" name="slug" value="{{ old('slug', $unionType?->slug) }}" dir="ltr">
         </div>
         <div class="col-md-4">
-            <label class="form-label" for="icon">آیکون (emoji یا کلاس)</label>
-            <input class="form-control" id="icon" name="icon" value="{{ old('icon', $unionType?->icon) }}" placeholder="🏭 یا fa fa-industry">
+            <label class="form-label" for="icon">آیکون نوع اتحادیه</label>
+            @php
+                $selectedIcon = old('icon', $unionType?->resolved_icon);
+            @endphp
+            <select class="form-control" id="icon" name="icon">
+                <option value="">انتخاب خودکار بر اساس نامک</option>
+                @foreach(($iconOptions ?? \App\Models\UnionType::iconOptions()) as $iconKey => $iconLabel)
+                    <option value="{{ $iconKey }}" @selected($selectedIcon === $iconKey)>{{ $iconLabel }}</option>
+                @endforeach
+            </select>
+            <small class="text-muted d-block mt-1">آیکون انتخاب‌شده در تب‌های صفحه اصلی نمایش داده می‌شود.</small>
         </div>
         <div class="col-md-4">
             <label class="form-label" for="image">تصویر</label>

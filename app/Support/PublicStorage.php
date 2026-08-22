@@ -16,19 +16,15 @@ class PublicStorage
                 Storage::disk('public')->makeDirectory($directory);
             }
         }
-
-        self::ensureStorageLink();
     }
 
     public static function ensureStorageLink(): void
     {
-        $target = config('filesystems.disks.public.root');
+        foreach (config('filesystems.links', []) as $link => $target) {
+            if (! is_string($link) || $link === '' || ! is_string($target) || $target === '') {
+                continue;
+            }
 
-        if (! is_string($target) || $target === '') {
-            return;
-        }
-
-        foreach ([public_path('storage'), public_path('media'), public_path('media-files')] as $link) {
             self::ensureSymlink($link, $target);
         }
     }

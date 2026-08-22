@@ -1,0 +1,1005 @@
+/*
+ * Aliche homepage layout lock
+ * Loaded after styles.css to keep two fragile homepage layouts deterministic.
+ */
+
+/* Homepage union tabs, list and related-news preview. */
+.home-main #representatives .representatives-tabs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.home-main #representatives .representatives-tabs .tab-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.home-main #representatives .union-type-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  color: currentColor;
+}
+
+.home-main #representatives .representative-layout {
+  display: grid !important;
+  grid-template-columns: minmax(360px, .95fr) minmax(0, 1.05fr) !important;
+  grid-template-areas: "panel preview" !important;
+  gap: 20px !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  direction: ltr;
+}
+
+.home-main #representatives .representative-map {
+  grid-area: preview !important;
+  position: relative !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 390px !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(15, 35, 52, .1) !important;
+  border-radius: 12px !important;
+  background: #eaf2f6 !important;
+  contain: layout paint;
+  direction: rtl;
+}
+
+.home-main #representatives .union-news-preview-card {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  color: #fff;
+  text-decoration: none;
+  isolation: isolate;
+}
+
+.home-main #representatives .representative-map .map-img {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  transform: none !important;
+  transition: transform .35s ease, opacity .2s ease;
+}
+
+.home-main #representatives .union-news-preview-card:hover .map-img {
+  transform: scale(1.025) !important;
+}
+
+.home-main #representatives .union-news-preview-shade {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6, 25, 40, .04) 24%, rgba(6, 25, 40, .82) 100%);
+  pointer-events: none;
+}
+
+.home-main #representatives .union-news-preview-copy {
+  position: absolute;
+  z-index: 2;
+  right: 20px;
+  bottom: 18px;
+  left: 20px;
+  color: #fff;
+}
+
+.home-main #representatives .union-news-preview-copy > span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  margin-bottom: 8px;
+  padding-inline: 9px;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 6px;
+  background: rgba(12, 116, 185, .84);
+  font-size: 10.5px;
+  font-weight: 700;
+  backdrop-filter: blur(4px);
+}
+
+.home-main #representatives .union-news-preview-copy h3 {
+  display: -webkit-box;
+  max-width: 92%;
+  overflow: hidden;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(17px, 2vw, 23px);
+  font-weight: 800;
+  line-height: 1.7;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.home-main #representatives .union-news-preview-copy p {
+  display: -webkit-box;
+  max-width: 88%;
+  overflow: hidden;
+  margin: 7px 0 0;
+  color: rgba(255,255,255,.82);
+  font-size: 11.5px;
+  line-height: 1.85;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.home-main #representatives .people-panel {
+  grid-area: panel !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 390px !important;
+  max-height: 390px !important;
+  padding: 14px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(15, 35, 52, .1) !important;
+  border-radius: 12px !important;
+  background: #f8fafb !important;
+  box-shadow: none !important;
+  direction: rtl;
+}
+
+.home-main #representatives .people-scroll-wrap {
+  min-height: 0;
+  max-height: 315px;
+  margin-top: 12px;
+  overflow-y: auto;
+}
+
+.home-main #representatives .person-list {
+  gap: 8px;
+  margin-top: 0;
+}
+
+.home-main #representatives .union-home-item {
+  min-width: 0;
+  padding: 0 !important;
+  overflow: hidden;
+  border: 1px solid rgba(15, 35, 52, .08);
+  border-radius: 9px;
+  background: #fff;
+  transition: border-color .16s ease, background-color .16s ease, box-shadow .16s ease;
+}
+
+.home-main #representatives .union-home-item:hover,
+.home-main #representatives .union-home-item:focus-within,
+.home-main #representatives .union-home-item.is-preview-active {
+  border-color: rgba(12, 116, 185, .34);
+  background: #f7fbfe;
+  box-shadow: 0 5px 16px rgba(15, 35, 52, .055);
+}
+
+.home-main #representatives .union-home-link {
+  display: flex !important;
+  width: 100%;
+  min-width: 0;
+  min-height: 64px;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-main #representatives .union-home-link > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.home-main #representatives .union-home-link strong,
+.home-main #representatives .union-home-link small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-main #representatives .union-home-link strong {
+  color: #102f47;
+  font-size: 12.5px;
+  font-weight: 750;
+}
+
+.home-main #representatives .union-home-link small {
+  margin-top: 2px;
+  color: #6b7b87;
+  font-size: 10.5px;
+}
+
+.home-main #representatives .person-avatar {
+  width: 48px !important;
+  height: 48px !important;
+  flex: 0 0 48px !important;
+  overflow: hidden;
+  border: 1px solid rgba(15, 35, 52, .1);
+  border-radius: 50%;
+  background: #edf3f6;
+}
+
+.home-main #representatives .person-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+.home-main #representatives .union-home-actions {
+  display: none !important;
+}
+
+@media (max-width: 991.98px) {
+  .home-main #representatives .representative-layout {
+    grid-template-columns: minmax(300px, .95fr) minmax(0, 1.05fr) !important;
+    gap: 14px !important;
+  }
+
+  .home-main #representatives .representative-map,
+  .home-main #representatives .people-panel {
+    min-height: 350px !important;
+    max-height: 350px !important;
+  }
+
+  .home-main #representatives .people-scroll-wrap {
+    max-height: 275px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .home-main #representatives .representatives-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  .home-main #representatives .representatives-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-main #representatives .representatives-tabs .tab-pill {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .home-main #representatives .representative-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas:
+      "preview"
+      "panel" !important;
+    gap: 10px !important;
+  }
+
+  .home-main #representatives .representative-map {
+    min-height: 235px !important;
+    max-height: 235px !important;
+  }
+
+  .home-main #representatives .people-panel {
+    min-height: 330px !important;
+    max-height: 330px !important;
+    padding: 11px !important;
+  }
+
+  .home-main #representatives .people-scroll-wrap {
+    max-height: 260px;
+  }
+
+  .home-main #representatives .union-news-preview-copy {
+    right: 14px;
+    bottom: 13px;
+    left: 14px;
+  }
+
+  .home-main #representatives .union-news-preview-copy h3 {
+    max-width: 100%;
+    font-size: 16px;
+  }
+
+  .home-main #representatives .union-news-preview-copy p {
+    max-width: 100%;
+    font-size: 10.5px;
+  }
+}
+
+/* =========================================================
+   Homepage: weekly important news — restrained corporate layout
+   ========================================================= */
+.home-main .home-weekly-news-section {
+  padding-block: 64px;
+  background: #fff;
+}
+
+.home-main .weekly-news-heading {
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.home-main .weekly-news-heading > div {
+  min-width: 0;
+}
+
+.home-main .weekly-news-heading h2 {
+  margin: 0;
+  color: #172f40;
+  font-size: 21px;
+  font-weight: 720;
+  line-height: 1.55;
+}
+
+.home-main .weekly-news-heading p {
+  margin: 4px 0 0;
+  color: #77848e;
+  font-size: 11.5px;
+  line-height: 1.8;
+}
+
+.home-main .weekly-news-layout {
+  direction: ltr;
+  display: grid;
+  grid-template-columns: minmax(320px, .9fr) minmax(0, 1.1fr);
+  grid-template-areas: "list feature";
+  gap: 18px;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.home-main .weekly-news-feature {
+  grid-area: feature;
+  position: relative;
+  min-width: 0;
+  min-height: 330px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 35, 52, .11);
+  border-radius: 10px;
+  background: #e8eef2;
+  color: #fff;
+  direction: rtl;
+  isolation: isolate;
+}
+
+.home-main .weekly-news-feature > img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center;
+}
+
+.home-main .weekly-news-feature-shade {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6, 24, 37, .02) 30%, rgba(6, 24, 37, .78) 100%);
+}
+
+.home-main .weekly-news-feature-copy {
+  position: absolute;
+  z-index: 2;
+  right: 18px;
+  bottom: 16px;
+  left: 18px;
+}
+
+.home-main .weekly-news-feature-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+  color: rgba(255, 255, 255, .8);
+  font-size: 10.5px;
+}
+
+.home-main .weekly-news-feature-meta span::after {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin-inline-start: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .62);
+  vertical-align: middle;
+}
+
+.home-main .weekly-news-feature-copy h3 {
+  display: -webkit-box;
+  max-width: 760px;
+  overflow: hidden;
+  margin: 0;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.75;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.home-main .weekly-news-list-panel {
+  grid-area: list;
+  min-width: 0;
+  min-height: 330px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 35, 52, .10);
+  border-radius: 10px;
+  background: #fff;
+  direction: rtl;
+}
+
+.home-main .weekly-news-list {
+  display: grid;
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  height: 100%;
+  min-height: 330px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-main .weekly-news-list > li {
+  min-width: 0;
+  border-bottom: 1px solid rgba(15, 35, 52, .075);
+}
+
+.home-main .weekly-news-list > li:last-child {
+  border-bottom: 0;
+}
+
+.home-main .weekly-news-list > li > a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 10px;
+  height: 100%;
+  min-height: 54px;
+  padding: 8px 13px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color .16s ease;
+}
+
+.home-main .weekly-news-list > li > a:hover {
+  background: #f7fafc;
+}
+
+.home-main .weekly-news-list-copy {
+  display: block;
+  min-width: 0;
+}
+
+.home-main .weekly-news-list-copy time {
+  display: block;
+  margin-bottom: 1px;
+  color: #89949c;
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+.home-main .weekly-news-list-copy strong {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #213746;
+  font-size: 12.5px;
+  font-weight: 620;
+  line-height: 1.7;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.home-main .weekly-news-list > li > a > svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: #0c74b9;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.home-main .weekly-news-list-empty {
+  grid-row: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #7a8790;
+  font-size: 11.5px;
+  line-height: 1.9;
+  text-align: center;
+}
+
+@media (max-width: 991.98px) {
+  .home-main .weekly-news-layout {
+    grid-template-columns: minmax(280px, .9fr) minmax(0, 1.1fr);
+    gap: 14px;
+  }
+
+  .home-main .weekly-news-feature,
+  .home-main .weekly-news-list-panel,
+  .home-main .weekly-news-list {
+    min-height: 310px;
+  }
+
+  .home-main .weekly-news-feature-copy h3 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .home-main .home-weekly-news-section {
+    padding-block: 46px;
+  }
+
+  .home-main .weekly-news-heading {
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .home-main .weekly-news-heading h2 {
+    font-size: 18px;
+  }
+
+  .home-main .weekly-news-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "feature"
+      "list";
+    gap: 12px;
+  }
+
+  .home-main .weekly-news-feature {
+    min-height: 245px;
+  }
+
+  .home-main .weekly-news-list-panel,
+  .home-main .weekly-news-list {
+    min-height: 0;
+  }
+
+  .home-main .weekly-news-list {
+    display: block;
+  }
+
+  .home-main .weekly-news-list > li > a {
+    min-height: 64px;
+    padding-block: 9px;
+  }
+}
+
+@media (max-width: 479.98px) {
+  .home-main .weekly-news-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .home-main .weekly-news-heading p {
+    grid-column: 1 / -1;
+  }
+
+  .home-main .weekly-news-feature {
+    min-height: 220px;
+  }
+
+  .home-main .weekly-news-feature-copy {
+    right: 14px;
+    bottom: 13px;
+    left: 14px;
+  }
+
+  .home-main .weekly-news-feature-copy h3 {
+    font-size: 15px;
+  }
+}
+
+/* Homepage board members: fixed six-member presentation. */
+#chamber-members .chamber-members-heading {
+  margin-bottom: 24px;
+}
+
+#chamber-members .members-swiper {
+  width: 100%;
+  overflow: hidden;
+  padding: 4px 2px 28px;
+}
+
+#chamber-members .chamber-members-grid.swiper-wrapper {
+  display: flex;
+  grid-template-columns: none;
+  gap: 0;
+  margin-top: 0;
+  padding: 0;
+}
+
+#chamber-members .chamber-member-card.swiper-slide {
+  width: auto;
+  min-width: 0;
+  height: auto;
+}
+
+#chamber-members .members-swiper-pagination {
+  position: static;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+#chamber-members .members-swiper-pagination .swiper-pagination-bullet {
+  width: 7px;
+  height: 7px;
+  margin: 0 !important;
+  background: rgba(12, 116, 185, .28);
+  opacity: 1;
+}
+
+#chamber-members .members-swiper-pagination .swiper-pagination-bullet-active {
+  width: 20px;
+  border-radius: 999px;
+  background: var(--color-primary, #0c74b9);
+}
+
+@media (max-width: 991.98px) {
+  #chamber-members .members-swiper-pagination {
+    display: flex;
+  }
+}
+
+@media (max-width: 767.98px) {
+  #chamber-members .members-swiper {
+    padding-bottom: 20px;
+  }
+
+  #chamber-members .chamber-member-photo-wrap {
+    width: 96px;
+    height: 96px;
+  }
+
+  #chamber-members .chamber-member-body {
+    padding-inline: 10px;
+  }
+
+  #chamber-members .chamber-member-body h3 {
+    font-size: .9rem;
+  }
+
+  #chamber-members .chamber-member-position {
+    font-size: .76rem;
+  }
+}
+
+/* Board members v2: exact six-on-desktop / three-per-mobile-slide behavior. */
+#chamber-members .members-section-heading h2 {
+  font-size: 21px;
+  font-weight: 650;
+}
+
+@media (min-width: 992px) {
+  #chamber-members .members-swiper {
+    padding-bottom: 4px;
+  }
+
+  #chamber-members .members-swiper-pagination {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  #chamber-members .members-swiper {
+    padding-inline: 0;
+  }
+
+  #chamber-members .chamber-member-card > a {
+    padding: 7px !important;
+  }
+
+  #chamber-members .chamber-member-photo-wrap {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+  }
+
+  #chamber-members .chamber-member-body {
+    padding: 6px 2px 0 !important;
+  }
+
+  #chamber-members .chamber-member-body h3 {
+    font-size: 10.5px !important;
+    line-height: 1.5;
+  }
+
+  #chamber-members .chamber-member-position {
+    font-size: 9.5px !important;
+    line-height: 1.5;
+  }
+}
+
+
+/* =========================================================
+   Homepage multimedia — corporate layout lock
+   Scoped to #multimedia so no other homepage section changes.
+   ========================================================= */
+.home-main #multimedia {
+  padding-block: 56px 64px;
+}
+
+.home-main #multimedia .media-header {
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.home-main #multimedia .media-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.home-main #multimedia .media-tab-group {
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, .10);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .06);
+}
+
+.home-main #multimedia .media-tab {
+  min-width: 78px;
+  min-height: 36px;
+  padding: 6px 16px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.home-main #multimedia .media-tab.active {
+  background: #fff;
+  color: #20262b;
+  box-shadow: none;
+}
+
+.home-main #multimedia .media-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 160px;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+}
+
+.home-main #multimedia .media-card {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 10px;
+  background: #202221;
+  box-shadow: none;
+}
+
+.home-main #multimedia .media-card-lg {
+  grid-column: span 2;
+  grid-row: span 2;
+  height: auto;
+}
+
+.home-main #multimedia .media-card > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.home-main #multimedia .media-card-overlay {
+  background: linear-gradient(180deg, rgba(0, 0, 0, .05) 22%, rgba(0, 0, 0, .82) 100%);
+}
+
+.home-main #multimedia .media-card-footer {
+  padding: 12px 14px;
+}
+
+.home-main #multimedia .media-card-footer h3 {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.65;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.home-main #multimedia .media-card-lg .media-card-footer h3 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* The play control belongs in the visual centre, not in a corner. */
+.home-main #multimedia .media-play-btn {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: 50%;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 7px 20px rgba(0, 0, 0, .22);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: transform .18s ease, background-color .18s ease;
+}
+
+.home-main #multimedia .media-card-lg .media-play-btn {
+  width: 52px;
+  height: 52px;
+}
+
+.home-main #multimedia .media-play-btn::before {
+  width: 0;
+  height: 0;
+  margin: 0 0 0 3px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 0;
+  border-left: 11px solid #252827;
+}
+
+.home-main #multimedia .media-card:hover .media-play-btn {
+  background: #fff;
+  transform: translate(-50%, -50%) scale(1.07);
+}
+
+.home-main #multimedia .media-view-all {
+  width: max-content;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 24px auto 0;
+  padding: 7px 22px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+  .home-main #multimedia .media-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: auto;
+    gap: 12px;
+  }
+
+  .home-main #multimedia .media-card,
+  .home-main #multimedia .media-card-lg {
+    grid-column: span 1;
+    grid-row: span 1;
+    height: auto;
+    aspect-ratio: 16 / 10;
+  }
+
+  .home-main #multimedia .media-card-lg .media-card-footer h3 {
+    font-size: 12.5px;
+    font-weight: 650;
+  }
+
+  .home-main #multimedia .media-card-lg .media-play-btn {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .home-main #multimedia {
+    padding-block: 42px 48px;
+  }
+
+  .home-main #multimedia .media-header {
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .home-main #multimedia .media-header h2 {
+    font-size: 18px;
+  }
+
+  .home-main #multimedia .media-tab-group {
+    align-self: flex-start;
+  }
+
+  /* Explicitly lock two columns; this overrides the older one-column mobile rule. */
+  .home-main #multimedia .media-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .home-main #multimedia .media-card,
+  .home-main #multimedia .media-card-lg {
+    grid-column: span 1;
+    grid-row: span 1;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 16 / 10;
+    border-radius: 8px;
+  }
+
+  .home-main #multimedia .media-card-footer {
+    padding: 8px 9px;
+  }
+
+  .home-main #multimedia .media-card-footer h3,
+  .home-main #multimedia .media-card-lg .media-card-footer h3 {
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.55;
+  }
+
+  .home-main #multimedia .media-play-btn,
+  .home-main #multimedia .media-card-lg .media-play-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .home-main #multimedia .media-play-btn::before {
+    border-top-width: 5px;
+    border-bottom-width: 5px;
+    border-left-width: 8px;
+  }
+
+  .home-main #multimedia .media-view-all {
+    min-height: 36px;
+    margin-top: 18px;
+    padding-inline: 18px;
+  }
+}
+
+@media (max-width: 359.98px) {
+  .home-main #multimedia .media-grid {
+    gap: 7px;
+  }
+
+  .home-main #multimedia .media-card-footer {
+    padding: 7px;
+  }
+
+  .home-main #multimedia .media-card-footer h3,
+  .home-main #multimedia .media-card-lg .media-card-footer h3 {
+    font-size: 9.8px;
+  }
+}

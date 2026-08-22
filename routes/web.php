@@ -55,6 +55,7 @@ use App\Http\Controllers\Frontend\UnionPresidentController;
 use App\Http\Controllers\Frontend\VideoController as FrontendVideoController;
 use App\Http\Controllers\Admin\PermissionController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 
 Route::middleware('guest')->group(function () {
@@ -71,10 +72,6 @@ $servePublicMedia = function (string $path) {
     $roots = array_unique(array_filter([
         config('filesystems.disks.public.root'),
         storage_path('app/public'),
-        public_path('storage'),
-        public_path('media'),
-        public_path('media-files'),
-        public_path('uploaded-media'),
     ]));
 
     foreach ($roots as $root) {
@@ -89,35 +86,19 @@ $servePublicMedia = function (string $path) {
     $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
     if (in_array($extension, ['avif', 'gif', 'jpeg', 'jpg', 'png', 'webp'], true) && is_file($fallback)) {
-        $targetRoots = array_unique(array_filter([
-            config('filesystems.disks.public.root'),
-            public_path('media'),
-            public_path('media-files'),
-            public_path('uploaded-media'),
-        ]));
-
-        foreach ($targetRoots as $targetRoot) {
-            $target = rtrim($targetRoot, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$path;
-            $targetDirectory = dirname($target);
-
-            if (! is_dir($targetDirectory)) {
-                @mkdir($targetDirectory, 0755, true);
-            }
-
-            if (! is_file($target)) {
-                @copy($fallback, $target);
-            }
-
-            if (is_file($target)) {
-                return response()->file($target);
-            }
-        }
+        return response()->file($fallback);
     }
 
-    return response()->file($fallback);
+    abort(404);
 };
 
-Route::get('/media/{path}', $servePublicMedia)->where('path', '.*')->name('media.public');
+Route::get('/media/{path}', function (string $path) {
+    $path = App\Support\PublicFileUrl::normalizeStoragePath($path);
+
+    abort_if($path === '', 404);
+
+    return redirect()->to(Storage::disk('public')->url($path));
+})->where('path', '.*')->name('media.public');
 Route::get('/uploaded-media/{path}', $servePublicMedia)->where('path', '.*')->name('media.public.uploaded-media');
 Route::get('/media-files/{path}', $servePublicMedia)->where('path', '.*')->name('media.public.legacy');
 
@@ -130,6 +111,9 @@ Route::get('/storage/{path}', function (string $path) {
 })->where('path', '.*')->name('storage.public.fallback');
 
 Route::get('/', [FrontendHomeController::class, 'index'])->name('home');
+Route::get('/home/latest-news', [FrontendHomeController::class, 'latestNews'])
+    ->middleware('throttle:60,1')
+    ->name('home.latest-news');
 Route::get('/guilds', [FrontendUnionController::class, 'index'])->name('guilds.index');
 Route::get('/chamber-members', [FrontendChamberMemberController::class, 'index'])->name('chamber-members.index');
 Route::get('/union-presidents', [UnionPresidentController::class, 'index'])->name('union-presidents.index');
@@ -418,3 +402,40 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::put('permissions/{permission}', [PermissionController::class, 'update'])->middleware('permission:permissions.edit')->name('permissions.update');
     Route::delete('permissions/{permission}', [PermissionController::class, 'destroy'])->middleware('permission:permissions.delete')->name('permissions.destroy');
 });
+Route::get('/system/clear-cache-7f3a9d', function (\Illuminate\Http\Request $request) {
+    $secretKey = 'Aliche-2026-Clear-Cache-X9p4K7';
+
+    abort_unless(
+        hash_equals($secretKey, (string) $request->query('key')),
+        403,
+        'Access denied.'
+    );
+
+    try {
+        $results = [];
+
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        $results['optimize:clear'] = trim(
+            \Illuminate\Support\Facades\Artisan::output()
+        );
+
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        $results['view:clear'] = trim(
+            \Illuminate\Support\Facades\Artisan::output()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Laravel caches cleared successfully.',
+            'results' => $results,
+        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+    } catch (\Throwable $exception) {
+        report($exception);
+
+        return response()->json([
+            'success' => false,
+            'message' => $exception->getMessage(),
+        ], 500, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    }
+})->middleware('throttle:2,1');

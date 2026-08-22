@@ -8,7 +8,7 @@
     $decodedShortDescription = html_entity_decode((string) $post->short_description, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $decodedBody = html_entity_decode((string) $post->body, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 @endphp
-<div class="page-header">
+<div class="page-header single-post-breadcrumb-bar">
 <div class="site-container">
 <nav class="breadcrumb-nav">
 <a href="{{ route('home') }}">خانه</a>
@@ -17,11 +17,10 @@
 <span class="breadcrumb-sep">/</span>
 <span>{{ $post->title }}</span>
 </nav>
-<h1>{{ $post->title }}</h1>
 </div>
 </div>
 
-<main>
+<main class="single-post-page">
 <div class="site-container single-post-layout">
 <article class="single-post-article">
 <img alt="{{ $post->title }}" class="post-featured-img" src="{{ $post->featured_image_url }}" loading="lazy"/>
@@ -63,7 +62,7 @@
 <div class="post-tags">
 @if($post->union)<a class="post-tag" href="{{ route('posts.index', ['union_id' => $post->union_id]) }}">{{ $post->union->display_title }}</a>@endif
 @if($post->category)<a class="post-tag" href="{{ route('posts.index', ['category_id' => $post->category_id]) }}">{{ $post->category->title }}</a>@endif
-<a class="post-tag" href="{{ route('posts.index', ['search' => $post->type === 'video' ? 'ویدیو' : 'نوشته']) }}">{{ $post->type === 'video' ? 'ویدیو' : 'نوشته' }}</a>
+<span class="post-tag">{{ $post->type_label }}</span>
 </div>
 <div class="post-nav">
 @if($previousPost)

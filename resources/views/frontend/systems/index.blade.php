@@ -1,80 +1,53 @@
 @extends('frontend.layouts.app')
 
-@section('title', 'سامانه‌ها | اتاق اصناف مرکز استان گلستان')
-@section('meta_description', 'لیست سامانه‌های پرکاربرد صنفی، خدمات الکترونیک و درگاه‌های مرتبط با اتاق اصناف مرکز استان گلستان')
-@section('frontend_variant', 'compact')
-@section('footer_links_variant', 'short')
+@section('title', 'سامانه‌های صنفی اتاق اصناف استان گلستان')
+@section('meta_description', 'دسترسی به سامانه‌ها و درگاه‌های الکترونیکی مرتبط با مجوزهای صنفی، شکایات، بازرسی، آموزش و اطلاع‌رسانی اتحادیه‌های استان گلستان.')
+@section('canonical', $systems->currentPage() === 1 ? route('systems.index', \Illuminate\Support\Arr::except(request()->query(), 'page')) : $systems->url($systems->currentPage()))
 
 @section('content')
-<section class="page-header page-header-alt portal-hero">
-  <div class="site-container">
-    <span class="portal-eyebrow">درگاه‌های آنلاین</span>
-    <h1>سامانه‌ها</h1>
-    <p>دسترسی سریع و مرتب به سامانه‌ها و درگاه‌های پرکاربرد مرتبط با امور صنفی.</p>
-    <nav class="breadcrumb">
-      <a href="{{ route('home') }}">خانه</a>
-      <span>سامانه‌ها</span>
-    </nav>
-  </div>
-</section>
-
-<section class="site-container portal-page">
-  <div class="portal-intro-card">
-    <div>
-      <span class="portal-eyebrow">فهرست سامانه‌ها</span>
-      <h2>سامانه‌های صنفی</h2>
-      <p>با جستجو یا انتخاب دسته‌بندی، سامانه مورد نیاز خود را پیدا کنید و در صورت وجود لینک مستقیم وارد آن شوید.</p>
-    </div>
-    <div class="portal-count-box">
-      <strong>{{ $systems->total() }}</strong>
-      <span>سامانه فعال</span>
-    </div>
-  </div>
-
-  <div class="portal-filter-panel">
-    <form class="portal-search-form" action="{{ route('systems.index') }}" method="GET">
-      @if ($activeCategory !== '')
-        <input type="hidden" name="category" value="{{ $activeCategory }}">
-      @endif
-      <input class="form-control" name="search" value="{{ $search }}" placeholder="نام یا توضیح سامانه را جستجو کنید..." type="search">
-      <button class="portal-primary-action" type="submit">جستجو</button>
-      @if ($search !== '' || $activeCategory !== '')
-        <a class="portal-secondary-action" href="{{ route('systems.index') }}">نمایش همه</a>
-      @endif
-    </form>
-
-    <div class="portal-tabs" aria-label="فیلتر دسته‌بندی سامانه‌ها">
-      <a class="portal-tab {{ $activeCategory === '' ? 'active' : '' }}" href="{{ route('systems.index', array_filter(['search' => $search])) }}">همه سامانه‌ها</a>
-      @foreach ($categories as $category)
-        <a class="portal-tab {{ $activeCategory === $category->slug || $activeCategory === (string) $category->id ? 'active' : '' }}" href="{{ route('systems.index', array_filter(['category' => $category->slug, 'search' => $search])) }}">{{ $category->title }}</a>
-      @endforeach
-    </div>
-  </div>
-
-  <div class="portal-card-grid">
-    @forelse ($systems as $system)
-      <article class="portal-card system-card-modern">
-        <div class="portal-card-icon">{{ $system->icon ?: '💻' }}</div>
-        <div class="portal-card-body">
-          <span class="portal-card-category">{{ $system->category?->title ?: 'سامانه صنفی' }}</span>
-          <h3>{{ $system->title }}</h3>
-          <p>{{ plain_text($system->short_description ?: $system->description, 130) ?: 'توضیحات این سامانه به‌زودی تکمیل می‌شود.' }}</p>
+<div class="systems-directory-page" data-systems-directory>
+    <header class="page-header systems-directory-header">
+        <div class="site-container">
+            <nav class="breadcrumb-nav" aria-label="مسیر صفحه">
+                <a href="{{ route('home') }}">خانه</a>
+                <span class="breadcrumb-sep" aria-hidden="true">/</span>
+                <span aria-current="page">سامانه‌ها</span>
+            </nav>
+            <h1>سامانه‌ها</h1>
+            <p>دسترسی سریع به سامانه‌ها و درگاه‌های پرکاربرد مرتبط با امور صنفی</p>
         </div>
-        <div class="portal-card-actions">
-          <a class="portal-secondary-action" href="{{ route('systems.show', $system->slug) }}">جزئیات</a>
-          @if ($system->link)
-            <a class="portal-primary-action" href="{{ $system->link }}" target="{{ $system->target }}" @if($system->target === '_blank') rel="noopener" @endif>ورود به سامانه</a>
-          @endif
-        </div>
-      </article>
-    @empty
-      <div class="portal-empty-state">
-        <strong>سامانه فعالی برای نمایش یافت نشد.</strong>
-        <p>عبارت جستجو یا دسته‌بندی انتخاب‌شده را تغییر دهید.</p>
-      </div>
-    @endforelse
-  </div>
+    </header>
 
-  <div class="portal-pagination">{{ $systems->links('frontend.partials.pagination') }}</div>
-</section>
+    <main class="systems-directory-main">
+        <div class="site-container">
+            <section class="systems-directory-toolbar" aria-labelledby="systems-directory-heading">
+                <div class="systems-directory-heading">
+                    <span>فهرست سامانه‌ها</span>
+                    <h2 id="systems-directory-heading" tabindex="-1">سامانه‌های صنفی</h2>
+                    <p>سامانه موردنیاز خود را جستجو کنید و به درگاه معتبر آن دسترسی داشته باشید.</p>
+                </div>
+                <div class="systems-directory-count" aria-label="{{ fa_number($activeTotal) }} سامانه فعال">
+                    <strong data-systems-active-count>{{ fa_number($activeTotal) }}</strong>
+                    <span>سامانه فعال</span>
+                </div>
+            </section>
+
+            <section class="systems-filter-toolbar" aria-label="جستجو و فیلتر سامانه‌ها">
+                <div class="systems-filter-row">
+                    <form class="systems-directory-search" action="{{ route('systems.index') }}" method="GET" role="search" data-systems-search-form>
+                        <label class="visually-hidden" for="systemDirectorySearch">جستجو در سامانه‌ها</label>
+                        <input id="systemDirectorySearch" name="search" value="{{ $search }}" type="search" placeholder="نام یا کاربرد سامانه را جستجو کنید..." autocomplete="off" data-system-search>
+                        @if($activeCategory !== '')<input type="hidden" name="category" value="{{ $activeCategory }}">@endif
+                        <button type="submit">جستجو</button>
+                    </form>
+                    <p data-systems-result-count>{{ fa_number($systems->total()) }} {{ $search !== '' || $activeCategory !== '' ? 'سامانه یافت شد' : 'سامانه در فهرست' }}</p>
+                    <a class="systems-directory-clear" href="{{ route('systems.index') }}" data-systems-clear @if($search === '' && $activeCategory === '') hidden @endif>پاک‌کردن فیلترها</a>
+                </div>
+                @include('frontend.systems.partials.category-tabs')
+            </section>
+
+            @include('frontend.systems.partials.results')
+        </div>
+    </main>
+</div>
 @endsection

@@ -16,6 +16,14 @@
             <input class="form-control" id="full_name" name="full_name" value="{{ old('full_name', $member?->full_name) }}" required>
         </div>
         <div class="col-md-4">
+            <label class="form-label" for="position">سمت عضو</label>
+            <input class="form-control" id="position" name="position" value="{{ old('position', $member?->position) }}" placeholder="مثلاً رئیس هیئت‌مدیره">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="sort_order">ترتیب نمایش</label>
+            <input class="form-control" id="sort_order" name="sort_order" type="number" min="0" value="{{ old('sort_order', $member?->sort_order ?? 0) }}">
+        </div>
+        <div class="col-md-4">
             <label class="form-label" for="national_code">کد ملی</label>
             <input class="form-control" id="national_code" name="national_code" value="{{ old('national_code', $member?->national_code) }}">
         </div>

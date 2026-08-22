@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Post;
+use App\Services\SlugService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,7 +17,9 @@ class UpdatePostRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
+            'slug' => $this->normalizedSlug(),
             'meta_keywords' => $this->normalizeMetaKeywords($this->input('meta_keywords')),
+            'is_important' => $this->boolean('is_important'),
         ]);
     }
 
@@ -28,7 +31,7 @@ class UpdatePostRequest extends FormRequest
 
         return [
             'title' => ['required', 'string', 'max:190'],
-            'slug' => ['nullable', 'string', 'max:190', 'regex:/^[\p{Arabic}\p{L}\p{N}\-]+$/u'],
+            'slug' => ['nullable', 'string', 'max:190', 'regex:/^[\p{Arabic}A-Za-z0-9\-]+$/u'],
             'excerpt' => ['nullable', 'string', 'max:1000'],
             'body' => ['nullable', 'string'],
             'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
@@ -37,8 +40,9 @@ class UpdatePostRequest extends FormRequest
             'gallery_media_ids.*' => ['integer', 'exists:media,id'],
             'category_id' => ['nullable', 'exists:categories,id'],
             'union_id' => ['nullable', 'exists:unions,id'],
-            'type' => ['required', 'string', Rule::in(Post::TYPES)],
+            'type' => ['required', 'string', Rule::in($this->allowedTypes($post))],
             'homepage_position' => ['required', 'string', Rule::in(Post::HOMEPAGE_POSITIONS)],
+            'is_important' => ['required', 'boolean'],
             'featured_order' => ['nullable', 'integer', 'min:0'],
             'status' => ['required', 'string', Rule::in($this->allowedStatuses())],
             'published_at' => ['nullable', 'date'],
@@ -55,6 +59,45 @@ class UpdatePostRequest extends FormRequest
             'delete_gallery' => ['nullable', 'array'],
             'delete_gallery.*' => ['integer', 'exists:post_galleries,id'],
         ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'slug.regex' => 'اسلاگ فقط می‌تواند شامل حروف فارسی یا انگلیسی، عدد و خط تیره باشد.',
+            'slug.max' => 'اسلاگ نمی‌تواند بیشتر از ۱۹۰ کاراکتر باشد.',
+            'title.required' => 'وارد کردن عنوان الزامی است.',
+            'title.max' => 'عنوان نمی‌تواند بیشتر از ۱۹۰ کاراکتر باشد.',
+            'featured_image.image' => 'فایل تصویر شاخص باید یک تصویر معتبر باشد.',
+            'featured_image.max' => 'حجم تصویر شاخص نباید بیشتر از ۴ مگابایت باشد.',
+            'type.in' => 'نوع محتوای انتخاب‌شده معتبر نیست.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return ['title' => 'عنوان', 'slug' => 'اسلاگ', 'featured_image' => 'تصویر شاخص', 'type' => 'نوع محتوا'];
+    }
+
+    private function normalizedSlug(): ?string
+    {
+        $slug = $this->input('slug');
+        if ($slug === null || filter_var($slug, FILTER_VALIDATE_URL)) {
+            return $slug;
+        }
+
+        return app(SlugService::class)->make((string) $slug, '');
+    }
+
+    /** @return array<int, string> */
+    private function allowedTypes(mixed $post): array
+    {
+        $types = Post::TYPES;
+        if ($post instanceof Post && in_array($post->type, Post::LEGACY_TYPES, true)) {
+            $types[] = $post->type;
+        }
+
+        return $types;
     }
 
     /** @return array<int, string> */

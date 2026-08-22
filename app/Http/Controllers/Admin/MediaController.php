@@ -49,7 +49,7 @@ class MediaController extends Controller
 
     public function store(Request $request): RedirectResponse|JsonResponse
     {
-        $request->validate(['files'=>['required','array'],'files.*'=>['image','mimes:jpg,jpeg,png,webp,gif','max:8192']]);
+        $request->validate(['files'=>['required','array'],'files.*'=>['image','mimes:jpg,jpeg,png,webp,gif','max:4096']]);
         $stored = collect($request->file('files', []))->map(fn ($file) => app(MediaLibraryService::class)->storeImage(
             $file,
             'media/'.now()->format('Y/m'),

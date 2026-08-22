@@ -12,7 +12,8 @@ class Post extends Model
 {
     use HasFactory;
 
-    public const TYPES = ['news', 'article', 'announcement', 'video'];
+    public const TYPES = ['news', 'interview', 'report', 'statement', 'note', 'photo_report', 'video'];
+    public const LEGACY_TYPES = ['article', 'announcement'];
     public const STATUSES = ['draft', 'pending', 'approved', 'rejected', 'published', 'archived'];
     public const HOMEPAGE_POSITIONS = ['normal', 'top', 'featured'];
     public const LIMITED_STATUSES = ['draft', 'pending'];
@@ -102,9 +103,14 @@ class Post extends Model
     {
         return [
             'news' => 'خبر',
-            'article' => 'مقاله',
-            'announcement' => 'اطلاعیه',
-            'video' => 'ویدیو',
+            'interview' => 'گفتگو',
+            'report' => 'گزارش',
+            'statement' => 'بیانیه',
+            'note' => 'یادداشت',
+            'photo_report' => 'گزارش تصویری',
+            'video' => 'ویدئو',
+            'article' => 'مقاله - نوع قدیمی',
+            'announcement' => 'اطلاعیه - نوع قدیمی',
         ];
     }
 
@@ -201,6 +207,11 @@ class Post extends Model
             $date->copy()->startOfDay(),
             $date->copy()->endOfDay(),
         ]);
+    }
+
+    public function scopeEditorial($query)
+    {
+        return $query->whereIn('type', self::TYPES);
     }
 
     public static function homepagePositionLabels(): array

@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
 use App\Http\Requests\Admin\StoreUnionRequest;
 use App\Http\Requests\Admin\UpdateUnionRequest;
-use App\Models\Category;
 use App\Models\GuildUnion;
 use App\Models\Post;
 use App\Models\UnionType;
@@ -51,7 +50,6 @@ class UnionController extends Controller
     {
         return view('admin.unions.create', [
             'union' => null,
-            'categories' => $this->unionCategories(),
             'unionTypes' => $this->unionTypes(),
             'selectablePosts' => $this->selectablePosts(),
         ]);
@@ -85,7 +83,6 @@ class UnionController extends Controller
     {
         return view('admin.unions.edit', [
             'union' => $union->load(['commissions.tasks', 'rules', 'minutes', 'educations', 'prices', 'selectedPosts']),
-            'categories' => $this->unionCategories(),
             'unionTypes' => $this->unionTypes(),
             'selectablePosts' => $this->selectablePosts(),
         ]);
@@ -137,6 +134,7 @@ class UnionController extends Controller
     {
         $validated = $this->sanitizeRichTextFields($validated, ['body', 'excerpt', 'description', 'content', 'footer_description', 'site_description']);
         $validated['short_description'] = plain_text($validated['short_description'] ?? null);
+        $validated['manager_description'] = plain_text($validated['manager_description'] ?? null);
 
         $presidentButtons = collect($validated['president_buttons'] ?? [])->map(function ($button) {
             return [
@@ -162,6 +160,7 @@ class UnionController extends Controller
         $settings = collect(GuildUnion::sectionDefaults())
             ->map(fn ($default, $key) => array_key_exists($key, $submittedSettings) ? (bool) $submittedSettings[$key] : false)
             ->all();
+        $settings['show_news_slider'] = $settings['show_news'];
 
         return [
             'name' => $validated['title'],
@@ -175,9 +174,10 @@ class UnionController extends Controller
             'email' => $validated['email'] ?? null,
             'website' => $validated['website'] ?? null,
             'manager_name' => $validated['manager_name'] ?? null,
+            'manager_position' => $validated['manager_position'] ?? null,
+            'manager_description' => $validated['manager_description'] ?? null,
             'union_type' => $selectedUnionTypeSlug ?: ($validated['union_type'] ?? null),
             'union_type_id' => $validated['union_type_id'] ?? null,
-            'category_id' => $validated['category_id'] ?? null,
             'working_hours' => $validated['working_hours'] ?? null,
             'social_links' => $socialLinks === [] ? null : $socialLinks,
             'settings' => $settings,
@@ -343,16 +343,7 @@ class UnionController extends Controller
 
     private function selectablePosts()
     {
-        return Post::query()->published()->where('type', 'news')->orderByDesc('published_at')->orderBy('title')->take(200)->get(['id', 'title', 'published_at']);
-    }
-
-    private function unionCategories()
-    {
-        return Category::query()
-            ->where(fn ($query) => $query->whereNull('type')->orWhere('type', 'union')->orWhere('type', 'union_type'))
-            ->orderBy('sort_order')
-            ->orderBy('title')
-            ->get();
+        return Post::query()->published()->editorial()->orderByDesc('published_at')->orderBy('title')->take(200)->get(['id', 'title', 'published_at']);
     }
 
     private function storeImage(Request $request, string $field, string $directory): ?string

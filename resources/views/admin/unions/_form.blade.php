@@ -18,6 +18,7 @@
 
 <div class="admin-panel-card">
     <div class="row g-3">
+        <div class="col-12"><h3 class="h6 mb-0">هویت اتحادیه</h3></div>
         <div class="col-md-8">
             <label class="form-label" for="title">عنوان اتحادیه</label>
             <input class="form-control" id="title" name="title" value="{{ old('title', $union?->display_title) }}" required>
@@ -27,14 +28,28 @@
             <input class="form-control" id="slug" name="slug" value="{{ old('slug', $union?->slug) }}" dir="ltr"><small class="text-muted">اگر خالی بماند از عنوان ساخته می‌شود و می‌توانید آن را دستی تغییر دهید.</small>
         </div>
         <div class="col-md-6">
-            <label class="form-label" for="logo">لوگو</label>
-            <input class="form-control" id="logo" name="logo" type="file" accept="image/*">
-            <div class="mt-2" data-image-preview="logo">@if ($union?->logo)<img src="{{ $union->logo_url }}" alt="لوگوی فعلی" class="img-fluid rounded" style="max-height:120px;object-fit:contain">@endif</div>
+            <label class="form-label" for="union_type_id">نوع اتحادیه</label>
+            <select class="form-control" id="union_type_id" name="union_type_id">
+                <option value="">انتخاب نوع</option>
+                @foreach (($unionTypes ?? collect()) as $unionType)
+                    <option value="{{ $unionType->id }}" @selected((string) old('union_type_id', $union?->union_type_id) === (string) $unionType->id)>{{ $unionType->icon }} {{ $unionType->title }}</option>
+                @endforeach
+            </select>
+            <input type="hidden" name="union_type" value="{{ old('union_type', $union?->union_type) }}">
         </div>
         <div class="col-md-6">
-            <label class="form-label" for="cover_image">تصویر کاور</label>
+            <label class="form-label" for="cover_image">تصویر اصلی اتحادیه</label>
             <input class="form-control" id="cover_image" name="cover_image" type="file" accept="image/*">
-            <div class="mt-2" data-image-preview="cover_image">@if ($union?->cover_image)<img src="{{ $union->cover_image_url }}" alt="کاور فعلی" class="img-fluid rounded" style="max-height:140px;object-fit:cover">@endif</div>
+            <small class="text-muted d-block mt-1">حداکثر حجم فایل: ۵ مگابایت</small>
+            <small class="text-muted d-block mt-1">این تصویر در کارت اتحادیه و کاور صفحه اختصاصی اتحادیه استفاده می‌شود.</small>
+            <div class="mt-2" data-image-preview="cover_image">@if ($union?->cover_image)<img src="{{ $union->cover_image_url }}" alt="تصویر اصلی فعلی اتحادیه" class="img-fluid rounded" style="max-height:140px;object-fit:cover">@endif</div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="logo">لوگوی اتحادیه (اختیاری)</label>
+            <input class="form-control" id="logo" name="logo" type="file" accept="image/*">
+            <small class="text-muted d-block mt-1">حداکثر حجم فایل: ۵ مگابایت</small>
+            <small class="text-muted d-block mt-1">لوگوی کوچک هویتی اتحادیه در صفحه اختصاصی.</small>
+            <div class="mt-2" data-image-preview="logo">@if ($union?->logo)<img src="{{ $union->logo_url }}" alt="لوگوی فعلی اتحادیه" class="img-fluid rounded" style="max-height:120px;object-fit:contain">@endif</div>
         </div>
         <div class="col-12">
             <label class="form-label" for="short_description">توضیح کوتاه</label>
@@ -44,6 +59,43 @@
             <label class="form-label" for="description">توضیحات کامل</label>
             <textarea class="form-control js-rich-editor" id="description" name="description" rows="6">{{ old('description', $union?->description) }}</textarea>
         </div>
+
+        <div class="col-12"><h3 class="h6 mt-2 mb-0">رئیس اتحادیه</h3></div>
+        <div class="col-md-4">
+            <label class="form-label" for="manager_name">نام رئیس</label>
+            <input class="form-control" id="manager_name" name="manager_name" value="{{ old('manager_name', $union?->manager_name) }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="manager_position">سمت رئیس</label>
+            <input class="form-control" id="manager_position" name="manager_position" value="{{ old('manager_position', $union?->manager_position) }}" placeholder="رئیس اتحادیه">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="manager_image">تصویر رئیس</label>
+            <input class="form-control" id="manager_image" name="manager_image" type="file" accept="image/*">
+            <small class="text-muted d-block mt-1">حداکثر حجم فایل: ۵ مگابایت</small>
+            <div class="mt-2" data-image-preview="manager_image">@if ($union?->manager_image)<img src="{{ $union->manager_image_url }}" alt="تصویر فعلی رئیس" class="img-fluid rounded" style="max-height:120px;object-fit:cover">@endif</div>
+        </div>
+        <div class="col-12">
+            <label class="form-label" for="manager_description">معرفی کوتاه رئیس</label>
+            <textarea class="form-control" id="manager_description" name="manager_description" rows="4">{{ old('manager_description', $union?->manager_description) }}</textarea>
+        </div>
+        <div class="col-12"><h4 class="h6 mt-2">دکمه‌های رئیس اتحادیه</h4></div>
+        <div class="col-12 union-dynamic-section" data-section="president-buttons" data-next-index="{{ count($presidentButtons) }}">
+            <div data-rows>
+                @foreach ($presidentButtons as $index => $button)
+                    <div class="border rounded p-3 mb-2" data-row><div class="row g-2 align-items-end">
+                        <div class="col-md-3"><label class="form-label">عنوان</label><input class="form-control" name="president_buttons[{{ $index }}][title]" value="{{ $button['title'] ?? '' }}"></div>
+                        <div class="col-md-3"><label class="form-label">لینک</label><input class="form-control" name="president_buttons[{{ $index }}][url]" value="{{ $button['url'] ?? '' }}" dir="ltr"></div>
+                        <div class="col-md-2"><label class="form-label">آیکون</label><input class="form-control" name="president_buttons[{{ $index }}][icon]" value="{{ $button['icon'] ?? '' }}" placeholder="phone, email, document"></div>
+                        <div class="col-md-2"><label class="form-label">باز شدن</label><select class="form-control" name="president_buttons[{{ $index }}][target]"><option value="_self" @selected(($button['target'] ?? '_self') === '_self')>همان صفحه</option><option value="_blank" @selected(($button['target'] ?? '_self') === '_blank')>صفحه جدید</option></select></div>
+                        <div class="col-md-2"><label class="form-check"><input class="form-check-input" type="checkbox" name="president_buttons[{{ $index }}][is_active]" value="1" @checked($button['is_active'] ?? true)> فعال</label></div>
+                    </div></div>
+                @endforeach
+            </div>
+            <button class="btn btn-outline-primary" type="button" data-add-row>افزودن دکمه رئیس</button>
+        </div>
+
+        <div class="col-12"><h3 class="h6 mt-2 mb-0">اطلاعات تماس</h3></div>
         <div class="col-md-6">
             <label class="form-label" for="address">آدرس</label>
             <textarea class="form-control" id="address" name="address" rows="3">{{ old('address', $union?->address) }}</textarea>
@@ -56,34 +108,7 @@
         <div class="col-md-3"><label class="form-label" for="mobile">موبایل</label><input class="form-control" id="mobile" name="mobile" value="{{ old('mobile', $union?->mobile) }}"></div>
         <div class="col-md-3"><label class="form-label" for="email">ایمیل</label><input class="form-control" id="email" name="email" type="email" value="{{ old('email', $union?->email) }}"></div>
         <div class="col-md-3"><label class="form-label" for="website">وب‌سایت</label><input class="form-control" id="website" name="website" type="url" value="{{ old('website', $union?->website) }}" dir="ltr"></div>
-        <div class="col-md-4">
-            <label class="form-label" for="manager_name">نام مدیر</label>
-            <input class="form-control" id="manager_name" name="manager_name" value="{{ old('manager_name', $union?->manager_name) }}">
-        </div>
-        <div class="col-md-4">
-            <label class="form-label" for="union_type_id">نوع اتحادیه</label>
-            <select class="form-control" id="union_type_id" name="union_type_id">
-                <option value="">انتخاب نوع</option>
-                @foreach (($unionTypes ?? collect()) as $unionType)
-                    <option value="{{ $unionType->id }}" @selected((string) old('union_type_id', $union?->union_type_id) === (string) $unionType->id)>{{ $unionType->icon }} {{ $unionType->title }}</option>
-                @endforeach
-            </select>
-            <input type="hidden" name="union_type" value="{{ old('union_type', $union?->union_type) }}">
-        </div>
-        <div class="col-md-4">
-            <label class="form-label" for="category_id">دسته‌بندی اتحادیه</label>
-            <select class="form-control" id="category_id" name="category_id">
-                <option value="">بدون دسته‌بندی</option>
-                @foreach (($categories ?? collect()) as $category)
-                    <option value="{{ $category->id }}" @selected((string) old('category_id', $union?->category_id) === (string) $category->id)>{{ $category->title }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label" for="manager_image">تصویر مدیر</label>
-            <input class="form-control" id="manager_image" name="manager_image" type="file" accept="image/*">
-            <div class="mt-2" data-image-preview="manager_image">@if ($union?->manager_image)<img src="{{ $union->manager_image_url }}" alt="تصویر فعلی مدیر" class="img-fluid rounded" style="max-height:120px;object-fit:cover">@endif</div>
-        </div>
+
         <div class="col-12"><h3 class="h6 mt-2">شبکه‌های اجتماعی</h3></div>
         @foreach (['instagram' => 'اینستاگرام', 'telegram' => 'تلگرام', 'whatsapp' => 'واتساپ', 'eitaa' => 'ایتا', 'bale' => 'بله', 'rubika' => 'روبیکا', 'website' => 'وب‌سایت'] as $key => $label)
             <div class="col-md-3">
@@ -120,21 +145,6 @@
             </select>
             <small class="text-muted">این فیلد برای Select2 آماده شده است و در نبود کتابخانه، انتخاب چندگانه مرورگر را نمایش می‌دهد.</small>
         </div>
-        <div class="col-12"><h3 class="h6 mt-2">دکمه‌های رئیس اتحادیه</h3></div>
-        <div class="col-12 union-dynamic-section" data-section="president-buttons" data-next-index="{{ count($presidentButtons) }}">
-            <div data-rows>
-                @foreach ($presidentButtons as $index => $button)
-                    <div class="border rounded p-3 mb-2" data-row><div class="row g-2 align-items-end">
-                        <div class="col-md-3"><label class="form-label">عنوان</label><input class="form-control" name="president_buttons[{{ $index }}][title]" value="{{ $button['title'] ?? '' }}"></div>
-                        <div class="col-md-3"><label class="form-label">لینک</label><input class="form-control" name="president_buttons[{{ $index }}][url]" value="{{ $button['url'] ?? '' }}" dir="ltr"></div>
-                        <div class="col-md-2"><label class="form-label">آیکون</label><input class="form-control" name="president_buttons[{{ $index }}][icon]" value="{{ $button['icon'] ?? '' }}"></div>
-                        <div class="col-md-2"><label class="form-label">باز شدن</label><select class="form-control" name="president_buttons[{{ $index }}][target]"><option value="_self" @selected(($button['target'] ?? '_self') === '_self')>همان صفحه</option><option value="_blank" @selected(($button['target'] ?? '_self') === '_blank')>صفحه جدید</option></select></div>
-                        <div class="col-md-2"><label class="form-check"><input class="form-check-input" type="checkbox" name="president_buttons[{{ $index }}][is_active]" value="1" @checked($button['is_active'] ?? true)> فعال</label></div>
-                    </div></div>
-                @endforeach
-            </div>
-            <button class="btn btn-outline-primary" type="button" data-add-row>افزودن دکمه رئیس</button>
-        </div>
         <div class="col-12"><h3 class="h6 mt-2">نرخنامه اتحادیه</h3></div>
         <div class="col-md-4">
             <label class="form-label" for="price_list_mode">حالت نمایش نرخنامه</label>
@@ -147,6 +157,7 @@
         <div class="col-md-8">
             <label class="form-label" for="price_list_image">عکس نرخنامه</label>
             <input class="form-control" id="price_list_image" name="price_list_image" type="file" accept="image/*">
+            <small class="text-muted d-block mt-1">حداکثر حجم فایل: ۵ مگابایت</small>
             <div class="mt-2" data-image-preview="price_list_image">@if ($union?->price_list_image)<img src="{{ $union->price_list_image_url }}" alt="عکس نرخنامه فعلی" class="img-fluid rounded" style="max-height:140px;object-fit:cover">@endif</div>
         </div>
         <div class="col-12"><h3 class="h6 mt-2">تنظیمات صفحه اتحادیه</h3></div>

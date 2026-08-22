@@ -193,13 +193,15 @@ class PostController extends Controller
         return [
             'post' => $post,
             'statuses' => $this->allowedStatuses(),
-            'types' => Post::TYPES,
+            'types' => $post && in_array($post->type, Post::LEGACY_TYPES, true)
+                ? array_merge(Post::TYPES, [$post->type])
+                : Post::TYPES,
             'typeLabels' => Post::typeLabels(),
             'statusLabels' => Post::statusLabels(),
             'categories' => Category::query()->active()->where('type', 'news')->orderBy('sort_order')->orderBy('title')->get(),
             'mediaItems' => Media::query()->latest()->take(60)->get(),
             'homepagePositionLabels' => Post::homepagePositionLabels(),
-            'unions' => GuildUnion::query()->where('is_active', true)->orderBy('title')->orderBy('name')->get(),
+            'unions' => GuildUnion::query()->orderByDesc('is_active')->orderBy('title')->orderBy('name')->get(),
         ];
     }
 
@@ -217,7 +219,7 @@ class PostController extends Controller
             'union_id' => filled($validated['union_id'] ?? null) ? $validated['union_id'] : null,
             'type' => $validated['type'],
             'homepage_position' => $validated['homepage_position'] ?? 'normal',
-            'is_important' => false,
+            'is_important' => (bool) ($validated['is_important'] ?? false),
             'is_featured' => ($validated['homepage_position'] ?? 'normal') === 'featured',
             'featured_order' => $validated['featured_order'] ?? ($validated['sort_order'] ?? 0),
             'is_top' => ($validated['homepage_position'] ?? 'normal') === 'top',

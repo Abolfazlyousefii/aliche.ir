@@ -25,20 +25,41 @@
     $servicesUrl = route('electronic-services.index');
     $commissionsUrl = route('commissions.index');
     $complaintsUrl = route('complaints.create');
+    $normalizeInternalUrl = static function (?string $value): string {
+        $value = trim((string) $value);
+        if ($value === '') return '';
+
+        $parts = parse_url($value);
+        $host = mb_strtolower((string) ($parts['host'] ?? ''));
+        if (! in_array($host, ['localhost', '127.0.0.1'], true)) return $value;
+
+        $path = '/'.ltrim((string) ($parts['path'] ?? '/'), '/');
+        $knownRoutes = [
+            '/contact' => route('contact.create'),
+            '/complaints/create' => route('complaints.create'),
+            '/guilds' => route('guilds.index'),
+            '/announcements' => route('announcements.index'),
+        ];
+        $resolved = $knownRoutes[$path] ?? url($path);
+        if (filled($parts['query'] ?? null)) $resolved .= '?'.$parts['query'];
+        if (filled($parts['fragment'] ?? null)) $resolved .= '#'.$parts['fragment'];
+
+        return $resolved;
+    };
 
     $heroFallbacks = collect([
         ['title' => 'راهنمای صدور، تمدید و انتقال پروانه کسب برای فعالان صنفی گرگان', 'kicker' => 'خدمات صنفی', 'url' => $servicesUrl, 'image' => $defaultImage],
         ['title' => 'پیگیری شکایات مردمی و صیانت از حقوق مصرف‌کنندگان و واحدهای صنفی', 'kicker' => 'نظارت و بازرسی', 'url' => $complaintsUrl, 'image' => $defaultImage],
         ['title' => 'آخرین خبرها و اطلاعیه‌های اتاق اصناف مرکز استان گلستان', 'kicker' => 'اخبار اتاق', 'url' => $postsUrl, 'image' => $defaultImage],
     ]);
-    $heroItems = ($heroPosts ?? collect())->take(3)->map(fn ($post) => [
+    $heroItems = ($heroPosts ?? collect())->take(5)->map(fn ($post) => [
         'title' => $post->title,
         'kicker' => $post->category?->title ?? 'خبر',
         'url' => route('posts.show', $post->slug),
         'image' => $post->featured_image_url,
     ])->values();
     if ($heroItems->isEmpty()) {
-        $heroItems = ($importantAnnouncements ?? collect())->take(3)->map(fn ($announcement) => [
+        $heroItems = ($importantAnnouncements ?? collect())->take(5)->map(fn ($announcement) => [
             'title' => $announcement->title,
             'kicker' => $announcement->category?->title ?? 'اطلاعیه',
             'url' => route('announcements.show', $announcement->slug),
@@ -62,12 +83,12 @@
     $quickFallbacks = collect([
         ['title' => 'درباره اتاق اصناف', 'url' => route('pages.show', 'about-gorgan-guild-chamber'), 'children' => collect([['title' => 'معرفی اتاق اصناف گرگان', 'url' => route('pages.show', 'about-gorgan-guild-chamber')], ['title' => 'هیئت رئیسه و ساختار اداری', 'url' => '#chamber-members'], ['title' => 'شرح وظایف و اختیارات', 'url' => route('pages.show', 'about-gorgan-guild-chamber')]])],
         ['title' => 'خدمات متقاضیان', 'url' => $servicesUrl, 'children' => collect([['title' => 'راهنمای صدور پروانه کسب', 'url' => $servicesUrl], ['title' => 'تمدید و انتقال پروانه', 'url' => $servicesUrl], ['title' => 'پیگیری درخواست‌ها', 'url' => $systemsUrl]])],
-        ['title' => 'اتحادیه‌های صنفی', 'url' => $guildsUrl, 'children' => collect([['title' => 'فهرست اتحادیه‌های گرگان', 'url' => $guildsUrl], ['title' => 'اطلاعات تماس اتحادیه‌ها', 'url' => '#friendship'], ['title' => 'رسته‌های شغلی', 'url' => '#representatives']])],
+        ['title' => 'اتحادیه‌های صنفی', 'url' => $guildsUrl, 'children' => collect([['title' => 'فهرست اتحادیه‌های گرگان', 'url' => $guildsUrl], ['title' => 'اطلاعات تماس اتحادیه‌ها', 'url' => $guildsUrl], ['title' => 'رسته‌های شغلی', 'url' => '#representatives']])],
         ['title' => 'بازرسی و نظارت', 'url' => $complaintsUrl, 'children' => collect([['title' => 'ثبت شکایت صنفی', 'url' => $complaintsUrl], ['title' => 'گزارش تخلف', 'url' => $complaintsUrl], ['title' => 'پیگیری بازرسی‌ها', 'url' => route('complaints.track')]])],
         ['title' => 'آموزش و احکام تجارت', 'url' => $servicesUrl, 'children' => collect([['title' => 'دوره‌های آموزشی', 'url' => $servicesUrl], ['title' => 'احکام تجارت و کسب‌وکار', 'url' => $servicesUrl], ['title' => 'راهنمای متقاضیان', 'url' => $servicesUrl]])],
         ['title' => 'اطلاعیه‌ها', 'url' => route('announcements.index'), 'children' => collect([['title' => 'بخشنامه‌ها', 'url' => route('announcements.index')], ['title' => 'اخبار اتاق اصناف', 'url' => $postsUrl], ['title' => 'رویدادهای صنفی', 'url' => $postsUrl]])],
         ['title' => 'سامانه‌ها', 'url' => $systemsUrl, 'children' => collect([['title' => 'سامانه نوین اصناف', 'url' => $systemsUrl], ['title' => 'سامانه آموزش اصناف', 'url' => $systemsUrl], ['title' => 'فرم‌ها و درخواست‌ها', 'url' => $servicesUrl]])],
-        ['title' => 'ارتباط با ما', 'url' => $contactUrl, 'children' => collect([['title' => 'آدرس و تلفن', 'url' => '#friendship'], ['title' => 'ارسال پیام', 'url' => $contactUrl], ['title' => 'راهنمای مراجعه حضوری', 'url' => '#friendship']])],
+        ['title' => 'ارتباط با ما', 'url' => $contactUrl, 'children' => collect([['title' => 'آدرس و تلفن', 'url' => $contactUrl], ['title' => 'ارسال پیام', 'url' => $contactUrl], ['title' => 'راهنمای مراجعه حضوری', 'url' => $contactUrl]])],
     ]);
     $quickItems = ($quickMenuItems ?? collect())->map(fn ($item) => [
         'title' => trim($item->title),
@@ -109,14 +130,14 @@
     ])->take(6)->values();
     $systemItems = $systemItems->isNotEmpty() ? $systemItems : $systemFallbacks;
 
-    $adItems = ($homeAdvertisements ?? collect())->take(4)->filter(fn ($ad) => filled($ad->image))->map(fn ($ad) => ['title' => $ad->title ?: 'تبلیغات', 'url' => $ad->link ?: '#', 'image' => $assetImage($ad->image), 'target' => $ad->target ?: '_self', 'alt' => data_get($ad, 'alt') ?: ($ad->title ?: 'تبلیغات')])->values();
+    $adItems = ($homeAdvertisements ?? collect())->take(4)->filter(fn ($ad) => filled($ad->image))->map(fn ($ad) => ['title' => $ad->title ?: 'تبلیغات', 'url' => $ad->link, 'image' => $assetImage($ad->image), 'target' => $ad->target ?: '_self', 'alt' => data_get($ad, 'alt') ?: ($ad->title ?: 'تبلیغات')])->values();
 
     $unionPanels = ($unionPanels ?? collect());
     if ($unionPanels->isEmpty()) {
         $unionPanels = collect([
-            'rep-production' => ['label' => 'اتحادیه‌های تولیدی', 'icon' => '', 'items' => ($productionUnions ?? collect())],
-            'rep-distribution' => ['label' => 'اتحادیه‌های توزیعی', 'icon' => '', 'items' => ($distributionUnions ?? collect())],
-            'rep-service' => ['label' => 'اتحادیه‌های خدماتی', 'icon' => '', 'items' => ($serviceUnions ?? collect())],
+            'rep-production' => ['label' => 'اتحادیه‌های تولیدی', 'icon' => 'factory', 'items' => ($productionUnions ?? collect())],
+            'rep-distribution' => ['label' => 'اتحادیه‌های توزیعی', 'icon' => 'cart', 'items' => ($distributionUnions ?? collect())],
+            'rep-service' => ['label' => 'اتحادیه‌های خدماتی', 'icon' => 'briefcase', 'items' => ($serviceUnions ?? collect())],
         ]);
     }
 
@@ -178,7 +199,7 @@
             '#commissions-real' => ['commissions'],
             '#daily-news' => ['daily_news'],
             '#fractions' => ['systems'],
-            '#friendship' => ['contact'],
+            '#friendship' => ['important_news'],
             '#tourism' => ['tourism'],
             '#multimedia' => ['videos', 'galleries'],
             '#chamber-members' => ['chamber_members'],
@@ -232,19 +253,21 @@
 @foreach($heroItems as $item)
 <article class="news-card news-card-main swiper-slide">
 <a href="{{ $item['url'] }}">
-<img alt="{{ $item['title'] }}" src="{{ $item['image'] }}"/>
+<img alt="{{ $item['title'] }}" src="{{ $item['image'] }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}" @if($loop->first) fetchpriority="high" @endif/>
 <div class="news-overlay"></div>
 <div class="news-content">
 <span class="news-kicker">{{ $item['kicker'] }}</span>
-<h1>{{ $item['title'] }}</h1>
+<h1 class="hero-news-title" title="{{ $item['title'] }}">{{ $item['title'] }}</h1>
 </div>
 </a>
 </article>
 @endforeach
 </div>
+@if($heroItems->count() > 1)
 <button aria-label="خبر بعدی" class="hero-slider-arrow hero-slider-next" type="button"></button>
 <button aria-label="خبر قبلی" class="hero-slider-arrow hero-slider-prev" type="button"></button>
 <div class="hero-slider-pagination"></div>
+@endif
 </div>
 <div aria-label="خبرهای کناری" class="side-news">
 @foreach($sideItems as $item)
@@ -260,18 +283,20 @@
 </div>
 </section>
 
-<section class="site-container howto-section">
-<div class="section-heading section-heading-centered">
+<section class="site-container howto-section home-services-refined">
+<div class="section-heading home-refined-heading">
+<div>
 <h2>{{ $sectionTitle('electronic_services', 'خدمات الکترونیک صنفی') }}</h2>
 <p>{{ $sectionSubtitle('electronic_services', 'نحوه انجام خدمات و دریافت مجوزها و ثبت درخواست‌ها') }}</p>
+</div>
 </div>
 <div class="howto-grid">
 @foreach($serviceItems as $item)
 <a class="howto-card" href="{{ $item['url'] }}" target="{{ $item['target'] ?? '_self' }}">
-<div class="howto-icon">{{ $item['icon'] }}</div>
+<div class="howto-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3.5h8M9 2v3M15 2v3M6 4.5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z"/><path d="m8 12 2.2 2.2L16 8.5M8 18h8"/></svg></div>
 <h3>{{ $item['title'] }}</h3>
 <p>{{ $item['description'] }}</p>
-<span class="howto-link">{{ $item['label'] }}</span>
+<span class="howto-link"><span class="howto-link-mobile">مشاهده</span><span class="howto-link-desktop">{{ $item['label'] }}</span></span>
 </a>
 @endforeach
 </div>
@@ -281,29 +306,31 @@
 <section class="latest-news-section section-white" id="latest-news">
 <div class="site-container">
 <div class="latest-news-shell">
-<div class="section-heading latest-news-heading"><div><span class="section-kicker">اخبار اتاق</span><h2>آخرین اخبار</h2><p>جدیدترین خبرهای اتاق اصناف با چینش هماهنگ با سایر بخش‌های صفحه اصلی</p></div><a class="tab-pill" href="{{ route('posts.index') }}">آرشیو اخبار</a></div>
+<div class="section-heading latest-news-heading"><div><h2 id="latest-news-title" tabindex="-1">آخرین اخبار</h2><p>جدیدترین خبرهای اتاق اصناف با چینش هماهنگ با سایر بخش‌های صفحه اصلی</p></div><a class="latest-news-archive" href="{{ route('posts.index') }}">آرشیو اخبار</a></div>
 <div class="latest-news-layout">
-<div class="latest-news-list">
-@forelse(($latestPosts ?? collect()) as $post)
-@php
-    $postUrl = route('posts.show', ['slug' => $post->slug, 'news_page' => request('news_page')]);
-@endphp
-<article class="latest-news-card">
-<a class="latest-news-thumb-link" href="{{ $postUrl }}"><img loading="lazy" src="{{ $post->featured_image_url }}" alt="{{ $post->title }}"></a>
-<div class="latest-news-card-body"><div class="latest-news-meta"><time>{{ jalali_datetime($post->published_at) }}</time><span>{{ $post->category_title }}</span></div><h3><a href="{{ $postUrl }}">{{ $post->title }}</a></h3><p>{{ $plain($post->excerpt ?: $post->short_description ?: $post->body, 135) }}</p><a class="read-more" href="{{ $postUrl }}">ادامه مطلب</a></div>
-</article>
-@empty
-<div class="empty-state">هنوز خبری برای نمایش ثبت نشده است.</div>
-@endforelse
-@if(($latestPosts ?? null) instanceof \Illuminate\Contracts\Pagination\Paginator)
-<div class="latest-news-pagination">{{ $latestPosts->links('frontend.partials.pagination') }}</div>
-@endif
+<div class="latest-news-list" data-latest-news data-endpoint="{{ route('home.latest-news') }}" aria-busy="false">
+@include('frontend.home.partials.latest-news-grid', ['latestPosts' => $latestPosts])
 </div>
+<p class="latest-news-status visually-hidden" data-latest-news-status aria-live="polite"></p>
 @php
     $sidebarAdItems = collect($sidebarAdvertisements ?? collect())->take(4);
 @endphp
 @if($sidebarAdItems->isNotEmpty())
-<aside class="latest-news-ads">@foreach($sidebarAdItems as $ad)<a href="{{ $ad['url'] }}" target="{{ $ad['target'] }}" rel="{{ $ad['target'] === '_blank' ? 'noopener noreferrer' : '' }}"><img loading="lazy" alt="{{ $ad['alt'] }}" src="{{ $ad['image'] }}"><span>{{ $ad['title'] }}</span></a>@endforeach</aside>
+<aside class="latest-news-ads">
+@foreach($sidebarAdItems as $ad)
+@php
+    $sidebarAdUrl = $normalizeInternalUrl($ad->link ?? data_get($ad, 'url', ''));
+    $sidebarAdTarget = $ad->target ?? data_get($ad, 'target', '_self');
+    $sidebarAdTitle = $ad->title ?? data_get($ad, 'title', 'تبلیغات');
+    $sidebarAdImage = $ad->image_url ?? data_get($ad, 'image');
+@endphp
+@if($sidebarAdUrl !== '')
+<a class="latest-news-ad" href="{{ $sidebarAdUrl }}" target="{{ $sidebarAdTarget }}" @if($sidebarAdTarget === '_blank') rel="noopener noreferrer" @endif><img loading="lazy" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}"><span>{{ $sidebarAdTitle }}</span></a>
+@else
+<div class="latest-news-ad latest-news-ad-placeholder"><img loading="lazy" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}"><span>{{ $sidebarAdTitle }}</span></div>
+@endif
+@endforeach
+</aside>
 @endif
 </div>
 </div>
@@ -315,17 +342,23 @@
     $bannerAdItems = collect($bannerAdvertisements ?? collect())->take(4);
 @endphp
 @foreach($bannerAdItems as $ad)
-@if(filled($ad['url'] ?? null))
-<a class="ad-banner" href="{{ $ad['url'] }}" target="{{ $ad['target'] }}">
-<img alt="تبلیغات" src="{{ $ad['image'] }}"/>
+@php
+    $bannerAdUrl = $normalizeInternalUrl($ad->link ?? data_get($ad, 'url', ''));
+    $bannerAdTarget = $ad->target ?? data_get($ad, 'target', '_self');
+    $bannerAdImage = $ad->image_url ?? data_get($ad, 'image');
+    $bannerAdTitle = $ad->title ?? data_get($ad, 'title', 'تبلیغات');
+@endphp
+@if($bannerAdUrl !== '')
+<a class="ad-banner" href="{{ $bannerAdUrl }}" target="{{ $bannerAdTarget }}" @if($bannerAdTarget === '_blank') rel="noopener noreferrer" @endif>
+<img alt="{{ $bannerAdTitle }}" src="{{ $bannerAdImage }}"/>
 <div class="ad-banner-overlay"></div>
-<div class="ad-banner-text">{{ $ad['title'] }}</div>
+<div class="ad-banner-text">{{ $bannerAdTitle }}</div>
 </a>
 @else
 <div class="ad-banner ad-banner-placeholder">
-<img alt="تبلیغات" src="{{ $ad['image'] }}"/>
+<img alt="{{ $bannerAdTitle }}" src="{{ $bannerAdImage }}"/>
 <div class="ad-banner-overlay"></div>
-<div class="ad-banner-text">{{ $ad['title'] }}</div>
+<div class="ad-banner-text">{{ $bannerAdTitle }}</div>
 </div>
 @endif
 @endforeach
@@ -333,34 +366,88 @@
 
 <section class="representatives-section section-white" id="representatives" data-union-ajax-url="{{ route('guilds.ajax-search') }}">
 <div class="site-container">
-<div class="section-heading">
-<h2>اتحادیه‌های صنفی استان گلستان</h2>
+<div class="section-heading home-refined-heading representatives-heading">
+<div><h2>اتحادیه‌های صنفی استان گلستان</h2></div>
 @if(($homeUnions ?? collect())->isNotEmpty())
-<a class="tab-pill" href="{{ $guildsUrl }}">فهرست کامل اتحادیه‌ها</a>
+<a class="home-refined-action" href="{{ $guildsUrl }}">فهرست کامل اتحادیه‌ها</a>
 @endif
 </div>
 @php
     $displayUnionPanels = ($unionPanels ?? collect())->filter(fn ($data) => collect($data['items'] ?? [])->isNotEmpty());
 @endphp
 @if($displayUnionPanels->isNotEmpty())
-<div aria-label="گروه‌بندی اتحادیه‌ها" class="tabs" data-tab-group="representatives" role="tablist">
+<div aria-label="گروه‌بندی اتحادیه‌ها" class="tabs representatives-tabs" data-tab-group="representatives" role="tablist">
 @foreach($displayUnionPanels as $panel => $data)
-<button class="tab-pill {{ $loop->first ? 'active' : '' }}" data-tab-target="{{ $panel }}" type="button">{{ trim(($data['icon'] ?? '').' '.$data['label']) }}</button>
+<button class="tab-pill {{ $loop->first ? 'active' : '' }}" data-tab-target="{{ $panel }}" type="button">
+<x-union-type-icon :icon="$data['icon'] ?? 'storefront'" />
+<span>{{ $data['label'] }}</span>
+</button>
 @endforeach
 </div>
 <div class="tab-panels" data-tab-panels="representatives">
 @foreach($displayUnionPanels as $panel => $data)
+@php
+    $panelUnions = collect($data['items']);
+    $initialUnion = $panelUnions->first(fn ($item) => $item->latestPublishedNews !== null) ?: $panelUnions->first();
+    $initialNews = $initialUnion?->latestPublishedNews;
+    $initialUnionImage = $initialUnion?->primary_image;
+    $initialPreviewUrl = $initialNews
+        ? route('posts.show', $initialNews->slug)
+        : ($initialUnion ? route('guilds.show', $initialUnion->slug) : $guildsUrl);
+    $initialPreviewImage = $initialNews?->featured_image_url ?: $assetImage($initialUnionImage);
+    $initialPreviewTitle = $initialNews?->title ?: ($initialUnion?->display_title ?? $data['label']);
+    $initialPreviewExcerpt = $initialNews?->summary
+        ?: $plain($initialUnion?->short_description ?: $initialUnion?->description, 150);
+    $initialPreviewLabel = $initialNews ? 'آخرین خبر مرتبط' : 'معرفی اتحادیه';
+@endphp
 <div class="tab-panel {{ $loop->first ? 'active' : '' }}" data-tab-panel="{{ $panel }}">
 <div class="representative-layout">
-<div class="representative-map">
-<img alt="{{ $data['label'] }}" class="map-img" src="{{ $defaultImage }}"/>
+<div class="representative-map" data-union-preview>
+<a class="union-news-preview-card" href="{{ $initialPreviewUrl }}" data-union-preview-link>
+<img alt="{{ $initialPreviewTitle }}" class="map-img" src="{{ $initialPreviewImage }}" data-union-preview-image/>
+<div class="union-news-preview-shade"></div>
+<div class="union-news-preview-copy">
+<span data-union-preview-label>{{ $initialPreviewLabel }}</span>
+<h3 data-union-preview-title>{{ $initialPreviewTitle }}</h3>
+<p data-union-preview-excerpt>{{ $initialPreviewExcerpt }}</p>
+</div>
+</a>
 </div>
 <aside class="people-panel" data-search-area="">
 <div class="searchbox"><span class="search-icon"></span><input data-union-ajax-input="" data-union-type="{{ str_replace('rep-', '', $panel) }}" placeholder="جستجوی سریع اتحادیه..." type="search"/></div>
 <div class="people-scroll-wrap">
 <ul class="person-list" data-union-results="{{ $panel }}">
-@foreach(collect($data['items']) as $union)
-<li class="union-home-item"><a href="{{ route('guilds.show', $union->slug) }}" class="d-flex align-items-center gap-2 text-decoration-none"><span class="person-avatar avatar-{{ ($loop->iteration % 6) + 1 }}">@if($union->logo || $union->cover_image)<img src="{{ image_url($union->logo ?: $union->cover_image) }}" alt="{{ $union->display_title }}" loading="lazy">@endif</span><div><strong>{{ $union->display_title }}</strong><small>{{ $plain($union->short_description ?: $union->manager_name ?: $union->union_type_label, 90) }}</small></div></a>@if($union->complaint_enabled)<div class="union-home-actions"><a href="{{ route('complaints.create', ['union_id' => $union->id]) }}">ثبت شکایت</a></div>@endif</li>
+@foreach($panelUnions as $union)
+@php
+    $previewNews = $union->latestPublishedNews;
+    $unionUrl = route('guilds.show', $union->slug);
+    $unionImage = $union->primary_image;
+    $previewUrl = $previewNews ? route('posts.show', $previewNews->slug) : $unionUrl;
+    $previewImage = $previewNews?->featured_image_url ?: $assetImage($unionImage);
+    $previewTitle = $previewNews?->title ?: $union->display_title;
+    $previewExcerpt = $previewNews?->summary
+        ?: $plain($union->short_description ?: $union->description ?: $union->manager_name, 150);
+    $previewLabel = $previewNews ? 'آخرین خبر مرتبط' : 'معرفی اتحادیه';
+@endphp
+<li
+    class="union-home-item"
+    data-union-preview-item
+    data-preview-url="{{ $previewUrl }}"
+    data-preview-image="{{ $previewImage }}"
+    data-preview-title="{{ $previewTitle }}"
+    data-preview-excerpt="{{ $previewExcerpt }}"
+    data-preview-label="{{ $previewLabel }}"
+>
+<a href="{{ $unionUrl }}" class="union-home-link">
+<span class="person-avatar avatar-{{ ($loop->iteration % 6) + 1 }}">
+<img src="{{ $assetImage($unionImage) }}" alt="{{ $union->display_title }}" loading="lazy">
+</span>
+<div>
+<strong>{{ $union->display_title }}</strong>
+<small>{{ $plain($union->short_description ?: $union->manager_name ?: $union->union_type_label, 90) }}</small>
+</div>
+</a>
+</li>
 @endforeach
 </ul>
 <div class="union-ajax-status" data-union-status="{{ $panel }}" hidden></div>
@@ -379,30 +466,39 @@
 </div>
 </section>
 
-
-<section class="commissions-section ds-tint-block office-services-section" id="commissions">
+<section class="commissions-section ds-tint-block office-services-section home-systems-section" id="commissions">
 <div class="site-container">
-<div class="section-heading">
-<h2>{{ $sectionTitle('systems', 'سامانه‌ها') }}</h2>
-<a class="tab-pill" href="{{ $systemsUrl }}">مشاهده همه سامانه‌ها</a>
+<div class="section-heading systems-section-heading">
+<div><h2>سامانه‌ها و خدمات مرتبط</h2><p>{{ $sectionSubtitle('systems', 'دسترسی سریع به سامانه‌ها و پیوندهای کاربردی اصناف') }}</p></div>
+<a class="home-corporate-action" href="{{ $systemsUrl }}">مشاهده همه سامانه‌ها</a>
 </div>
-<div class="commission-card"><div class="commission-grid compact-grid">
+<div class="systems-unified-shell">
+<div class="systems-primary-group"><h3 class="systems-subtitle">سامانه‌های اصلی</h3><div class="commission-grid compact-grid systems-primary-grid">
 @foreach($systemItems as $item)
-<a class="commission-item service-color-{{ ($loop->iteration % 4) + 1 }}" href="{{ $item['url'] }}" target="{{ $item['target'] ?? '_self' }}"><strong>{{ $item['title'] }}</strong><span>{{ $item['description'] }}</span></a>
+<a class="commission-item" href="{{ $item['url'] }}" target="{{ $item['target'] ?? '_self' }}"><span class="system-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3M7 9h10M7 13h6"/></svg></span><strong>{{ $item['title'] }}</strong><span class="system-card-description">{{ $item['description'] }}</span></a>
 @endforeach
 </div></div>
+<div class="systems-links-group" id="fractions"><h3 class="systems-subtitle">پیوندها و اطلاعیه‌های کاربردی</h3><div class="systems-links-grid">
+@forelse($followTopics as $topic)
+<a href="{{ $topic['url'] }}" class="systems-utility-link">{{ $topic['title'] }}</a>
+@empty
+<p class="empty-state">موضوعی برای نمایش در پنل مدیریت ثبت نشده است.</p>
+@endforelse
+</div></div>
+</div>
 </div>
 </section>
-<section class="commissions-real" id="commissions-real">
+<section class="commissions-real home-commissions-section" id="commissions-real">
 <div class="site-container">
-<div class="section-heading section-heading-centered">
-<h2>{{ $sectionTitle('commissions', 'کمیسیون‌های اتاق اصناف مرکز استان گلستان') }}</h2>
+<div class="section-heading commissions-section-heading">
+<div><h2>{{ $sectionTitle('commissions', 'کمیسیون‌های اتاق اصناف مرکز استان گلستان') }}</h2>
 <p>{{ $sectionSubtitle('commissions', 'آخرین اطلاعات کمیسیون‌های تخصصی اتاق اصناف مرکز استان گلستان را در این بخش دنبال کنید.') }}</p>
+</div><a class="home-corporate-action" href="{{ $commissionsUrl }}">مشاهده همه کمیسیون‌ها</a>
 </div>
 <div class="comreal-grid">
 @foreach($commissionItems as $item)
 <a href="{{ $item['url'] ?? $commissionsUrl }}" class="comreal-card">
-<div class="comreal-icon">{{ $item['icon'] }}</div>
+<div class="comreal-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M6 6h12M5 6l-3 7h6L5 6Zm14 0-3 7h6l-3-7ZM8 21h8"/></svg></div>
 <h3>{{ $item['title'] }}</h3>
 <p>{{ $item['description'] }}</p>
 @if(($item['tasks'] ?? collect())->isNotEmpty())
@@ -416,53 +512,28 @@
 </div>
 </section>
 
-<section class="fractions-section section-gray" id="fractions">
-<div class="site-container">
-<div class="section-heading">
-<h2>{{ $sectionTitle('systems', 'موضوعات پیگیری اصناف') }}</h2>
-</div>
-<div class="fraction-grid">
-@forelse($followTopics as $topic)
-<a href="{{ $topic['url'] }}" class="fraction-link">{{ $topic['title'] }}</a>
-@empty
-<p class="empty-state">موضوعی برای نمایش در پنل مدیریت ثبت نشده است.</p>
-@endforelse
-</div>
-</div>
-</section>
-
-<section class="friendship-section section-white" id="friendship">
-<div class="site-container">
-<div class="section-heading friendship-heading"><h2>{{ $sectionTitle('contact', 'ارتباط با اتاق و دستگاه‌های همکار') }}</h2><a class="tab-pill" href="{{ $contactUrl }}">راهنمای تماس</a></div>
-<div class="friendship-layout">
-<div class="world-map-wrap">
-<img alt="تصویر پیش‌فرض اتاق اصناف مرکز استان گلستان" class="world-map-img" src="{{ $defaultImage }}"/>
-</div>
-<aside class="friend-list">
-<div class="friend-scroll-wrap">
-<ul>
-@forelse($orgLinks ?? collect() as $link)
-<li><a href="{{ $link->url ?: '#' }}" target="{{ $link->target ?? '_self' }}" class="text-decoration-none" @if(($link->target ?? '_self') === '_blank') rel="noopener" @endif>@if($link->icon)<span>{{ $link->icon }}</span>@endif <strong>{{ $link->title }}</strong>@if($link->description)<small>{{ plain_text($link->description, 100) }}</small>@endif</a></li>
-@empty
-<li><a href="{{ $contactUrl }}">اتاق اصناف مرکز استان گلستان؛ مشاهده اطلاعات تماس و راهنمای مراجعه</a></li>
-@endforelse
-</ul>
-</div>
-</aside>
-</div>
-</div>
-</section>
-
-
 <section class="tourism-section" id="tourism">
 <div class="site-container">
-<div class="section-heading">
-<h2>{{ $sectionTitle('tourism', 'گردشگری گرگان و گلستان') }}</h2>
-<div aria-label="دسته‌بندی گردشگری" class="tabs" data-tab-group="tourism" role="tablist">
-@foreach($tourismPanels as $panel => $panelData)
-<button class="tab-pill {{ $loop->first ? 'active' : '' }}" data-tab-target="{{ $panel }}" type="button">{{ $panelData['label'] }}</button>
+<div class="tourism-tab-controls" data-tab-group="tourism">
+<div class="section-heading home-refined-heading tourism-heading">
+<div><h2>{{ $sectionTitle('tourism', 'گردشگری گرگان و گلستان') }}</h2></div>
+<div class="tourism-heading-actions">
+@php
+    $primaryTourismPanel = $tourismPanels->keys()->first();
+@endphp
+@if($primaryTourismPanel !== null)
+<button class="tab-pill active" data-tab-target="{{ $primaryTourismPanel }}" type="button">{{ $tourismPanels->get($primaryTourismPanel)['label'] }}</button>
+@endif
+<a class="home-refined-action" href="{{ $tourismUrl }}">مشاهده همه</a>
+</div>
+ </div>
+@if($tourismPanels->count() > 1)
+<div aria-label="دسته‌بندی گردشگری" class="tabs tourism-tabs" role="tablist">
+@foreach($tourismPanels->skip(1) as $panel => $panelData)
+<button class="tab-pill" data-tab-target="{{ $panel }}" type="button">{{ $panelData['label'] }}</button>
 @endforeach
 </div>
+@endif
 </div>
 <div class="tab-panels" data-tab-panels="tourism">
 @foreach($tourismPanels as $panel => $panelData)
@@ -566,17 +637,16 @@
 
 <section class="chamber-members-home" id="chamber-members">
 <div class="site-container">
-<div class="section-heading chamber-members-heading">
+<div class="section-heading chamber-members-heading members-section-heading">
 <div>
-<span class="section-kicker">اعضای اتاق اصناف</span>
-<h2>{{ $sectionTitle('chamber_members', 'اعضای اتاق اصناف') }}</h2>
-<p>{{ $sectionSubtitle('chamber_members', 'معرفی رسمی پنج عضو هیئت‌مدیره با نام، سمت و تصویر.') }}</p>
+<h2>{{ $sectionTitle('chamber_members', 'هیئت مدیره اصناف') }}</h2>
+<p>{{ $sectionSubtitle('chamber_members', 'معرفی اعضای هیئت مدیره اصناف مرکز استان گلستان') }}</p>
 </div>
-<a class="tab-pill" href="{{ route('chamber-members.index') }}">مشاهده همه اعضا</a>
 </div>
-<div class="chamber-members-grid">
-@forelse(($chamberMembers ?? collect())->take(5) as $member)
-<article class="chamber-member-card">
+<div class="members-swiper swiper" data-members-swiper>
+<div class="chamber-members-grid swiper-wrapper">
+@forelse(($chamberMembers ?? collect())->take(6) as $member)
+<article class="chamber-member-card swiper-slide">
 <div class="chamber-member-card-glow"></div>
 <a href="{{ route('chamber-members.index') }}" aria-label="مشاهده معرفی {{ $member->full_name }}">
 <div class="chamber-member-photo-wrap">
@@ -584,7 +654,7 @@
 <span class="chamber-member-number">{{ $loop->iteration }}</span>
 </div>
 <div class="chamber-member-body">
-<span class="chamber-member-label">عضو اتاق اصناف</span>
+<span class="chamber-member-label">عضو هیئت‌مدیره</span>
 <h3>{{ $member->full_name }}</h3>
 <p class="chamber-member-position">{{ $member->position }}</p>
 <div class="chamber-member-meta">
@@ -596,14 +666,16 @@
 </article>
 @empty
 <div class="chamber-members-empty">
-<img alt="اعضای اتاق اصناف" src="{{ $defaultImage }}"/>
+<img alt="اعضای هیئت‌مدیره" src="{{ $defaultImage }}"/>
 <div>
 <span class="chamber-member-label">در انتظار تکمیل محتوا</span>
 <h3>هنوز عضوی برای نمایش در صفحه نخست ثبت نشده است.</h3>
-<p>از بخش «اعضای اتاق اصناف» در پنل مدیریت، اعضا را همراه با عکس دایره‌ای، سمت، توضیحات و ترتیب نمایش اضافه کنید.</p>
+<p>از بخش «اعضای اتاق اصناف» در پنل مدیریت، شش عضو هیئت‌مدیره را همراه با تصویر، سمت و ترتیب نمایش ثبت کنید.</p>
 </div>
 </div>
 @endforelse
+</div>
+<div class="members-swiper-pagination swiper-pagination" aria-label="صفحه‌بندی اعضای هیئت‌مدیره"></div>
 </div>
 </div>
 </section>

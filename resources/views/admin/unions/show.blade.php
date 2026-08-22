@@ -55,7 +55,8 @@
                 <dt class="col-5">وضعیت</dt><dd class="col-7">{{ $union->is_active ? 'فعال' : 'غیرفعال' }}</dd>
                 <dt class="col-5">نوع اتحادیه</dt><dd class="col-7">{{ $union->union_type_label }}</dd>
                 <dt class="col-5">حالت خبر</dt><dd class="col-7">{{ \App\Models\GuildUnion::newsModeLabels()[$union->news_mode ?? 'auto'] ?? 'خودکار' }}</dd>
-                <dt class="col-5">مدیر</dt><dd class="col-7">{{ $union->manager_name ?: '—' }}</dd>
+                <dt class="col-5">رئیس</dt><dd class="col-7">{{ $union->manager_name ?: '—' }}</dd>
+                <dt class="col-5">سمت رئیس</dt><dd class="col-7">{{ $union->manager_position ?: '—' }}</dd>
                 <dt class="col-5">تلفن</dt><dd class="col-7">{{ $union->phone ?: '—' }}</dd>
                 <dt class="col-5">موبایل</dt><dd class="col-7">{{ $union->mobile ?: '—' }}</dd>
                 <dt class="col-5">ایمیل</dt><dd class="col-7">{{ $union->email ?: '—' }}</dd>
@@ -69,6 +70,9 @@
         </div>
         @if ($union->manager_image)
             <div class="admin-panel-card mt-3"><img class="img-fluid rounded" src="{{ route('media.public', ['path' => $union->manager_image]) }}" alt="{{ $union->manager_name }}"></div>
+        @endif
+        @if ($union->manager_description)
+            <div class="admin-panel-card mt-3"><h3 class="h6">معرفی کوتاه رئیس</h3><p class="mb-0">{{ $union->manager_description }}</p></div>
         @endif
     </div>
 </div>

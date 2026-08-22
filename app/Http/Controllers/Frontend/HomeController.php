@@ -25,10 +25,26 @@ use App\Services\MenuService;
 use App\Services\SettingService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
+    public function latestNews(): JsonResponse
+    {
+        $latestPosts = $this->latestPosts();
+
+        return response()->json([
+            'html' => view('frontend.home.partials.latest-news-grid', compact('latestPosts'))->render(),
+            'current_page' => $latestPosts->currentPage(),
+            'last_page' => $latestPosts->lastPage(),
+            'has_previous' => $latestPosts->onFirstPage() === false,
+            'has_next' => $latestPosts->hasMorePages(),
+            'previous_url' => $latestPosts->previousPageUrl(),
+            'next_url' => $latestPosts->nextPageUrl(),
+        ]);
+    }
+
     public function index(AdvertisementService $advertisementService, MenuService $menus, SettingService $settings, DailyNewsService $dailyNewsService): View
     {
         $sections = HomeSection::query()
@@ -37,16 +53,11 @@ class HomeController extends Controller
             ->orderBy('id')
             ->get();
 
-        $latestPosts = Post::query()
-            ->published()
-            ->with(['category', 'union', 'featuredMedia'])
-            ->orderByDesc('published_at')
-            ->orderByDesc('id')
-            ->paginate(6, ['*'], 'news_page')
-            ->withQueryString();
+        $latestPosts = $this->latestPosts();
 
         $importantPosts = Post::query()
             ->published()
+            ->editorial()
             ->where('homepage_position', 'featured')
             ->with(['category', 'union', 'galleries'])
             ->withCount('galleries')
@@ -55,19 +66,49 @@ class HomeController extends Controller
             ->take($this->sectionLimit($sections, 'important_news', 6))
             ->get();
 
-        $heroPosts = Post::query()
+        $importantNewsPosts = Post::query()
             ->published()
-            ->where('homepage_position', 'top')
-            ->with(['category', 'union', 'galleries'])
-            ->withCount('galleries')
-            ->orderBy('featured_order')
+            ->editorial()
+            ->where('is_important', true)
+            ->with(['category', 'union', 'featuredMedia'])
             ->latest('published_at')
             ->latest('id')
-            ->take(3)
+            ->take(7)
             ->get();
 
+        if ($importantNewsPosts->isEmpty()) {
+            $importantNewsPosts = Post::query()
+                ->published()
+                ->editorial()
+                ->with(['category', 'union', 'featuredMedia'])
+                ->latest('published_at')
+                ->latest('id')
+                ->take(7)
+                ->get();
+        }
+
+        // The main homepage slider always shows the five most recently published news items.
+        // It intentionally does not depend on the optional homepage_position flag.
+        $heroPosts = Post::query()
+            ->published()
+            ->editorial()
+            ->with(['category', 'union', 'galleries', 'featuredMedia'])
+            ->withCount('galleries')
+            ->latest('published_at')
+            ->latest('id')
+            ->take(6)
+            ->get();
+
+        // Keep the hero usable in legacy databases where old posts may not have a news type.
         if ($heroPosts->isEmpty()) {
-            $heroPosts = $latestPosts->getCollection()->take(3);
+            $heroPosts = Post::query()
+                ->published()
+                ->with(['category', 'union', 'galleries', 'featuredMedia'])
+                ->withCount('galleries')
+                ->latest('published_at')
+                ->latest('id')
+                ->take(5)
+                ->get();
         }
 
         $dailySelectedDate = $dailyNewsService->selectedDate(request()->query('date'));
@@ -85,8 +126,10 @@ class HomeController extends Controller
 
         $sidePosts = Post::query()
             ->published()
+            ->editorial()
             ->where('homepage_position', 'featured')
-            ->with(['category', 'union', 'galleries'])
+            ->whereNotIn('id', $heroPosts->pluck('id'))
+            ->with(['category', 'union', 'galleries', 'featuredMedia'])
             ->withCount('galleries')
             ->latest('published_at')
             ->latest('id')
@@ -94,7 +137,15 @@ class HomeController extends Controller
             ->get();
 
         if ($sidePosts->isEmpty()) {
-            $sidePosts = $latestPosts->getCollection()->whereNotIn('id', $heroPosts->pluck('id'))->take(2)->values();
+            $sidePosts = Post::query()
+                ->published()
+                ->editorial()
+                ->whereNotIn('id', $heroPosts->pluck('id'))
+                ->with(['category', 'union', 'featuredMedia'])
+                ->latest('published_at')
+                ->latest('id')
+                ->take(2)
+                ->get();
         }
 
         $announcements = Announcement::query()
@@ -124,6 +175,7 @@ class HomeController extends Controller
         $unionLimit = $this->sectionLimit($sections, 'unions', 24);
         $homeUnions = GuildUnion::query()
             ->active()
+            ->with(['unionType', 'latestPublishedNews.featuredMedia'])
             ->withCount(['posts as published_posts_count' => fn ($query) => $query->published()])
             ->orderBy('sort_order')
             ->orderBy('title')
@@ -134,7 +186,7 @@ class HomeController extends Controller
         $unionTypeTabs = $unionTypes->mapWithKeys(fn (UnionType $unionType) => [
             $unionType->slug => [
                 'label' => $unionType->title,
-                'icon' => $unionType->icon,
+                'icon' => $unionType->resolved_icon,
                 'items' => $this->unionsByTypeDefinition($unionType, $unionLimit),
             ],
         ]);
@@ -149,16 +201,16 @@ class HomeController extends Controller
 
         if ($unionPanels->isEmpty()) {
             $legacyPanels = collect([
-                'rep-production' => ['label' => 'اتحادیه‌های تولیدی', 'icon' => '', 'items' => $productionUnions],
-                'rep-distribution' => ['label' => 'اتحادیه‌های توزیعی', 'icon' => '', 'items' => $distributionUnions],
-                'rep-service' => ['label' => 'اتحادیه‌های خدماتی', 'icon' => '', 'items' => $serviceUnions],
+                'rep-production' => ['label' => 'اتحادیه‌های تولیدی', 'icon' => UnionType::ICON_FACTORY, 'items' => $productionUnions],
+                'rep-distribution' => ['label' => 'اتحادیه‌های توزیعی', 'icon' => UnionType::ICON_CART, 'items' => $distributionUnions],
+                'rep-service' => ['label' => 'اتحادیه‌های خدماتی', 'icon' => UnionType::ICON_BRIEFCASE, 'items' => $serviceUnions],
             ]);
             $unionPanels = $legacyPanels->filter(fn (array $data) => collect($data['items'] ?? [])->isNotEmpty());
         }
 
         if ($unionPanels->isEmpty() && $homeUnions->isNotEmpty()) {
             $unionPanels = collect([
-                'rep-all' => ['label' => 'همه اتحادیه‌های فعال', 'icon' => '', 'items' => $homeUnions],
+                'rep-all' => ['label' => 'همه اتحادیه‌های فعال', 'icon' => UnionType::ICON_STOREFRONT, 'items' => $homeUnions],
             ]);
         }
 
@@ -219,7 +271,7 @@ class HomeController extends Controller
             ->orderBy('sort_order')
             ->orderBy('last_name')
             ->orderBy('first_name')
-            ->take(5)
+            ->take(6)
             ->get();
 
         $congratulationMessages = CongratulationMessage::where('is_active', true)
@@ -267,6 +319,7 @@ class HomeController extends Controller
         return view('frontend.home', compact(
             'sections',
             'importantPosts',
+            'importantNewsPosts',
             'latestPosts',
             'dailyPosts',
             'dailyNewsCount',
@@ -317,10 +370,23 @@ class HomeController extends Controller
         ));
     }
 
+    private function latestPosts()
+    {
+        return Post::query()
+            ->published()
+            ->editorial()
+            ->with(['category', 'union', 'featuredMedia'])
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
+            ->paginate(6, ['*'], 'news_page')
+            ->withQueryString();
+    }
+
     private function unionsByType(string $type): Collection
     {
         return GuildUnion::query()
             ->active()
+            ->with(['unionType', 'latestPublishedNews.featuredMedia'])
             ->where('union_type', $type)
             ->orderBy('title')
             ->take(10)
@@ -331,6 +397,7 @@ class HomeController extends Controller
     {
         return GuildUnion::query()
             ->active()
+            ->with(['unionType', 'latestPublishedNews.featuredMedia'])
             ->where(fn ($query) => $query
                 ->where('union_type_id', $type->id)
                 ->orWhere('union_type', $type->slug))
