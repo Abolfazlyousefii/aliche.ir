@@ -16,7 +16,7 @@ class CommissionSessionController extends Controller
 {
     public function index(Commission $commission): View
     {
-        $sessions = $commission->sessions()->paginate(15);
+        $sessions = $commission->sessions()->paginate(15)->withQueryString();
 
         return view('admin.commission_sessions.index', compact('commission', 'sessions'));
     }

@@ -17,7 +17,8 @@ class CommissionController extends Controller
             ->withCount(['publishedSessions as sessions_count'])
             ->orderBy('sort_order')
             ->latest()
-            ->paginate(12);
+            ->paginate(12)
+            ->withQueryString();
 
         return view('frontend.commissions.index', compact('commissions'));
     }

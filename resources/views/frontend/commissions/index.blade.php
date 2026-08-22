@@ -52,7 +52,7 @@
     </div>
 
     <div class="commissions-pagination">
-        {{ $commissions->links('frontend.partials.pagination') }}
+        {{ $commissions->links() }}
     </div>
 </section>
 @endsection

@@ -19,7 +19,7 @@ class UnionTypeController extends Controller
 
     public function index(): View
     {
-        $unionTypes = UnionType::query()->orderBy('sort_order')->orderBy('title')->paginate(20);
+        $unionTypes = UnionType::query()->orderBy('sort_order')->orderBy('title')->paginate(20)->withQueryString();
 
         return view('admin.union_types.index', compact('unionTypes'));
     }

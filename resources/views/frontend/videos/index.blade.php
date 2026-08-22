@@ -46,6 +46,6 @@
     @endforelse
   </div>
 
-  {{ $videos->links('frontend.partials.pagination') }}
+  {{ $videos->links() }}
 </section>
 @endsection

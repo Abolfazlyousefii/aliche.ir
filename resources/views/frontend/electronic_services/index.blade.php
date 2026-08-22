@@ -75,6 +75,6 @@
     @endforelse
   </div>
 
-  <div class="portal-pagination">{{ $services->links('frontend.partials.pagination') }}</div>
+  <div class="portal-pagination">{{ $services->links() }}</div>
 </section>
 @endsection

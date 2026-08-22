@@ -20,17 +20,8 @@
 <div class="empty-state">هنوز خبری برای نمایش ثبت نشده است.</div>
 @endforelse
 </div>
-@if($latestPosts->lastPage() > 1)
-<nav class="latest-news-pagination" aria-label="صفحه‌بندی آخرین اخبار">
-@if($latestPosts->onFirstPage())
-<span class="latest-news-page-button is-disabled" aria-disabled="true" title="اخبار قبلی"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></span>
-@else
-<a class="latest-news-page-button" href="{{ $latestPosts->previousPageUrl() }}" aria-label="اخبار قبلی" title="اخبار قبلی"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></a>
-@endif
-@if($latestPosts->hasMorePages())
-<a class="latest-news-page-button" href="{{ $latestPosts->nextPageUrl() }}" aria-label="اخبار بعدی" title="اخبار بعدی"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></a>
-@else
-<span class="latest-news-page-button is-disabled" aria-disabled="true" title="اخبار بعدی"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></span>
-@endif
-</nav>
-@endif
+{{ $latestPosts->onEachSide(1)->links('vendor.pagination.bootstrap-rtl', [
+    'class' => 'latest-news-pagination',
+    'linkClass' => 'latest-news-page-button',
+    'ariaLabel' => 'صفحه‌بندی آخرین اخبار',
+]) }}

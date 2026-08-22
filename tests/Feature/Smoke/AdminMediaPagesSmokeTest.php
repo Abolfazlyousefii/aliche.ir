@@ -44,6 +44,7 @@ class AdminMediaPagesSmokeTest extends TestCase
             'media' => ['admin.media.index'],
             'galleries' => ['admin.galleries.index'],
             'unions' => ['admin.unions.index'],
+            'users' => ['admin.users.index'],
             'union create' => ['admin.unions.create'],
             'union types' => ['admin.union-types.index'],
             'chamber members' => ['admin.chamber_members.index'],
@@ -52,6 +53,26 @@ class AdminMediaPagesSmokeTest extends TestCase
             'videos' => ['admin.videos.index'],
             'electronic services' => ['admin.electronic_services.index'],
             'settings' => ['admin.settings.edit'],
+        ];
+    }
+
+    #[DataProvider('paginatedAdminPageProvider')]
+    public function test_admin_paginated_pages_accept_page_two_and_search_filters(string $route): void
+    {
+        $this->get(route($route, ['page' => 2, 'search' => 'آزمون']))
+            ->assertOk()
+            ->assertSee('dir="rtl"', false);
+    }
+
+    public static function paginatedAdminPageProvider(): array
+    {
+        return [
+            'pages' => ['admin.pages.index'],
+            'posts' => ['admin.posts.index'],
+            'media' => ['admin.media.index'],
+            'galleries' => ['admin.galleries.index'],
+            'unions' => ['admin.unions.index'],
+            'users' => ['admin.users.index'],
         ];
     }
 

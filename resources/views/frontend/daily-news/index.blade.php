@@ -17,7 +17,7 @@
             </div>
         </div>
         @include('frontend.partials.daily-news-list', ['posts' => $dailyPosts, 'previousDateParam' => $previousDateParam])
-        {{ $dailyPosts->links('frontend.partials.pagination') }}
+        {{ $dailyPosts->links() }}
     </div>
 </section>
 @endsection

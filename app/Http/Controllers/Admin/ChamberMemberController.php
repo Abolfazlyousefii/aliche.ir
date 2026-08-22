@@ -19,7 +19,7 @@ class ChamberMemberController extends Controller
     public function index(): View
     {
         return view('admin.chamber_members.index', [
-            'members' => ChamberMember::query()->orderBy('sort_order')->latest()->paginate(20),
+            'members' => ChamberMember::query()->orderBy('sort_order')->latest()->paginate(20)->withQueryString(),
         ]);
     }
 

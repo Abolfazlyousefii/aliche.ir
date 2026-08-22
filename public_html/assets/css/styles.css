@@ -10156,3 +10156,26 @@ a.guild-profile-contact-card:active {
     order: 2;
   }
 }
+
+/* Shared Laravel paginator: Bootstrap 5 markup with one RTL ordering contract. */
+.pagination-rtl { direction: rtl; width: 100%; margin-block: 28px 0; }
+.pagination-rtl .pagination { display: flex; flex-flow: row wrap; align-items: center; justify-content: center; gap: 6px; direction: rtl; margin: 0; padding: 0; list-style: none; }
+.pagination-rtl .page-item { display: block; margin: 0; }
+.pagination-rtl .page-link { display: inline-flex; min-width: 38px; min-height: 38px; align-items: center; justify-content: center; gap: 6px; padding: 6px 11px; border: 1px solid rgba(15,35,52,.15); border-radius: 7px; background: #fff; color: var(--color-ink-700,#334155); font: inherit; line-height: 1; text-decoration: none; transition: border-color .16s ease,background-color .16s ease,color .16s ease; }
+.pagination-rtl a.page-link:hover,
+.pagination-rtl a.page-link:focus-visible { border-color: var(--color-primary,#0c74b9); background: #f2f8fc; color: var(--color-primary,#0c74b9); }
+.pagination-rtl a.page-link:focus-visible { outline: 3px solid rgba(12,116,185,.2); outline-offset: 2px; }
+.pagination-rtl .page-item.active .page-link { border-color: var(--color-primary,#0c74b9); background: var(--color-primary,#0c74b9); color: #fff; font-weight: 700; }
+.pagination-rtl .page-item.disabled .page-link { cursor: not-allowed; opacity: .48; background: #f4f6f7; pointer-events: none; }
+.pagination-rtl .pagination-ellipsis { min-width: 24px; padding-inline: 3px; border-color: transparent; background: transparent; }
+.news-archive-page nav.pagination-rtl.news-archive-pagination,
+.announcements-archive-page nav.pagination-rtl.announcements-pagination,
+.guilds-directory-page nav.pagination-rtl.guilds-directory-pagination,
+.systems-directory-page nav.pagination-rtl.systems-directory-pagination,
+.galleries-directory-page nav.pagination-rtl.galleries-directory-pagination { display: block; width: 100%; margin-top: 30px; }
+#latest-news nav.pagination-rtl.latest-news-pagination { display: block; }
+#latest-news .pagination-rtl .latest-news-page-button { width: auto; min-width: 38px; padding-inline: 10px; }
+@media (max-width: 575.98px) {
+  .pagination-rtl .pagination { gap: 4px; }
+  .pagination-rtl .page-link { min-width: 36px; min-height: 36px; padding-inline: 9px; font-size: 12px; }
+}

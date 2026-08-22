@@ -329,8 +329,7 @@
           return;
         }
 
-        setLoading(currentResults, false);
-        showError(currentResults);
+        window.location.assign(requestedUrl.href);
       } finally {
         if (requestId === latestRequestId) {
           activeController = null;
@@ -509,8 +508,7 @@
           window.location.reload();
           return;
         }
-        setLoading(currentResults, false);
-        showError(currentResults);
+        window.location.assign(requestedUrl.href);
       } finally {
         if (requestId === latestRequestId) {
           activeController = null;
@@ -700,8 +698,7 @@
           window.location.reload();
           return;
         }
-        setLoading(currentResults, false);
-        showError(currentResults);
+        window.location.assign(requestedUrl.href);
       } finally {
         if (requestId === latestRequestId) {
           activeController = null;
@@ -909,8 +906,7 @@
           window.location.reload();
           return;
         }
-        setLoading(currentResults, false);
-        showError(currentResults);
+        window.location.assign(requestedUrl.href);
       } finally {
         if (requestId === latestRequestId) {
           activeController = null;
@@ -1124,8 +1120,7 @@
           window.location.reload();
           return;
         }
-        setLoading(currentResults, false);
-        showError(currentResults);
+        window.location.assign(requestedUrl.href);
       } finally {
         if (requestId === latestRequestId) {
           activeController = null;
@@ -2153,10 +2148,7 @@
         qs('#latest-news-title')?.focus({ preventScroll: true });
         qs('#latest-news')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       } catch (error) {
-        if (error.name !== 'AbortError' && status) {
-          status.classList.remove('visually-hidden');
-          status.textContent = 'دریافت اخبار با خطا مواجه شد. دوباره تلاش کنید.';
-        }
+        if (error.name !== 'AbortError') window.location.assign(browserUrl.href);
       } finally {
         if (newsRequest === controller) setNewsLoading(false);
       }

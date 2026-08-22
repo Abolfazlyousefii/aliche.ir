@@ -3,7 +3,7 @@
 @endphp
 
 @if ($paginator->hasPages())
-    <nav class="admin-pagination-wrapper" aria-label="صفحه‌بندی مدیریت" data-admin-pagination>
+    <div class="admin-pagination-wrapper" data-admin-pagination>
         @if (method_exists($paginator, 'firstItem'))
             <div class="admin-pagination-summary">
                 نمایش {{ fa_number($paginator->firstItem()) }} تا {{ fa_number($paginator->lastItem()) }} از {{ fa_number($paginator->total()) }} مورد
@@ -11,23 +11,9 @@
         @endif
 
         <div class="admin-pagination-links">
-            {{ $paginator->onEachSide(1)->links() }}
+            {{ $paginator->onEachSide(1)->links('vendor.pagination.bootstrap-rtl', ['ariaLabel' => 'صفحه‌بندی مدیریت']) }}
         </div>
-
-        <div class="admin-pagination-fallback" aria-label="لینک‌های صفحه قبل و بعد">
-            @if ($paginator->previousPageUrl())
-                <a class="admin-secondary-btn" href="{{ $paginator->previousPageUrl() }}" data-url="{{ $paginator->previousPageUrl() }}" rel="prev">صفحه قبل</a>
-            @else
-                <span class="admin-secondary-btn is-disabled" aria-disabled="true">صفحه قبل</span>
-            @endif
-
-            @if ($paginator->nextPageUrl())
-                <a class="admin-secondary-btn" href="{{ $paginator->nextPageUrl() }}" data-url="{{ $paginator->nextPageUrl() }}" rel="next">صفحه بعد</a>
-            @else
-                <span class="admin-secondary-btn is-disabled" aria-disabled="true">صفحه بعد</span>
-            @endif
-        </div>
-    </nav>
+    </div>
 @elseif (method_exists($paginator, 'total'))
     <div class="admin-pagination-wrapper admin-pagination-wrapper-empty">
         <div class="admin-pagination-summary">نمایش {{ fa_number($paginator->total()) }} مورد</div>

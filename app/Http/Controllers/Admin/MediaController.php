@@ -59,7 +59,7 @@ class MediaController extends Controller
             default => $query->orderByDesc('created_at')->orderByDesc('id'),
         };
 
-        $media = $query->paginate($perPage);
+        $media = $query->paginate($perPage)->withQueryString();
         $items = $media->getCollection()->map(fn (Media $item) => $this->pickerItem($item))->values();
 
         return response()->json([
