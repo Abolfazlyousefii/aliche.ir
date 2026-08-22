@@ -9,7 +9,7 @@
 <div class="admin-wp-media-shell" data-wp-media-library>
     <aside class="admin-wp-upload-panel">
         <form method="POST" action="{{ route('admin.media.store') }}" enctype="multipart/form-data" class="admin-wp-upload" data-media-dropzone>@csrf
-            <input id="mediaFiles" class="admin-wp-upload-input" type="file" name="files[]" accept="image/*" multiple required>
+            <input id="mediaFiles" class="admin-wp-upload-input" type="file" name="files[]" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/jpeg,image/png,image/webp,image/gif,image/avif" multiple required>
             <label for="mediaFiles" class="admin-wp-dropzone">
                 <span class="admin-wp-upload-icon">@include('admin.components.icon', ['name' => 'upload'])</span>
                 <strong>پرونده‌ها را اینجا رها کنید</strong>
@@ -30,11 +30,11 @@
         <div class="admin-wp-media-grid">
             @forelse($media as $item)
                 <article class="admin-wp-media-tile" tabindex="0" data-media-tile data-id="{{ $item->id }}">
-                    <img src="{{ $item->url }}" alt="{{ $item->alt_text ?: $item->title }}">
+                    <img src="{{ $item->url }}" alt="{{ $item->alt_text ?: $item->title ?: $item->original_name }}" loading="lazy" decoding="async" @if($item->srcset) srcset="{{ $item->srcset }}" sizes="200px" @endif @if($item->width && $item->height) width="{{ $item->width }}" height="{{ $item->height }}" @endif>
                     <button class="admin-wp-media-check" type="button" aria-label="انتخاب رسانه">✓</button>
                     <div class="admin-wp-media-title">{{ $item->title ?: $item->original_name }}</div>
                     <template data-media-details>
-                        <div class="admin-wp-attachment-preview"><img src="{{ $item->url }}" alt="{{ $item->alt_text ?: $item->title }}"></div>
+                        <div class="admin-wp-attachment-preview"><img src="{{ $item->url }}" alt="{{ $item->alt_text ?: $item->title ?: $item->original_name }}" decoding="async" @if($item->width && $item->height) width="{{ $item->width }}" height="{{ $item->height }}" @endif></div>
                         <div class="admin-wp-attachment-fields">
                             <h3>{{ $item->title ?: $item->original_name }}</h3>
                             <p dir="ltr" class="text-muted">{{ $item->path }}</p>

@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
+use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\System;
+use App\Rules\SafeImageUpload;
+use App\Services\ContentApprovalService;
+use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -16,6 +19,7 @@ use Illuminate\View\View;
 class SystemController extends Controller
 {
     use SelectsMedia;
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search'));
@@ -125,11 +129,11 @@ class SystemController extends Controller
             'description' => ['nullable', 'string'],
             'short_description' => ['nullable', 'string', 'max:1000'],
             'icon' => ['nullable', 'string', 'max:255'],
-            'image' => ['nullable', 'image', 'max:4096'],
+            'image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'link' => ['nullable', 'url', 'max:500'],
             'category_id' => ['nullable', 'exists:categories,id'],
             'target' => ['required', Rule::in(System::TARGETS)],
-            'status' => ['required', Rule::in(app(\App\Services\ContentApprovalService::class)->allowedStatusesFor($request->user(), ['systems.approve', 'systems.publish']))],
+            'status' => ['required', Rule::in(app(ContentApprovalService::class)->allowedStatusesFor($request->user(), ['systems.approve', 'systems.publish']))],
             'published_at' => ['nullable', 'date'],
             'rejected_reason' => ['nullable', 'required_if:status,rejected', 'string', 'max:1000'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
@@ -176,7 +180,7 @@ class SystemController extends Controller
 
     private function uniqueSlug(string $value, ?System $system = null): string
     {
-        return app(\App\Services\SlugService::class)->unique(System::class, $value, $system?->id, 'slug', strtolower(class_basename(System::class)));
+        return app(SlugService::class)->unique(System::class, $value, $system?->id, 'slug', strtolower(class_basename(System::class)));
 
         $baseSlug = Str::slug($value) ?: Str::random(8);
         $slug = $baseSlug;

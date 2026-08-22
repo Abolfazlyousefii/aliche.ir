@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Models\Media;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 class ImportExistingMedia extends Command
 {
@@ -16,58 +15,57 @@ class ImportExistingMedia extends Command
     public function handle(): int
     {
         $roots = [
-            'storage/app/public' => 'public',
-            'public/media-files' => 'public',
-            'public/uploads' => 'public',
-            'public/images' => 'public',
-            'public/assets/img' => 'public',
-            'uploads/news' => 'public',
-            'storage' => 'public',
+            [storage_path('app/public'), ''],
+            [public_path('storage'), ''],
+            [public_path('media-files'), ''],
+            [public_path('uploaded-media'), ''],
+            [base_path('public_html/storage'), ''],
+            [base_path('public_html/media-files'), ''],
+            [base_path('public_html/uploaded-media'), ''],
+            [base_path('public_html/public_html/storage'), ''],
+            [base_path('public_html/public_html/media-files'), ''],
+            [public_path('assets/img'), 'assets/img'],
         ];
 
         $checked = 0;
         $imported = 0;
         $dupes = 0;
 
-        foreach ($roots as $root => $disk) {
-            $abs = base_path($root);
-
-            if (! is_dir($abs)) {
+        foreach ($roots as [$root, $prefix]) {
+            if (! is_dir($root)) {
                 continue;
             }
 
-            foreach (File::allFiles($abs) as $file) {
-                $ext = strtolower($file->getExtension());
-
-                if (! in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'], true)) {
+            foreach (File::allFiles($root) as $file) {
+                $extension = strtolower($file->getExtension());
+                if (! in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif', 'bmp', 'svg'], true)) {
                     continue;
                 }
 
                 $checked++;
-                $path = str_starts_with($root, 'storage/app/public')
-                    ? Str::after($file->getPathname(), storage_path('app/public').DIRECTORY_SEPARATOR)
-                    : '/'.Str::after($file->getPathname(), public_path().DIRECTORY_SEPARATOR);
-                $path = str_replace('\\', '/', $path);
+                $relative = str_replace('\\', '/', $file->getRelativePathname());
+                $path = trim($prefix.'/'.$relative, '/');
                 $hash = hash_file('sha256', $file->getPathname());
 
-                if (Media::where('path', $path)->orWhere('hash', $hash)->exists()) {
+                if (Media::query()->where('path', $path)->orWhere('hash', $hash)->exists()) {
                     $dupes++;
+
                     continue;
                 }
 
                 [$width, $height] = @getimagesize($file->getPathname()) ?: [null, null];
 
-                Media::create([
+                Media::query()->create([
                     'file_name' => $file->getFilename(),
                     'original_name' => $file->getFilename(),
                     'path' => $path,
-                    'disk' => $disk,
+                    'disk' => 'public',
                     'mime_type' => File::mimeType($file->getPathname()),
-                    'extension' => $ext,
+                    'extension' => $extension,
                     'size' => $file->getSize(),
                     'width' => $width,
                     'height' => $height,
-                    'title' => $file->getBasename('.'.$ext),
+                    'title' => $file->getBasename('.'.$extension),
                     'hash' => $hash,
                 ]);
 

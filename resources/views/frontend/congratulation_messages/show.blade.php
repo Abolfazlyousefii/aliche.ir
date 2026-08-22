@@ -32,7 +32,7 @@
         <aside class="news-sidebar congratulation-sidebar">
             <div class="news-sidebar-card congratulation-manager-card">
                 @if($message->manager_image)
-                    <img src="{{ Storage::url($message->manager_image) }}" alt="{{ $message->manager_name ?: $message->title }}" class="congratulation-manager-image mb-3">
+                    <img src="{{ image_url($message->manager_image) }}" alt="{{ $message->manager_name ?: $message->title }}" class="congratulation-manager-image mb-3" loading="eager" decoding="async">
                 @endif
                 <div class="congratulation-manager-info">
                     <h4>{{ $message->manager_name ?: 'مدیر اصناف' }}</h4>

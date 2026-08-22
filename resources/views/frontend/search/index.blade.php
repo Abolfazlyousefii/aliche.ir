@@ -38,7 +38,7 @@
               <div class="col-md-6">
                 <a class="related-post-item" href="{{ $item['url'] }}">
                   <div class="related-post-thumb">
-                    @if ($item['image'])<img src="{{ Storage::url($item['image']) }}" alt="{{ $item['title'] }}" loading="lazy">@else<span style="font-size:1.8rem">🔎</span>@endif
+                    @if ($item['image'])<img src="{{ image_url($item['image']) }}" alt="{{ $item['title'] }}" loading="lazy" decoding="async">@else<span style="font-size:1.8rem">🔎</span>@endif
                   </div>
                   <div><strong>{{ $item['title'] }}</strong><span>{{ $item['type'] }}</span><p>{{ $item['summary'] ?: 'خلاصه‌ای برای این نتیجه ثبت نشده است.' }}</p></div>
                 </a>

@@ -111,7 +111,7 @@
                 <div class="guild-profile-hero__identity {{ $union->logo ? '' : 'guild-profile-hero__identity--fallback' }}">
                     <div class="guild-profile-emblem {{ $union->logo ? '' : 'guild-profile-emblem--fallback' }}" data-guild-profile-image-wrap>
                         @if($union->logo)
-                            <img src="{{ $assetImage($union->logo, '') }}" alt="لوگوی {{ $union->display_title }}" data-guild-profile-optional-image>
+                            <img src="{{ $assetImage($union->logo, '') }}" alt="لوگوی {{ $union->display_title }}" loading="eager" decoding="async" data-guild-profile-optional-image>
                         @endif
                         <span @if($union->logo) hidden @endif data-guild-profile-image-fallback>{{ $initial($union->display_title) }}</span>
                     </div>
@@ -217,7 +217,7 @@
                     <div class="guild-profile-manager">
                         <div class="guild-profile-manager__avatar" data-guild-profile-image-wrap>
                             @if($union->manager_image)
-                                <img src="{{ $assetImage($union->manager_image, '') }}" alt="{{ $union->manager_name }}" data-guild-profile-optional-image>
+                                <img src="{{ $assetImage($union->manager_image, '') }}" alt="{{ $union->manager_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
                             @endif
                             <span @if($union->manager_image) hidden @endif data-guild-profile-image-fallback>{{ $initial($union->manager_name) }}</span>
                             <small>رئیس اتحادیه</small>
@@ -295,7 +295,7 @@
                         @foreach($posts->take(6) as $post)
                             <article class="guild-profile-post">
                                 <a href="{{ route('posts.show', $post->slug) }}">
-                                    <div class="guild-profile-post__media"><img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}" loading="lazy"></div>
+                                    <div class="guild-profile-post__media"><img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}" loading="lazy" decoding="async"></div>
                                     <div class="guild-profile-post__body"><span>{{ jalali_date($post->published_at) ?: 'بدون تاریخ' }}</span><h3>{{ $post->title }}</h3>@if($post->summary)<p>{{ $post->summary }}</p>@endif</div>
                                 </a>
                             </article>
@@ -309,7 +309,7 @@
                     <header class="guild-profile-section__head"><div><span>دانش صنفی</span><h2>مقاله‌ها و مطالب آموزشی</h2></div></header>
                     <div class="guild-profile-posts guild-profile-posts--compact">
                         @foreach($articles->take(6) as $article)
-                            <article class="guild-profile-post"><a href="{{ route('posts.show', $article->slug) }}"><div class="guild-profile-post__media"><img src="{{ $article->featured_image_url }}" alt="{{ $article->title }}" loading="lazy"></div><div class="guild-profile-post__body"><span>مقاله آموزشی</span><h3>{{ $article->title }}</h3>@if($article->summary)<p>{{ $article->summary }}</p>@endif</div></a></article>
+                            <article class="guild-profile-post"><a href="{{ route('posts.show', $article->slug) }}"><div class="guild-profile-post__media"><img src="{{ $article->featured_image_url }}" alt="{{ $article->title }}" loading="lazy" decoding="async"></div><div class="guild-profile-post__body"><span>مقاله آموزشی</span><h3>{{ $article->title }}</h3>@if($article->summary)<p>{{ $article->summary }}</p>@endif</div></a></article>
                         @endforeach
                     </div>
                 </section>
@@ -319,7 +319,7 @@
                 <section class="guild-profile-section" id="guild-prices" data-guild-profile-section>
                     <header class="guild-profile-section__head"><div><span>اطلاعات قیمت</span><h2>نرخ‌نامه اختصاصی اتحادیه</h2></div></header>
                     @if(($union->price_list_mode ?? 'table') === 'image' && $union->price_list_image)
-                        <a class="guild-profile-price-image" href="{{ $assetImage($union->price_list_image, '') }}" target="_blank" rel="noopener noreferrer"><img src="{{ $assetImage($union->price_list_image, '') }}" alt="نرخ‌نامه {{ $union->display_title }}"></a>
+                        <a class="guild-profile-price-image" href="{{ $assetImage($union->price_list_image, '') }}" target="_blank" rel="noopener noreferrer"><img src="{{ $assetImage($union->price_list_image, '') }}" alt="نرخ‌نامه {{ $union->display_title }}" loading="lazy" decoding="async"></a>
                     @else
                         <div class="guild-profile-table-wrap"><table class="guild-profile-table"><thead><tr><th>عنوان</th><th>نوع</th><th>قیمت</th><th>بروزرسانی</th></tr></thead><tbody>@foreach($union->prices as $price)<tr><td>{{ $price->title }}</td><td>{{ $price->type ?: 'عمومی' }}</td><td>{{ $price->price ? fa_number(number_format((float)$price->price)).' '.$price->currency : 'اعلام نشده' }}</td><td>{{ $price->updated_on ? jalali_date($price->updated_on) : '—' }}</td></tr>@endforeach</tbody></table></div>
                     @endif
@@ -377,10 +377,10 @@
                     <header class="guild-profile-section__head"><div><span>رسانه‌های اتحادیه</span><h2>گالری تصاویر و ویدئوها</h2></div></header>
                     <div class="guild-profile-gallery">
                         @if($showGalleries)
-                            @foreach($union->galleries->take(6) as $gallery)<a href="{{ route('galleries.show', $gallery->slug) }}"><img src="{{ $gallery->cover_image_url }}" alt="{{ $gallery->title }}" loading="lazy"><span>{{ $gallery->title }}</span></a>@endforeach
+                            @foreach($union->galleries->take(6) as $gallery)<a href="{{ route('galleries.show', $gallery->slug) }}"><img src="{{ $gallery->cover_image_url }}" alt="{{ $gallery->title }}" loading="lazy" decoding="async"><span>{{ $gallery->title }}</span></a>@endforeach
                         @endif
                         @if($showVideos)
-                            @foreach($union->videos->take(6) as $video)<a href="{{ route('videos.show', $video->slug) }}" class="is-video"><img src="{{ $assetImage($video->cover_image) }}" alt="{{ $video->title }}" loading="lazy"><span>{{ $video->title }}</span></a>@endforeach
+                            @foreach($union->videos->take(6) as $video)<a href="{{ route('videos.show', $video->slug) }}" class="is-video"><img src="{{ $assetImage($video->cover_image) }}" alt="{{ $video->title }}" loading="lazy" decoding="async"><span>{{ $video->title }}</span></a>@endforeach
                         @endif
                     </div>
                 </section>

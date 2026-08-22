@@ -40,7 +40,7 @@
         </div>
       </div>
       <figure class="tourism-directory-intro-media">
-        <img src="{{ $introImageUrl }}" alt="نمایی از جاذبه‌های گردشگری گرگان" decoding="async">
+        <img src="{{ $introImageUrl }}" alt="نمایی از جاذبه‌های گردشگری گرگان" loading="eager" fetchpriority="high" decoding="async">
       </figure>
     </div>
   </section>

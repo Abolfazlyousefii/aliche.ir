@@ -5,7 +5,7 @@
 @endphp
 <article class="latest-news-card">
 <a class="latest-news-thumb-link" href="{{ $postUrl }}">
-<img loading="lazy" src="{{ $post->featured_image_url }}" alt="{{ $post->title }}">
+<img loading="lazy" decoding="async" src="{{ $post->featured_image_url }}" alt="{{ $post->featuredMedia?->alt_text ?: $post->title }}" @if($post->featuredMedia?->srcset) srcset="{{ $post->featuredMedia->srcset }}" sizes="(max-width: 768px) 100vw, 400px" @endif @if($post->featuredMedia?->width && $post->featuredMedia?->height) width="{{ $post->featuredMedia->width }}" height="{{ $post->featuredMedia->height }}" @endif>
 @if(filled($post->category_title))
 <span class="latest-news-category">{{ $post->category_title }}</span>
 @endif

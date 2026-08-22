@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
+use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Media;
 use App\Models\TourismPlace;
+use App\Rules\SafeImageUpload;
+use App\Services\ContentApprovalService;
 use App\Services\MediaLibraryService;
+use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +21,7 @@ use Illuminate\View\View;
 class TourismPlaceController extends Controller
 {
     use SelectsMedia;
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search'));
@@ -147,12 +151,12 @@ class TourismPlaceController extends Controller
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('tourism_places', 'slug')->ignore($place?->id)],
             'description' => ['nullable', 'string'],
             'short_description' => ['nullable', 'string', 'max:1000'],
-            'featured_image' => ['nullable', 'image', 'max:4096'],
+            'featured_image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'gallery_images' => ['nullable', 'array'],
-            'gallery_images.*' => ['image', 'max:4096'],
+            'gallery_images.*' => ['bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'category_id' => ['nullable', 'exists:categories,id'],
             'badge' => ['nullable', 'string', 'max:255'],
-            'image' => ['nullable', 'image', 'max:4096'],
+            'image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'location' => ['nullable', 'string', 'max:255'],
             'tourism_type' => ['required', Rule::in(TourismPlace::TYPES)],
             'address' => ['nullable', 'string'],
@@ -162,7 +166,7 @@ class TourismPlaceController extends Controller
             'phone' => ['nullable', 'string', 'max:255'],
             'working_hours' => ['nullable', 'string', 'max:255'],
             'visit_price' => ['nullable', 'string', 'max:255'],
-            'status' => ['required', Rule::in(app(\App\Services\ContentApprovalService::class)->allowedStatusesFor($request->user(), ['tourism.approve', 'tourism.publish']))],
+            'status' => ['required', Rule::in(app(ContentApprovalService::class)->allowedStatusesFor($request->user(), ['tourism.approve', 'tourism.publish']))],
             'published_at' => ['nullable', 'date'],
             'rejected_reason' => ['nullable', 'required_if:status,rejected', 'string'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
@@ -294,7 +298,7 @@ class TourismPlaceController extends Controller
 
     private function uniqueSlug(string $value, ?TourismPlace $place = null): string
     {
-        return app(\App\Services\SlugService::class)->unique(TourismPlace::class, $value, $place?->id, 'slug', strtolower(class_basename(TourismPlace::class)));
+        return app(SlugService::class)->unique(TourismPlace::class, $value, $place?->id, 'slug', strtolower(class_basename(TourismPlace::class)));
 
         $baseSlug = Str::slug($value) ?: Str::random(8);
         $slug = $baseSlug;

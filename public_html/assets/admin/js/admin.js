@@ -278,6 +278,174 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     const pickerUrl = window.adminMediaPickerUrl;
 
+    if (!pickerUrl) return;
+    window.adminEnhancedMediaPicker = true;
+
+    const uploadUrl = window.adminMediaUploadUrl;
+    const escapeHtml = (value) => {
+        const node = document.createElement('div');
+        node.textContent = value ?? '';
+        return node.innerHTML;
+    };
+    const formatSize = (bytes) => {
+        const value = Number(bytes || 0);
+        if (!value) return 'نامشخص';
+        const units = ['بایت', 'کیلوبایت', 'مگابایت', 'گیگابایت'];
+        const unit = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1);
+        return `${(value / (1024 ** unit)).toLocaleString('fa-IR', { maximumFractionDigits: 1 })} ${units[unit]}`;
+    };
+    const state = {
+        items: new Map(), page: 0, lastPage: 1, total: 0, loading: false,
+        search: '', type: 'all', sort: 'newest', controller: null, active: null, selected: new Map(),
+    };
+    let searchTimer;
+
+    const modal = document.createElement('div');
+    modal.className = 'admin-wp-media-modal';
+    modal.dataset.adminEnhancedMediaPickerModal = '';
+    modal.hidden = true;
+    modal.innerHTML = `
+        <div class="admin-wp-modal-backdrop" data-picker-close></div>
+        <section class="admin-wp-modal-dialog admin-media-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="adminMediaPickerTitle">
+            <header class="admin-media-picker-header"><strong id="adminMediaPickerTitle">انتخاب تصویر از کتابخانه</strong><button type="button" data-picker-close aria-label="بستن">×</button></header>
+            <div class="admin-media-picker-body">
+                <main class="admin-media-picker-main">
+                    <form class="admin-picker-upload" data-picker-upload>
+                        <input id="adminPickerFiles" class="admin-wp-upload-input" name="files[]" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+                        <label class="admin-picker-dropzone" for="adminPickerFiles"><strong>فایل‌ها را اینجا رها کنید یا انتخاب کنید</strong><small>JPG، PNG، WebP و GIF</small></label>
+                        <div class="admin-picker-upload-actions"><span data-picker-upload-status>آمادهٔ آپلود</span><button class="admin-secondary-btn" type="submit">آپلود</button></div>
+                        <div class="admin-picker-progress" data-picker-progress hidden><span></span></div>
+                    </form>
+                    <div class="admin-picker-toolbar">
+                        <input class="form-control" type="search" placeholder="جست‌وجو در عنوان، نام فایل، متن جایگزین و توضیح…" data-picker-search>
+                        <select class="form-select" data-picker-type><option value="all">همه تصاویر</option><option value="webp">WebP</option><option value="png">PNG</option><option value="jpg">JPG</option><option value="gif">GIF</option></select>
+                        <select class="form-select" data-picker-sort><option value="newest">جدیدترین</option><option value="oldest">قدیمی‌ترین</option><option value="largest">بزرگ‌ترین حجم</option><option value="smallest">کوچک‌ترین حجم</option></select>
+                    </div>
+                    <div class="media-picker-grid" data-picker-grid tabindex="0"><div class="admin-picker-items" data-picker-items></div><div class="admin-picker-load-state" data-picker-state></div><div data-picker-sentinel></div></div>
+                </main>
+                <aside class="admin-media-picker-sidebar"><strong>جزئیات تصویر</strong><div class="admin-media-picker-preview" data-picker-preview><span>یک تصویر انتخاب کنید.</span></div></aside>
+            </div>
+            <footer class="admin-media-picker-footer"><span data-picker-count>هنوز تصویری بارگذاری نشده است.</span><button class="admin-primary-btn" type="button" data-picker-apply disabled>انتخاب تصویر</button></footer>
+        </section>`;
+    document.body.appendChild(modal);
+
+    const grid = modal.querySelector('[data-picker-grid]');
+    const itemsNode = modal.querySelector('[data-picker-items]');
+    const stateNode = modal.querySelector('[data-picker-state]');
+    const preview = modal.querySelector('[data-picker-preview]');
+    const applyButton = modal.querySelector('[data-picker-apply]');
+    const countNode = modal.querySelector('[data-picker-count]');
+
+    const selectedItems = () => [...(state.active?.selectedIds || [])].map((id) => state.items.get(String(id)) || state.selected.get(String(id))).filter(Boolean);
+    const renderPreview = () => {
+        const chosen = selectedItems();
+        preview.innerHTML = chosen.length ? chosen.map((item) => `
+            <article class="admin-picker-detail"><img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.alt || '')}" loading="lazy" decoding="async"><dl>
+            <dt>نام فایل</dt><dd>${escapeHtml(item.original_name || item.title)}</dd><dt>حجم</dt><dd>${formatSize(item.size)}</dd>
+            <dt>ابعاد</dt><dd>${item.width && item.height ? `${Number(item.width).toLocaleString('fa-IR')} × ${Number(item.height).toLocaleString('fa-IR')}` : 'نامشخص'}</dd>
+            <dt>نوع</dt><dd>${escapeHtml(item.mime_type || 'نامشخص')}</dd><dt>تاریخ آپلود</dt><dd>${item.uploaded_at ? new Date(item.uploaded_at).toLocaleDateString('fa-IR') : 'نامشخص'}</dd>
+            <dt>آپلودکننده</dt><dd>${escapeHtml(item.uploader || 'نامشخص')}</dd></dl></article>`).join('') : '<span>یک تصویر انتخاب کنید.</span>';
+        applyButton.disabled = chosen.length === 0;
+    };
+    const renderItems = () => {
+        itemsNode.innerHTML = [...state.items.values()].map((item) => {
+            const selected = state.active?.selectedIds.has(String(item.id));
+            return `<button class="admin-wp-media-tile${selected ? ' is-selected' : ''}" type="button" data-picker-item="${escapeHtml(item.id)}" aria-pressed="${selected ? 'true' : 'false'}"><img src="${escapeHtml(item.thumbnail || item.url)}" alt="${escapeHtml(item.alt || item.title || '')}" loading="lazy" decoding="async"><span class="admin-wp-media-check" aria-hidden="true">✓</span><span class="admin-wp-media-title">${escapeHtml(item.title || item.original_name || 'تصویر')}</span></button>`;
+        }).join('');
+        countNode.textContent = `${state.items.size.toLocaleString('fa-IR')} از ${state.total.toLocaleString('fa-IR')} تصویر`;
+        stateNode.textContent = state.loading ? 'در حال دریافت تصاویر…' : (state.page >= state.lastPage ? (state.items.size ? 'پایان کتابخانه' : 'تصویری پیدا نشد.') : 'برای دریافت تصاویر بیشتر پیمایش کنید.');
+        renderPreview();
+    };
+    const loadPage = async (page, reset = false) => {
+        if (state.loading && !reset) return;
+        if (!reset && page > state.lastPage) return;
+        if (reset) state.controller?.abort();
+        const controller = new AbortController();
+        state.controller = controller;
+        state.loading = true;
+        if (reset) { state.items.clear(); state.page = 0; state.lastPage = 1; }
+        renderItems();
+        const params = new URLSearchParams({ page, per_page: 24, search: state.search, type: state.type, sort: state.sort });
+        try {
+            const response = await fetch(`${pickerUrl}?${params}`, { credentials: 'same-origin', headers: { Accept: 'application/json' }, signal: controller.signal });
+            if (!response.ok) throw new Error(response.status === 403 ? 'اجازهٔ مشاهدهٔ کتابخانه را ندارید.' : 'دریافت تصاویر ناموفق بود.');
+            const payload = await response.json();
+            (payload.data || payload.items || []).forEach((item) => state.items.set(String(item.id), item));
+            state.page = Number(payload.current_page || page); state.lastPage = Number(payload.last_page || 1); state.total = Number(payload.total || state.items.size);
+        } catch (error) {
+            if (error.name !== 'AbortError') stateNode.textContent = error.message;
+        } finally {
+            if (state.controller === controller) { state.loading = false; renderItems(); }
+        }
+    };
+    const resetAndLoad = () => loadPage(1, true);
+    const close = () => { modal.hidden = true; state.controller?.abort(); document.body.classList.remove('admin-picker-open'); };
+    const openPicker = ({ multiple = false, selectedIds = [], onApply }) => {
+        state.active = { multiple, selectedIds: new Set(selectedIds.map(String).filter(Boolean)), onApply };
+        state.search = ''; state.type = 'all'; state.sort = 'newest';
+        modal.querySelector('[data-picker-search]').value = ''; modal.querySelector('[data-picker-type]').value = 'all'; modal.querySelector('[data-picker-sort]').value = 'newest';
+        modal.hidden = false; document.body.classList.add('admin-picker-open'); resetAndLoad();
+    };
+    window.adminOpenMediaPicker = openPicker;
+
+    modal.querySelectorAll('[data-picker-close]').forEach((node) => node.addEventListener('click', close));
+    modal.addEventListener('keydown', (event) => { if (event.key === 'Escape') close(); });
+    itemsNode.addEventListener('click', (event) => {
+        const tile = event.target.closest('[data-picker-item]'); if (!tile || !state.active) return;
+        const id = tile.dataset.pickerItem;
+        if (state.active.multiple) state.active.selectedIds.has(id) ? state.active.selectedIds.delete(id) : state.active.selectedIds.add(id);
+        else state.active.selectedIds = state.active.selectedIds.has(id) ? new Set() : new Set([id]);
+        if (state.active.selectedIds.has(id)) state.selected.set(id, state.items.get(id));
+        else state.selected.delete(id);
+        renderItems();
+    });
+    applyButton.addEventListener('click', () => { if (!state.active) return; state.active.onApply([...state.active.selectedIds]); close(); });
+    modal.querySelector('[data-picker-search]').addEventListener('input', (event) => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.search = event.target.value.trim(); resetAndLoad(); }, 300); });
+    modal.querySelector('[data-picker-type]').addEventListener('change', (event) => { state.type = event.target.value; resetAndLoad(); });
+    modal.querySelector('[data-picker-sort]').addEventListener('change', (event) => { state.sort = event.target.value; resetAndLoad(); });
+    new IntersectionObserver((entries) => { if (!modal.hidden && entries[0].isIntersecting && !state.loading && state.page < state.lastPage) loadPage(state.page + 1); }, { root: grid, rootMargin: '160px' }).observe(modal.querySelector('[data-picker-sentinel]'));
+
+    const uploadForm = modal.querySelector('[data-picker-upload]');
+    const uploadInput = uploadForm.querySelector('input[type="file"]');
+    const dropzone = uploadForm.querySelector('.admin-picker-dropzone');
+    ['dragenter', 'dragover'].forEach((name) => dropzone.addEventListener(name, (event) => { event.preventDefault(); dropzone.classList.add('is-dragover'); }));
+    ['dragleave', 'drop'].forEach((name) => dropzone.addEventListener(name, (event) => { event.preventDefault(); dropzone.classList.remove('is-dragover'); }));
+    dropzone.addEventListener('drop', (event) => { uploadInput.files = event.dataTransfer.files; uploadForm.requestSubmit(); });
+    uploadForm.addEventListener('submit', (event) => {
+        event.preventDefault(); if (!uploadUrl || !uploadInput.files.length) return;
+        const status = uploadForm.querySelector('[data-picker-upload-status]'); const progress = uploadForm.querySelector('[data-picker-progress]'); const bar = progress.querySelector('span');
+        const body = new FormData(); [...uploadInput.files].forEach((file) => body.append('files[]', file));
+        const xhr = new XMLHttpRequest(); xhr.open('POST', uploadUrl); xhr.responseType = 'json'; xhr.setRequestHeader('Accept', 'application/json'); xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]')?.content || '');
+        progress.hidden = false; bar.style.width = '0%'; status.textContent = 'در حال آپلود…';
+        xhr.upload.onprogress = (e) => { if (e.lengthComputable) bar.style.width = `${Math.round(e.loaded / e.total * 100)}%`; };
+        xhr.onload = () => { const uploaded = xhr.response?.items || []; if (xhr.status < 200 || xhr.status >= 300) { status.textContent = xhr.response?.message || 'آپلود ناموفق بود.'; return; } uploaded.forEach((item) => { state.items.set(String(item.id), item); state.active?.selectedIds.add(String(item.id)); }); state.total += uploaded.length; uploadInput.value = ''; status.textContent = `${uploaded.length.toLocaleString('fa-IR')} تصویر آپلود شد.`; renderItems(); };
+        xhr.onerror = () => { status.textContent = 'ارتباط هنگام آپلود قطع شد.'; }; xhr.onloadend = () => { setTimeout(() => { progress.hidden = true; }, 600); }; xhr.send(body);
+    });
+
+    document.querySelectorAll('[data-media-select-target]').forEach((button) => button.addEventListener('click', () => {
+        const select = document.getElementById(button.dataset.mediaSelectTarget); if (!select) return;
+        const multiple = button.dataset.mediaSelectMultiple === 'true' || select.multiple;
+        openPicker({ multiple, selectedIds: [...select.selectedOptions].map((option) => option.value), onApply: (ids) => {
+            ids.forEach((id) => { if ([...select.options].some((option) => option.value === id)) return; const item = state.items.get(id); if (!item) return; const option = new Option(item.title || item.original_name || 'تصویر', item.id); option.dataset.url = item.url; select.add(option); select.tomselect?.addOption({ value: id, text: option.text, url: item.url }); });
+            if (select.tomselect) select.tomselect.setValue(multiple ? ids : (ids[0] || ''), true); else [...select.options].forEach((option) => { option.selected = ids.includes(option.value); }); select.dispatchEvent(new Event('change', { bubbles: true }));
+        }});
+    }));
+    document.querySelectorAll('input[type="file"][accept*="image"]:not([data-skip-media-picker])').forEach((input) => {
+        if (!input.name || input.dataset.mediaPickerReady) return; input.dataset.mediaPickerReady = 'true';
+        const multiple = input.multiple || input.name.endsWith('[]'); const base = input.name.replace(/\[\]$/, ''); const hiddenName = multiple ? `${base}_media_ids[]` : `${base}_media_id`;
+        const wrapper = document.createElement('div'); wrapper.className = 'admin-media-picker mt-2'; wrapper.innerHTML = '<button class="admin-secondary-btn" type="button">انتخاب از کتابخانه</button><small class="text-muted d-block mt-2">می‌توانید به‌جای آپلود فایل جدید، تصویر موجود را انتخاب کنید.</small><div class="admin-picker-field-selection"></div>'; input.insertAdjacentElement('afterend', wrapper);
+        const selection = wrapper.querySelector('.admin-picker-field-selection');
+        const renderSelection = (ids) => { selection.innerHTML = ids.map((id) => { const item = state.items.get(id); return item ? `<figure><input type="hidden" name="${escapeHtml(hiddenName)}" value="${escapeHtml(id)}"><img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.alt || '')}"><button type="button" aria-label="حذف">×</button></figure>` : ''; }).join(''); };
+        wrapper.querySelector('button').addEventListener('click', () => openPicker({ multiple, selectedIds: [...selection.querySelectorAll('input')].map((node) => node.value), onApply: renderSelection }));
+        selection.addEventListener('click', (event) => { if (event.target.closest('button')) event.target.closest('figure')?.remove(); });
+    });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const pickerUrl = window.adminMediaPickerUrl;
+
+    if (window.adminEnhancedMediaPicker) return;
+
     if (!pickerUrl) {
         return;
     }

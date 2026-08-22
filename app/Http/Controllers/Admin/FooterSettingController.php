@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
+use App\Http\Controllers\Controller;
+use App\Rules\SafeImageUpload;
 use App\Services\SettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ use Illuminate\View\View;
 class FooterSettingController extends Controller
 {
     use SelectsMedia;
+
     public function edit(SettingService $settings): View
     {
         return view('admin.settings.footer', ['settings' => $settings]);
@@ -21,7 +23,7 @@ class FooterSettingController extends Controller
     public function update(Request $request, SettingService $settings): RedirectResponse
     {
         $validated = $request->validate([
-            'footer_logo' => ['nullable', 'image', 'max:4096'],
+            'footer_logo' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'footer_description' => ['nullable', 'string'],
             'copyright_text' => ['nullable', 'string', 'max:500'],
             'footer_columns' => ['nullable', 'json'],
@@ -81,6 +83,7 @@ class FooterSettingController extends Controller
             return [];
         }
         $decoded = json_decode($value, true);
+
         return is_array($decoded) ? $decoded : [];
     }
 }

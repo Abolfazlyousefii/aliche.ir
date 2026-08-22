@@ -16,7 +16,7 @@
 <article class="guild-directory-card" data-guild-card>
     <div class="guild-directory-card-header">
         <div class="guild-directory-logo {{ $imageUrl ? 'has-image' : 'has-fallback' }}" data-guild-logo-wrap>
-            @if($imageUrl)<img src="{{ $imageUrl }}" alt="{{ $union->display_title }}" loading="lazy" data-guild-logo>@endif
+            @if($imageUrl)<img src="{{ $imageUrl }}" alt="{{ $union->display_title }}" loading="lazy" decoding="async" data-guild-logo>@endif
             <span class="guild-directory-logo-fallback" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M4 21h16M6 21V9h12v12M9 13h2M13 13h2M9 17h2M13 17h2M8 9V5h8v4"/></svg>
             </span>

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Announcement;
+use App\Rules\SafeImageUpload;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,7 +22,7 @@ class StoreAnnouncementRequest extends FormRequest
             'slug' => ['nullable', 'string', 'max:190', 'regex:/^[\p{Arabic}\p{L}\p{N}\-]+$/u', 'unique:announcements,slug'],
             'excerpt' => ['nullable', 'string', 'max:1000'],
             'body' => ['nullable', 'string'],
-            'featured_image' => ['nullable', 'image', 'max:4096'],
+            'featured_image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'featured_image_media_id' => ['nullable', 'integer', 'exists:media,id'],
             'attachment' => ['nullable', 'file', 'max:10240'],
             'category_id' => ['nullable', 'exists:announcement_categories,id'],

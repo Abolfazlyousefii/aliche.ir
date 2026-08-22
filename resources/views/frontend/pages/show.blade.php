@@ -18,7 +18,7 @@
 <main class="blank-page">
 <div class="site-container blank-page-content">
 @if($page->featured_image)
-<img class="post-featured-img" src="{{ image_url($page->featured_image) }}" alt="{{ $page->title }}" loading="lazy">
+<img class="post-featured-img" src="{{ image_url($page->featured_image) }}" alt="{{ $page->title }}" loading="eager" fetchpriority="high" decoding="async" @if(image_srcset($page->featured_image)) srcset="{{ image_srcset($page->featured_image) }}" sizes="100vw" @endif>
 @endif
 @if($page->excerpt)
 <div class="post-excerpt">{!! $page->excerpt !!}</div>

@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
+use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Gallery;
 use App\Models\GalleryImage;
 use App\Models\GuildUnion;
 use App\Models\Media;
+use App\Rules\SafeImageUpload;
+use App\Services\ContentApprovalService;
 use App\Services\MediaLibraryService;
+use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -20,6 +23,7 @@ use Illuminate\View\View;
 class GalleryController extends Controller
 {
     use SelectsMedia;
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search'));
@@ -168,17 +172,17 @@ class GalleryController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('galleries', 'slug')->ignore($gallery?->id)],
             'description' => ['nullable', 'string'],
-            'cover_image' => ['nullable', 'image', 'max:4096'],
+            'cover_image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'category_id' => ['nullable', 'exists:categories,id'],
             'union_id' => ['nullable', 'exists:unions,id'],
             'display_location' => ['required', Rule::in(['home', 'union', 'both'])],
-            'status' => ['required', Rule::in(app(\App\Services\ContentApprovalService::class)->allowedStatusesFor($request->user(), ['galleries.approve', 'galleries.publish']))],
+            'status' => ['required', Rule::in(app(ContentApprovalService::class)->allowedStatusesFor($request->user(), ['galleries.approve', 'galleries.publish']))],
             'published_at' => ['nullable', 'date'],
             'rejected_reason' => ['nullable', 'required_if:status,rejected', 'string'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['required', Rule::in(['0', '1'])],
             'images' => ['nullable', 'array'],
-            'images.*' => ['image', 'max:4096'],
+            'images.*' => ['bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'image_captions' => ['nullable', 'array'],
             'existing_images' => ['nullable', 'array'],
             'gallery_media_ids' => ['nullable', 'array'],
@@ -294,6 +298,7 @@ class GalleryController extends Controller
                 }
 
                 $image->delete();
+
                 continue;
             }
 
@@ -324,7 +329,7 @@ class GalleryController extends Controller
 
     private function uniqueSlug(string $value, ?Gallery $gallery = null): string
     {
-        return app(\App\Services\SlugService::class)->unique(Gallery::class, $value, $gallery?->id, 'slug', strtolower(class_basename(Gallery::class)));
+        return app(SlugService::class)->unique(Gallery::class, $value, $gallery?->id, 'slug', strtolower(class_basename(Gallery::class)));
 
         $baseSlug = Str::slug($value) ?: Str::random(8);
         $slug = $baseSlug;

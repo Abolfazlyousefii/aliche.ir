@@ -16,7 +16,7 @@
                     <article class="news-archive-card">
                         <a class="news-archive-card-link" href="{{ route('posts.show', $post->slug) }}" aria-label="مشاهده خبر: {{ $post->title }}">
                             <div class="news-archive-card-media">
-                                <img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}" loading="lazy" decoding="async">
+                                <img src="{{ $post->featured_image_url }}" alt="{{ $post->featuredMedia?->alt_text ?: $post->title }}" loading="lazy" decoding="async" @if($post->featuredMedia?->srcset) srcset="{{ $post->featuredMedia->srcset }}" sizes="(max-width: 768px) 100vw, 400px" @endif @if($post->featuredMedia?->width && $post->featuredMedia?->height) width="{{ $post->featuredMedia->width }}" height="{{ $post->featuredMedia->height }}" @endif>
                                 @if(filled($badge))<span class="news-archive-card-badge">{{ $badge }}</span>@endif
                             </div>
                             <div class="news-archive-card-content">

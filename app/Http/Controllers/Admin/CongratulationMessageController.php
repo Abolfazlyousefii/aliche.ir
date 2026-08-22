@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
+use App\Http\Controllers\Controller;
 use App\Models\CongratulationMessage;
 use App\Models\GuildUnion;
 use App\Models\SmsLog;
 use App\Models\UnionMember;
 use App\Models\User;
+use App\Rules\SafeImageUpload;
+use App\Services\ContentApprovalService;
+use App\Services\SlugService;
 use App\Services\Sms\SmsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,6 +23,7 @@ use Illuminate\View\View;
 class CongratulationMessageController extends Controller
 {
     use SelectsMedia;
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search'));
@@ -133,11 +137,11 @@ class CongratulationMessageController extends Controller
             'recipient_id' => ['nullable', 'integer'],
             'manager_name' => ['nullable', 'string', 'max:255'],
             'manager_position' => ['nullable', 'string', 'max:255'],
-            'manager_image' => ['nullable', 'image', 'max:4096'],
+            'manager_image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'union_id' => ['nullable', 'exists:unions,id'],
             'show_on_home' => ['required', Rule::in(['0', '1'])],
             'show_on_union_page' => ['required', Rule::in(['0', '1'])],
-            'status' => ['required', Rule::in(app(\App\Services\ContentApprovalService::class)->allowedStatusesFor($request->user(), ['congratulation_messages.approve', 'congratulation_messages.publish']))],
+            'status' => ['required', Rule::in(app(ContentApprovalService::class)->allowedStatusesFor($request->user(), ['congratulation_messages.approve', 'congratulation_messages.publish']))],
             'published_at' => ['nullable', 'date'],
             'rejected_reason' => ['nullable', 'required_if:status,rejected', 'string', 'max:1000'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
@@ -185,8 +189,6 @@ class CongratulationMessageController extends Controller
             'is_active' => (bool) $validated['is_active'],
         ];
     }
-
-
 
     /** @param array<string, mixed> $validated @return array<string, mixed> */
     private function resolveRecipient(array $validated): array
@@ -240,7 +242,7 @@ class CongratulationMessageController extends Controller
 
     private function uniqueSlug(string $value, ?CongratulationMessage $message = null): string
     {
-        return app(\App\Services\SlugService::class)->unique(CongratulationMessage::class, $value, $message?->id, 'slug', strtolower(class_basename(CongratulationMessage::class)));
+        return app(SlugService::class)->unique(CongratulationMessage::class, $value, $message?->id, 'slug', strtolower(class_basename(CongratulationMessage::class)));
 
         $baseSlug = Str::slug($value) ?: Str::random(8);
         $slug = $baseSlug;

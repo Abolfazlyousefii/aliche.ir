@@ -21,7 +21,7 @@
                         <div class="tourism-card">
                             <a href="{{ route('tourism.show', $place->slug) }}">
                                 <div class="tourism-img-wrap">
-                                    <img src="{{ $place->home_image_url }}" alt="{{ $place->title }}" loading="lazy"/>
+                                    <img src="{{ $place->home_image_url }}" alt="{{ $place->title }}" loading="lazy" decoding="async"/>
                                     <div class="tourism-badge">{{ $place->home_badge }}</div>
                                 </div>
                                 <div class="tourism-card-body">
@@ -34,7 +34,7 @@
                     @empty
                         <div class="tourism-card">
                             <div class="tourism-img-wrap">
-                                <img src="{{ asset('assets/img/asnaf-gorgan-default.jpg') }}" alt="موردی موجود نیست" loading="lazy"/>
+                                <img src="{{ asset('assets/img/asnaf-gorgan-default.jpg') }}" alt="موردی موجود نیست" loading="lazy" decoding="async"/>
                                 <div class="tourism-badge">گردشگری</div>
                             </div>
                             <div class="tourism-card-body">

@@ -32,7 +32,7 @@
       <article class="media-card {{ $loop->first ? 'media-card-lg' : '' }}">
         <a href="{{ route('videos.show', $video->slug) }}">
           <div class="tourism-img-wrap">
-            <img alt="{{ $video->title }}" src="{{ image_url($video->cover_image) }}" loading="lazy"/>
+            <img alt="{{ $video->title }}" src="{{ image_url($video->cover_image) }}" loading="lazy" decoding="async"/>
             <div class="tourism-badge">{{ $video->type_label }}</div>
           </div>
           <div class="tourism-card-body">

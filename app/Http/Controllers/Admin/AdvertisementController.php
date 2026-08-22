@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
+use App\Http\Controllers\Controller;
 use App\Models\Advertisement;
 use App\Models\AdvertisementPosition;
+use App\Rules\SafeImageUpload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +16,7 @@ use Illuminate\View\View;
 class AdvertisementController extends Controller
 {
     use SelectsMedia;
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search'));
@@ -110,7 +112,7 @@ class AdvertisementController extends Controller
         return $request->validate([
             'position_id' => ['required', 'exists:advertisement_positions,id'],
             'title' => ['required', 'string', 'max:255'],
-            'image' => [$advertisement ? 'nullable' : 'required_without:image_media_id', 'image', 'max:4096'],
+            'image' => [$advertisement ? 'nullable' : 'required_without:image_media_id', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'image_media_id' => ['nullable', 'integer', 'exists:media,id'],
             'link' => ['nullable', 'url', 'max:500'],
             'target' => ['required', Rule::in(Advertisement::TARGETS)],

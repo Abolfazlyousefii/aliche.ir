@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
+use App\Http\Controllers\Controller;
 use App\Models\Commission;
+use App\Rules\SafeImageUpload;
+use App\Services\ContentApprovalService;
+use App\Services\SlugService;
 use App\Support\PublicStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +19,7 @@ use Illuminate\View\View;
 class CommissionController extends Controller
 {
     use SelectsMedia;
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search'));
@@ -121,12 +125,12 @@ class CommissionController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('commissions', 'slug')->ignore($commission?->id)],
             'description' => ['nullable', 'string'],
-            'image' => ['nullable', 'image', 'max:4096'],
+            'image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'members' => ['nullable', 'string'],
             'attachments' => ['nullable', 'array'],
             'attachments.*' => ['file', 'max:10240'],
             'existing_attachments' => ['nullable', 'array'],
-            'status' => ['required', Rule::in(app(\App\Services\ContentApprovalService::class)->allowedStatusesFor($request->user(), ['commissions.approve', 'commissions.publish']))],
+            'status' => ['required', Rule::in(app(ContentApprovalService::class)->allowedStatusesFor($request->user(), ['commissions.approve', 'commissions.publish']))],
             'published_at' => ['nullable', 'date'],
             'rejected_reason' => ['nullable', 'required_if:status,rejected', 'string', 'max:1000'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
@@ -177,6 +181,7 @@ class CommissionController extends Controller
         $existing = collect($commission->attachments ?? [])->map(function ($file, $index) use ($request) {
             $payload = $request->input("existing_attachments.{$index}", []);
             $file['delete'] = ($payload['delete'] ?? null) === '1';
+
             return $file;
         });
         $existing->where('delete', true)->each(fn ($file) => Storage::disk('public')->delete($file['path'] ?? ''));
@@ -230,7 +235,7 @@ class CommissionController extends Controller
 
     private function uniqueSlug(string $value, ?Commission $commission = null): string
     {
-        return app(\App\Services\SlugService::class)->unique(Commission::class, $value, $commission?->id, 'slug', strtolower(class_basename(Commission::class)));
+        return app(SlugService::class)->unique(Commission::class, $value, $commission?->id, 'slug', strtolower(class_basename(Commission::class)));
 
         $baseSlug = Str::slug($value) ?: Str::random(8);
         $slug = $baseSlug;
@@ -238,6 +243,7 @@ class CommissionController extends Controller
         while (Commission::query()->where('slug', $slug)->when($commission, fn ($query) => $query->whereKeyNot($commission->id))->exists()) {
             $slug = $baseSlug.'-'.$counter++;
         }
+
         return $slug;
     }
 }

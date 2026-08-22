@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
-use App\Models\GuildUnion;
+use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\GuildUnion;
 use App\Models\Video;
+use App\Rules\SafeImageUpload;
+use App\Services\ContentApprovalService;
+use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +21,7 @@ use Illuminate\View\View;
 class VideoController extends Controller
 {
     use SelectsMedia;
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search'));
@@ -160,13 +164,13 @@ class VideoController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('videos', 'slug')->ignore($video?->id)],
             'description' => ['nullable', 'string'],
-            'cover_image' => ['nullable', 'image', 'max:4096'],
+            'cover_image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'video_type' => ['required', Rule::in(Video::VIDEO_TYPES)],
             'video_file' => ['nullable', 'file', 'mimes:mp4,mov,avi,wmv,webm,mkv', 'max:102400'],
             'aparat_url' => ['nullable', 'url', 'max:500'],
             'category_id' => ['nullable', 'exists:categories,id'],
             'union_id' => ['nullable', 'exists:unions,id'],
-            'status' => ['required', Rule::in(app(\App\Services\ContentApprovalService::class)->allowedStatusesFor($request->user(), ['videos.approve', 'videos.publish']))],
+            'status' => ['required', Rule::in(app(ContentApprovalService::class)->allowedStatusesFor($request->user(), ['videos.approve', 'videos.publish']))],
             'published_at' => ['nullable', 'date'],
             'rejected_reason' => ['nullable', 'required_if:status,rejected', 'string'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
@@ -236,7 +240,7 @@ class VideoController extends Controller
 
     private function uniqueSlug(string $value, ?Video $video = null): string
     {
-        return app(\App\Services\SlugService::class)->unique(Video::class, $value, $video?->id, 'slug', strtolower(class_basename(Video::class)));
+        return app(SlugService::class)->unique(Video::class, $value, $video?->id, 'slug', strtolower(class_basename(Video::class)));
 
         $baseSlug = Str::slug($value) ?: Str::random(8);
         $slug = $baseSlug;

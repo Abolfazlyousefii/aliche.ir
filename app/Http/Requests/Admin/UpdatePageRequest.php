@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Page;
+use App\Rules\SafeImageUpload;
+use App\Services\ContentApprovalService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,7 +25,7 @@ class UpdatePageRequest extends FormRequest
             'slug' => ['nullable', 'string', 'max:190', 'regex:/^[\p{Arabic}\p{L}\p{N}\-]+$/u', Rule::unique('pages', 'slug')->ignore($pageId)],
             'excerpt' => ['nullable', 'string', 'max:1000'],
             'body' => ['nullable', 'string'],
-            'featured_image' => ['nullable', 'image', 'max:2048'],
+            'featured_image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'featured_image_media_id' => ['nullable', 'integer', 'exists:media,id'],
             'template' => ['required', 'string', Rule::in(Page::TEMPLATES)],
             'meta_title' => ['nullable', 'string', 'max:190'],
@@ -40,6 +42,6 @@ class UpdatePageRequest extends FormRequest
     /** @return array<int, string> */
     private function allowedStatuses(): array
     {
-        return app(\App\Services\ContentApprovalService::class)->allowedStatusesFor($this->user(), ['pages.approve', 'pages.publish']);
+        return app(ContentApprovalService::class)->allowedStatusesFor($this->user(), ['pages.approve', 'pages.publish']);
     }
 }

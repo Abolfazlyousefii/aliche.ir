@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
+use App\Http\Controllers\Controller;
+use App\Rules\SafeImageUpload;
 use App\Services\SettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ use Illuminate\View\View;
 class SiteSettingController extends Controller
 {
     use SelectsMedia;
+
     public function edit(SettingService $settings): View
     {
         return view('admin.settings.site', ['settings' => $settings]);
@@ -23,8 +25,8 @@ class SiteSettingController extends Controller
         $validated = $request->validate([
             'site_title' => ['nullable', 'string', 'max:255'],
             'site_description' => ['nullable', 'string'],
-            'site_logo' => ['nullable', 'image', 'max:4096'],
-            'site_favicon' => ['nullable', 'image', 'max:1024'],
+            'site_logo' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
+            'site_favicon' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:1024'],
             'default_meta_title' => ['nullable', 'string', 'max:255'],
             'default_meta_description' => ['nullable', 'string'],
             'phone' => ['nullable', 'string', 'max:255'],

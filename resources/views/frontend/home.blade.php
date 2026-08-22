@@ -253,7 +253,7 @@
 @foreach($heroItems as $item)
 <article class="news-card news-card-main swiper-slide">
 <a href="{{ $item['url'] }}">
-<img alt="{{ $item['title'] }}" src="{{ $item['image'] }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}" @if($loop->first) fetchpriority="high" @endif/>
+<img alt="{{ $item['title'] }}" src="{{ $item['image'] }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}" decoding="async" @if($loop->first) fetchpriority="high" @endif/>
 <div class="news-overlay"></div>
 <div class="news-content">
 <span class="news-kicker">{{ $item['kicker'] }}</span>
@@ -273,7 +273,7 @@
 @foreach($sideItems as $item)
 <article class="news-card side-card">
 <a href="{{ $item['url'] }}">
-<img alt="{{ $item['title'] }}" src="{{ $item['image'] }}"/>
+<img alt="{{ $item['title'] }}" src="{{ $item['image'] }}" loading="lazy" decoding="async"/>
 <div class="news-overlay"></div>
 <div class="news-content"><h2>{{ $item['title'] }}</h2></div>
 </a>
@@ -325,9 +325,9 @@
     $sidebarAdImage = $ad->image_url ?? data_get($ad, 'image');
 @endphp
 @if($sidebarAdUrl !== '')
-<a class="latest-news-ad" href="{{ $sidebarAdUrl }}" target="{{ $sidebarAdTarget }}" @if($sidebarAdTarget === '_blank') rel="noopener noreferrer" @endif><img loading="lazy" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}"><span>{{ $sidebarAdTitle }}</span></a>
+<a class="latest-news-ad" href="{{ $sidebarAdUrl }}" target="{{ $sidebarAdTarget }}" @if($sidebarAdTarget === '_blank') rel="noopener noreferrer" @endif><img loading="lazy" decoding="async" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}"><span>{{ $sidebarAdTitle }}</span></a>
 @else
-<div class="latest-news-ad latest-news-ad-placeholder"><img loading="lazy" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}"><span>{{ $sidebarAdTitle }}</span></div>
+<div class="latest-news-ad latest-news-ad-placeholder"><img loading="lazy" decoding="async" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}"><span>{{ $sidebarAdTitle }}</span></div>
 @endif
 @endforeach
 </aside>
@@ -350,13 +350,13 @@
 @endphp
 @if($bannerAdUrl !== '')
 <a class="ad-banner" href="{{ $bannerAdUrl }}" target="{{ $bannerAdTarget }}" @if($bannerAdTarget === '_blank') rel="noopener noreferrer" @endif>
-<img alt="{{ $bannerAdTitle }}" src="{{ $bannerAdImage }}"/>
+<img alt="{{ $bannerAdTitle }}" src="{{ $bannerAdImage }}" loading="lazy" decoding="async"/>
 <div class="ad-banner-overlay"></div>
 <div class="ad-banner-text">{{ $bannerAdTitle }}</div>
 </a>
 @else
 <div class="ad-banner ad-banner-placeholder">
-<img alt="{{ $bannerAdTitle }}" src="{{ $bannerAdImage }}"/>
+<img alt="{{ $bannerAdTitle }}" src="{{ $bannerAdImage }}" loading="lazy" decoding="async"/>
 <div class="ad-banner-overlay"></div>
 <div class="ad-banner-text">{{ $bannerAdTitle }}</div>
 </div>
@@ -404,7 +404,7 @@
 <div class="representative-layout">
 <div class="representative-map" data-union-preview>
 <a class="union-news-preview-card" href="{{ $initialPreviewUrl }}" data-union-preview-link>
-<img alt="{{ $initialPreviewTitle }}" class="map-img" src="{{ $initialPreviewImage }}" data-union-preview-image/>
+<img alt="{{ $initialPreviewTitle }}" class="map-img" src="{{ $initialPreviewImage }}" loading="lazy" decoding="async" data-union-preview-image/>
 <div class="union-news-preview-shade"></div>
 <div class="union-news-preview-copy">
 <span data-union-preview-label>{{ $initialPreviewLabel }}</span>
@@ -440,7 +440,7 @@
 >
 <a href="{{ $unionUrl }}" class="union-home-link">
 <span class="person-avatar avatar-{{ ($loop->iteration % 6) + 1 }}">
-<img src="{{ $assetImage($unionImage) }}" alt="{{ $union->display_title }}" loading="lazy">
+<img src="{{ $assetImage($unionImage) }}" alt="{{ $union->display_title }}" loading="lazy" decoding="async">
 </span>
 <div>
 <strong>{{ $union->display_title }}</strong>
@@ -552,7 +552,7 @@
 <div class="tourism-card">
 <a href="{{ $placeUrl }}">
 <div class="tourism-img-wrap">
-<img alt="{{ $placeAlt }}" src="{{ $placeImage }}"/>
+<img alt="{{ $placeAlt }}" src="{{ $placeImage }}" loading="lazy" decoding="async"/>
 <div class="tourism-badge">{{ $placeBadge }}</div>
 </div>
 <div class="tourism-card-body">
@@ -584,7 +584,7 @@
       <div class="media-grid">
 @forelse(($latestVideos ?? collect())->take(5) as $video)
       <a href="{{ route('videos.show', $video->slug) }}" class="media-card {{ $loop->first ? 'media-card-lg' : '' }}">
-        <img alt="{{ $video->title }}" src="{{ $assetImage($video->cover_image) }}"/>
+        <img alt="{{ $video->title }}" src="{{ $assetImage($video->cover_image) }}" loading="lazy" decoding="async"/>
         <div class="media-card-overlay"></div>
         <span class="media-play-btn"></span>
         <div class="media-card-footer">
@@ -594,7 +594,7 @@
 @empty
 @foreach($videoFallbacks as $title)
       <a href="{{ $videosUrl }}" class="media-card {{ $loop->first ? 'media-card-lg' : '' }}">
-        <img alt="{{ $title }}" src="{{ $defaultImage }}"/>
+        <img alt="{{ $title }}" src="{{ $defaultImage }}" loading="lazy" decoding="async"/>
         <div class="media-card-overlay"></div>
         <span class="media-play-btn"></span>
         <div class="media-card-footer">
@@ -610,7 +610,7 @@
 <div class="media-grid">
 @forelse(($latestGalleries ?? collect())->take(8) as $gallery)
 <a href="{{ route('galleries.show', $gallery->slug) }}" class="media-card">
-<img alt="{{ $gallery->title }}" src="{{ $gallery->cover_image_url }}"/>
+<img alt="{{ $gallery->title }}" src="{{ $gallery->cover_image_url }}" loading="lazy" decoding="async"/>
 <div class="media-card-overlay"></div>
 <div class="media-card-footer">
 <h3>{{ $gallery->title }}</h3>
@@ -619,7 +619,7 @@
 @empty
 @foreach($galleryFallbacks as $title)
 <a href="{{ $galleriesUrl }}" class="media-card">
-<img alt="{{ $title }}" src="{{ $defaultImage }}"/>
+<img alt="{{ $title }}" src="{{ $defaultImage }}" loading="lazy" decoding="async"/>
 <div class="media-card-overlay"></div>
 <div class="media-card-footer">
 <h3>{{ $title }}</h3>
@@ -650,7 +650,7 @@
 <div class="chamber-member-card-glow"></div>
 <a href="{{ route('chamber-members.index') }}" aria-label="مشاهده معرفی {{ $member->full_name }}">
 <div class="chamber-member-photo-wrap">
-<img alt="{{ $member->full_name }}" src="{{ $member->photo_url }}" onerror="this.onerror=null;this.src='{{ $defaultImage }}';"/>
+<img alt="{{ $member->full_name }}" src="{{ $member->photo_url }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ $defaultImage }}';"/>
 <span class="chamber-member-number">{{ $loop->iteration }}</span>
 </div>
 <div class="chamber-member-body">
@@ -666,7 +666,7 @@
 </article>
 @empty
 <div class="chamber-members-empty">
-<img alt="اعضای هیئت‌مدیره" src="{{ $defaultImage }}"/>
+<img alt="اعضای هیئت‌مدیره" src="{{ $defaultImage }}" loading="lazy" decoding="async"/>
 <div>
 <span class="chamber-member-label">در انتظار تکمیل محتوا</span>
 <h3>هنوز عضوی برای نمایش در صفحه نخست ثبت نشده است.</h3>

@@ -11,22 +11,28 @@ class PublicFileUrlTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        config()->set('filesystems.disks.public.url', '/media-files');
+        config()->set('filesystems.disks.public.url', '/storage');
     }
 
     public function test_plain_storage_path_uses_the_canonical_public_media_prefix(): void
     {
         $url = PublicFileUrl::make('posts/featured/example.jpg');
 
-        $this->assertSame('/media-files/posts/featured/example.jpg', parse_url($url, PHP_URL_PATH));
+        $this->assertSame('/storage/posts/featured/example.jpg', parse_url($url, PHP_URL_PATH));
         $this->assertStringNotContainsString('/media/posts/', $url);
+    }
+
+    public function test_canonical_media_directory_is_not_mistaken_for_the_legacy_media_url(): void
+    {
+        $this->assertSame('media/2026/08/example.webp', PublicFileUrl::normalizeStoragePath('media/2026/08/example.webp'));
+        $this->assertSame('/storage/media/2026/08/example.webp', parse_url(PublicFileUrl::make('media/2026/08/example.webp'), PHP_URL_PATH));
     }
 
     #[DataProvider('localPathProvider')]
     public function test_local_media_variants_normalize_to_one_storage_path(string $input): void
     {
         $this->assertSame('posts/featured/example.jpg', PublicFileUrl::normalizeStoragePath($input));
-        $this->assertSame('/media-files/posts/featured/example.jpg', parse_url(PublicFileUrl::make($input), PHP_URL_PATH));
+        $this->assertSame('/storage/posts/featured/example.jpg', parse_url(PublicFileUrl::make($input), PHP_URL_PATH));
     }
 
     public static function localPathProvider(): array
@@ -45,7 +51,7 @@ class PublicFileUrlTest extends TestCase
         $legacy = 'https://aliche.ir/media/posts/featured/example.jpg';
         $external = 'https://example.org/image.jpg';
 
-        $this->assertSame('/media-files/posts/featured/example.jpg', parse_url(PublicFileUrl::make($legacy), PHP_URL_PATH));
+        $this->assertSame('/storage/posts/featured/example.jpg', parse_url(PublicFileUrl::make($legacy), PHP_URL_PATH));
         $this->assertSame('posts/featured/example.jpg', PublicFileUrl::sameApplicationStoragePath($legacy));
         $this->assertSame($external, PublicFileUrl::make($external));
         $this->assertNull(PublicFileUrl::sameApplicationStoragePath($external));

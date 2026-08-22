@@ -1,44 +1,45 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\AdvertisementController as AdminAdvertisementController;
 use App\Http\Controllers\Admin\AdvertisementPositionController as AdminAdvertisementPositionController;
 use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ChamberMemberController;
+use App\Http\Controllers\Admin\CommissionController as AdminCommissionController;
+use App\Http\Controllers\Admin\CommissionSessionController as AdminCommissionSessionController;
 use App\Http\Controllers\Admin\ComplaintController as AdminComplaintController;
 use App\Http\Controllers\Admin\CongratulationMessageController as AdminCongratulationMessageController;
 use App\Http\Controllers\Admin\ContactMessageController;
-use App\Http\Controllers\Admin\CommissionController as AdminCommissionController;
-use App\Http\Controllers\Admin\CommissionSessionController as AdminCommissionSessionController;
 use App\Http\Controllers\Admin\ElectronicServiceController as AdminElectronicServiceController;
 use App\Http\Controllers\Admin\FooterSettingController;
 use App\Http\Controllers\Admin\GalleryController as AdminGalleryController;
 use App\Http\Controllers\Admin\HeaderSettingController;
 use App\Http\Controllers\Admin\HomeSectionController;
 use App\Http\Controllers\Admin\InternalMessageController;
+use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\MenuItemController;
-use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\PendingApprovalController;
+use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
-use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\RichTextUploadController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SmsController;
 use App\Http\Controllers\Admin\SystemController as AdminSystemController;
 use App\Http\Controllers\Admin\TourismPlaceController as AdminTourismPlaceController;
 use App\Http\Controllers\Admin\UnionController as AdminUnionController;
-use App\Http\Controllers\Admin\UnionTypeController as AdminUnionTypeController;
 use App\Http\Controllers\Admin\UnionMemberController;
-use App\Http\Controllers\Admin\VideoController as AdminVideoController;
+use App\Http\Controllers\Admin\UnionTypeController as AdminUnionTypeController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\VideoController as AdminVideoController;
 use App\Http\Controllers\Frontend\AnnouncementController as FrontendAnnouncementController;
 use App\Http\Controllers\Frontend\ChamberMemberController as FrontendChamberMemberController;
-use App\Http\Controllers\Frontend\ComplaintController as FrontendComplaintController;
 use App\Http\Controllers\Frontend\CommissionController as FrontendCommissionController;
+use App\Http\Controllers\Frontend\ComplaintController as FrontendComplaintController;
 use App\Http\Controllers\Frontend\CongratulationMessageController as FrontendCongratulationMessageController;
 use App\Http\Controllers\Frontend\ContactController as FrontendContactController;
 use App\Http\Controllers\Frontend\DailyNewsController as FrontendDailyNewsController;
@@ -53,10 +54,11 @@ use App\Http\Controllers\Frontend\TourismController as FrontendTourismController
 use App\Http\Controllers\Frontend\UnionController as FrontendUnionController;
 use App\Http\Controllers\Frontend\UnionPresidentController;
 use App\Http\Controllers\Frontend\VideoController as FrontendVideoController;
-use App\Http\Controllers\Admin\PermissionController;
+use App\Support\PublicFileUrl;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
-
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AdminAuthController::class, 'showLoginForm'])->name('login');
@@ -65,20 +67,18 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AdminAuthController::class, 'logout'])->middleware('auth')->name('logout');
 
 $servePublicMedia = function (string $path) {
-    $path = App\Support\PublicFileUrl::normalizeStoragePath($path);
+    $path = PublicFileUrl::normalizeStoragePath($path);
 
     abort_if($path === '' || str_contains($path, '..'), 404);
 
-    $roots = array_unique(array_filter([
-        config('filesystems.disks.public.root'),
-        storage_path('app/public'),
-    ]));
-
-    foreach ($roots as $root) {
+    foreach (PublicFileUrl::storageRoots() as $root) {
         $file = rtrim($root, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$path;
 
         if (is_file($file)) {
-            return response()->file($file);
+            return response()->file($file, [
+                'Cache-Control' => 'public, max-age=31536000, immutable',
+                'X-Content-Type-Options' => 'nosniff',
+            ]);
         }
     }
 
@@ -86,14 +86,17 @@ $servePublicMedia = function (string $path) {
     $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
     if (in_array($extension, ['avif', 'gif', 'jpeg', 'jpg', 'png', 'webp'], true) && is_file($fallback)) {
-        return response()->file($fallback);
+        return response()->file($fallback, [
+            'Cache-Control' => 'public, max-age=86400',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     abort(404);
 };
 
 Route::get('/media/{path}', function (string $path) {
-    $path = App\Support\PublicFileUrl::normalizeStoragePath($path);
+    $path = PublicFileUrl::normalizeStoragePath($path);
 
     abort_if($path === '', 404);
 
@@ -106,9 +109,7 @@ Route::get('/storage/assets/{path}', function (string $path) {
     return redirect()->to(asset('assets/'.$path));
 })->where('path', '.*')->name('storage.assets.fallback');
 
-Route::get('/storage/{path}', function (string $path) {
-    return redirect()->route('media.public', ['path' => $path]);
-})->where('path', '.*')->name('storage.public.fallback');
+Route::get('/storage/{path}', $servePublicMedia)->where('path', '.*')->name('storage.public.fallback');
 
 Route::get('/', [FrontendHomeController::class, 'index'])->name('home');
 Route::get('/home/latest-news', [FrontendHomeController::class, 'latestNews'])
@@ -402,7 +403,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::put('permissions/{permission}', [PermissionController::class, 'update'])->middleware('permission:permissions.edit')->name('permissions.update');
     Route::delete('permissions/{permission}', [PermissionController::class, 'destroy'])->middleware('permission:permissions.delete')->name('permissions.destroy');
 });
-Route::get('/system/clear-cache-7f3a9d', function (\Illuminate\Http\Request $request) {
+Route::get('/system/clear-cache-7f3a9d', function (Request $request) {
     $secretKey = 'Aliche-2026-Clear-Cache-X9p4K7';
 
     abort_unless(
@@ -414,14 +415,14 @@ Route::get('/system/clear-cache-7f3a9d', function (\Illuminate\Http\Request $req
     try {
         $results = [];
 
-        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        Artisan::call('optimize:clear');
         $results['optimize:clear'] = trim(
-            \Illuminate\Support\Facades\Artisan::output()
+            Artisan::output()
         );
 
-        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        Artisan::call('view:clear');
         $results['view:clear'] = trim(
-            \Illuminate\Support\Facades\Artisan::output()
+            Artisan::output()
         );
 
         return response()->json([
@@ -430,7 +431,7 @@ Route::get('/system/clear-cache-7f3a9d', function (\Illuminate\Http\Request $req
             'results' => $results,
         ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-    } catch (\Throwable $exception) {
+    } catch (Throwable $exception) {
         report($exception);
 
         return response()->json([

@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
+use App\Http\Controllers\Controller;
+use App\Rules\SafeImageUpload;
 use App\Services\SettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,7 @@ use Illuminate\View\View;
 class HeaderSettingController extends Controller
 {
     use SelectsMedia;
+
     public function edit(SettingService $settings): View
     {
         return view('admin.settings.header', ['settings' => $settings]);
@@ -21,9 +23,9 @@ class HeaderSettingController extends Controller
     public function update(Request $request, SettingService $settings): RedirectResponse
     {
         $validated = $request->validate([
-            'desktop_logo' => ['nullable', 'image', 'max:4096'],
-            'mobile_logo' => ['nullable', 'image', 'max:4096'],
-            'header_logo' => ['nullable', 'image', 'max:4096'],
+            'desktop_logo' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
+            'mobile_logo' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
+            'header_logo' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'top_text' => ['nullable', 'string', 'max:255'],
             'top_date_enabled' => ['required', 'in:0,1'],
             'contact_button_text' => ['nullable', 'string', 'max:255'],

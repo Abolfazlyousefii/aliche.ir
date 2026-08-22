@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\PublicFileUrl;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 
@@ -34,9 +35,7 @@ if (! function_exists('jalali_to_persian_digits')) {
 if (! class_exists('JalaliDate')) {
     final class JalaliDate
     {
-        public function __construct(private readonly mixed $date)
-        {
-        }
+        public function __construct(private readonly mixed $date) {}
 
         public function format(string $format = 'Y/m/d'): string
         {
@@ -165,7 +164,7 @@ if (! function_exists('jalali_carbon')) {
             return $date;
         }
 
-        if ($date instanceof \DateTimeInterface) {
+        if ($date instanceof DateTimeInterface) {
             return Carbon::instance($date);
         }
 
@@ -296,7 +295,6 @@ if (! function_exists('jalali_to_gregorian_datetime')) {
     }
 }
 
-
 if (! function_exists('image_url')) {
     function image_url(?string $path, string $fallback = 'assets/img/asnaf-gorgan-default.jpg'): string
     {
@@ -307,11 +305,11 @@ if (! function_exists('image_url')) {
         }
 
         if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            return \App\Support\PublicFileUrl::make($path, $fallback);
+            return PublicFileUrl::make($path, $fallback);
         }
 
         if (str_starts_with($path, '/storage/') || str_starts_with($path, 'storage/') || str_starts_with($path, 'public/')) {
-            return \App\Support\PublicFileUrl::make($path, $fallback);
+            return PublicFileUrl::make($path, $fallback);
         }
 
         if (str_starts_with($path, '/')) {
@@ -324,6 +322,13 @@ if (! function_exists('image_url')) {
 
         $path = preg_replace('#^(public/|storage/)#', '', $path);
 
-        return \App\Support\PublicFileUrl::make($path, $fallback);
+        return PublicFileUrl::make($path, $fallback);
+    }
+}
+
+if (! function_exists('image_srcset')) {
+    function image_srcset(?string $path): ?string
+    {
+        return PublicFileUrl::srcset($path);
     }
 }

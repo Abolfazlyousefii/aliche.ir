@@ -24,11 +24,11 @@
       <div class="gallery-thumbs" data-gallery-group="gallery-{{ $gallery->id }}">
         @forelse ($gallery->images as $image)
           <div class="gallery-thumb" data-gallery-item="{{ $image->image_url }}">
-            <img src="{{ $image->image_url }}" alt="{{ $image->caption ?? $gallery->title }}" loading="lazy"/>
+            <img src="{{ $image->image_url }}" alt="{{ $image->caption ?? $gallery->title }}" loading="lazy" decoding="async" @if(image_srcset($image->image)) srcset="{{ image_srcset($image->image) }}" sizes="(max-width: 768px) 100vw, 50vw" @endif/>
           </div>
         @empty
           <div class="gallery-thumb" data-gallery-item="{{ $gallery->cover_image_url }}">
-            <img src="{{ $gallery->cover_image_url }}" alt="{{ $gallery->title }}" loading="lazy"/>
+            <img src="{{ $gallery->cover_image_url }}" alt="{{ $gallery->title }}" loading="lazy" decoding="async" @if(image_srcset($gallery->cover_image)) srcset="{{ image_srcset($gallery->cover_image) }}" sizes="100vw" @endif/>
           </div>
         @endforelse
       </div>

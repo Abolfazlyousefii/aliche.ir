@@ -28,14 +28,14 @@
                 @forelse (($heroPosts ?? $importantPosts ?? collect()) as $post)
                     <article class="news-card news-card-main swiper-slide">
                         <a href="{{ route('posts.show', $post->slug) }}">
-                            <img alt="{{ $post->title }}" src="{{ $post->featured_image_url }}" loading="lazy"/>
+                            <img alt="{{ $post->featuredMedia?->alt_text ?: $post->title }}" src="{{ $post->featured_image_url }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}" decoding="async" @if($loop->first) fetchpriority="high" @endif @if($post->featuredMedia?->srcset) srcset="{{ $post->featuredMedia->srcset }}" sizes="100vw" @endif @if($post->featuredMedia?->width && $post->featuredMedia?->height) width="{{ $post->featuredMedia->width }}" height="{{ $post->featuredMedia->height }}" @endif/>
                             <div class="news-overlay"></div>
                             <div class="news-content"><span class="news-kicker">خبر تاپ</span><h1>{{ $post->title }}</h1></div>
                         </a>
                     </article>
                 @empty
                     <article class="news-card news-card-main swiper-slide">
-                        <img alt="اتاق اصناف مرکز استان گلستان" src="{{ asset('assets/img/asnaf-gorgan-default.jpg') }}"/>
+                        <img alt="اتاق اصناف مرکز استان گلستان" src="{{ asset('assets/img/asnaf-gorgan-default.jpg') }}" loading="eager" fetchpriority="high" decoding="async"/>
                         <div class="news-overlay"></div>
                         <div class="news-content"><span class="news-kicker">{{ $section->title }}</span><h1>{{ $section->subtitle ?: 'اطلاع‌رسانی خدمات صنفی، آموزش و پیگیری درخواست‌های کسب‌وکارهای استان گلستان' }}</h1></div>
                     </article>

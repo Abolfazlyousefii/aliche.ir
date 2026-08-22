@@ -70,7 +70,7 @@
 <div class="site-container">
 <div class="footer-main">
 <div class="footer-col footer-brand-col">
-<img alt="{{ $siteTitle }}" src="{{ $logo }}" onerror="this.onerror=null;this.src='{{ asset('assets/img/asnaf-seal.svg') }}';"/>
+<img alt="{{ $siteTitle }}" src="{{ $logo }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ asset('assets/img/asnaf-seal.svg') }}';"/>
 <h3>{{ $siteTitle }}</h3>
 <div>{!! $description !!}</div>
 </div>

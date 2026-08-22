@@ -23,7 +23,7 @@
         <article class="commission-detail-main">
             @if($commission->image)
                 <figure class="commission-detail-cover">
-                    <img src="{{ $commission->image_url }}" alt="{{ $commission->title }}" loading="lazy">
+                    <img src="{{ $commission->image_url }}" alt="{{ $commission->title }}" loading="eager" fetchpriority="high" decoding="async">
                 </figure>
             @endif
 

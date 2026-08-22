@@ -7,7 +7,7 @@
 
         <div class="friendship-layout">
             <div class="world-map-wrap">
-                <img alt="اتاق اصناف مرکز استان گلستان" class="world-map-img" src="{{ asset('assets/img/asnaf-gorgan-default.jpg') }}">
+                <img alt="اتاق اصناف مرکز استان گلستان" class="world-map-img" src="{{ asset('assets/img/asnaf-gorgan-default.jpg') }}" loading="lazy" decoding="async">
             </div>
 
             <aside class="friend-list">

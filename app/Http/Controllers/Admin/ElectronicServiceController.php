@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
-use App\Models\ElectronicService;
+use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\ElectronicService;
+use App\Rules\SafeImageUpload;
+use App\Services\ContentApprovalService;
+use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -16,6 +19,7 @@ use Illuminate\View\View;
 class ElectronicServiceController extends Controller
 {
     use SelectsMedia;
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search'));
@@ -116,12 +120,12 @@ class ElectronicServiceController extends Controller
             'short_description' => ['nullable', 'string', 'max:1000'],
             'body' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:255'],
-            'image' => ['nullable', 'image', 'max:4096'],
+            'image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'link_type' => ['required', Rule::in(ElectronicService::LINK_TYPES)],
             'link' => ['nullable', 'required_unless:link_type,none', 'string', 'max:500'],
             'target' => ['required', Rule::in(ElectronicService::TARGETS)],
             'category_id' => ['nullable', 'exists:categories,id'],
-            'status' => ['required', Rule::in(app(\App\Services\ContentApprovalService::class)->allowedStatusesFor($request->user(), ['electronic_services.approve', 'electronic_services.publish']))],
+            'status' => ['required', Rule::in(app(ContentApprovalService::class)->allowedStatusesFor($request->user(), ['electronic_services.approve', 'electronic_services.publish']))],
             'published_at' => ['nullable', 'date'],
             'rejected_reason' => ['nullable', 'required_if:status,rejected', 'string', 'max:1000'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
@@ -172,7 +176,7 @@ class ElectronicServiceController extends Controller
 
     private function uniqueSlug(string $value, ?ElectronicService $service = null): string
     {
-        return app(\App\Services\SlugService::class)->unique(ElectronicService::class, $value, $service?->id, 'slug', strtolower(class_basename(ElectronicService::class)));
+        return app(SlugService::class)->unique(ElectronicService::class, $value, $service?->id, 'slug', strtolower(class_basename(ElectronicService::class)));
 
         $baseSlug = Str::slug($value) ?: Str::random(8);
         $slug = $baseSlug;

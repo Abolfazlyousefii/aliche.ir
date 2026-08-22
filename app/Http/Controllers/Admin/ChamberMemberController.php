@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
+use App\Http\Controllers\Controller;
 use App\Models\ChamberMember;
 use App\Models\Media;
+use App\Rules\SafeImageUpload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,6 +15,7 @@ use Illuminate\View\View;
 class ChamberMemberController extends Controller
 {
     use SelectsMedia;
+
     public function index(): View
     {
         return view('admin.chamber_members.index', [
@@ -86,7 +88,7 @@ class ChamberMemberController extends Controller
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'position' => ['required', 'string', 'max:150'],
-            'photo' => ['nullable', 'image', 'max:4096'],
+            'photo' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'photo_media_id' => ['nullable', 'integer', 'exists:media,id'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['required', 'boolean'],

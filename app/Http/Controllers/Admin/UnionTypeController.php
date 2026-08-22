@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
 use App\Http\Controllers\Controller;
 use App\Models\UnionType;
+use App\Rules\SafeImageUpload;
+use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -75,12 +77,12 @@ class UnionTypeController extends Controller
             'title' => ['required', 'string', 'max:190'],
             'slug' => ['nullable', 'string', 'max:190', Rule::unique('union_types', 'slug')->ignore($unionType?->id)],
             'icon' => ['nullable', 'string', Rule::in(array_keys(UnionType::iconOptions()))],
-            'image' => ['nullable', 'image', 'max:4096'],
+            'image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['required', 'boolean'],
         ]);
 
-        $validated['slug'] = app(\App\Services\SlugService::class)->unique(UnionType::class, ($validated['slug'] ?? '') ?: $validated['title'], $unionType?->id, 'slug', 'union-type');
+        $validated['slug'] = app(SlugService::class)->unique(UnionType::class, ($validated['slug'] ?? '') ?: $validated['title'], $unionType?->id, 'slug', 'union-type');
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
         return $validated;

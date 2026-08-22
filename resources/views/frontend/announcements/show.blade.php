@@ -20,7 +20,7 @@
 <main class="single-post-page">
     <div class="site-container single-post-layout">
         <article class="single-post-article">
-            <img class="post-featured-img" src="{{ $announcement->featured_image ? image_url($announcement->featured_image) : asset('assets/img/asnaf-gorgan-default.jpg') }}" alt="{{ $announcement->title }}">
+            <img class="post-featured-img" src="{{ $announcement->featured_image ? image_url($announcement->featured_image) : asset('assets/img/asnaf-gorgan-default.jpg') }}" alt="{{ $announcement->title }}" loading="eager" fetchpriority="high" decoding="async" @if(image_srcset($announcement->featured_image)) srcset="{{ image_srcset($announcement->featured_image) }}" sizes="100vw" @endif>
 
             <div class="single-post-body">
                 <div class="post-meta">

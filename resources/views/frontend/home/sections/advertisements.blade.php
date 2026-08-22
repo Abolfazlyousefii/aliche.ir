@@ -26,7 +26,7 @@
 <section class="home-ad-banners site-container mid-ad">
     @foreach ($advertisementItems as $advertisement)
         <a class="ad-banner {{ $advertisement['placeholder'] ? 'ad-banner-placeholder' : '' }}" href="{{ $advertisement['url'] }}" target="{{ $advertisement['target'] }}" @if($advertisement['target'] === '_blank') rel="noopener" @endif>
-            <img alt="{{ $advertisement['title'] }}" src="{{ $advertisement['image'] }}" loading="lazy"/>
+            <img alt="{{ $advertisement['title'] }}" src="{{ $advertisement['image'] }}" loading="lazy" decoding="async"/>
             <div class="ad-banner-overlay"></div>
             <div class="ad-banner-text">{{ $advertisement['title'] }}</div>
         </a>

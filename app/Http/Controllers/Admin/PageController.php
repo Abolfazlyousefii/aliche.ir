@@ -24,10 +24,10 @@ class PageController extends Controller
 
         $pages = Page::query()
             ->with('author')
-            ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
+            ->when($search !== '', fn($query) => $query->where(fn($query) => $query
                 ->where('title', 'like', "%{$search}%")
                 ->orWhere('slug', 'like', "%{$search}%")))
-            ->when($status !== '', fn ($query) => $query->where('status', $status))
+            ->when($status !== '', fn($query) => $query->where('status', $status))
             ->orderBy('sort_order')
             ->latest()
             ->paginate(15)
@@ -156,7 +156,7 @@ class PageController extends Controller
             'meta_description' => $validated['meta_description'] ?? null,
             'meta_keywords' => $validated['meta_keywords'] ?? null,
             'status' => $validated['status'],
-            'published_at' => $validated['published_at'] ?: null,
+            'published_at' => $validated['published_at'] ?? null,
             'rejected_reason' => $validated['rejected_reason'] ?? null,
             'sort_order' => $validated['sort_order'] ?? 0,
             'is_active' => (bool) $validated['is_active'],

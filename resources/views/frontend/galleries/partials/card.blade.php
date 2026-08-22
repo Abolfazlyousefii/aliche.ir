@@ -5,7 +5,7 @@
 @endphp
 <article class="gallery-directory-card">
     <div class="gallery-directory-media {{ $coverUrl ? 'has-cover' : 'has-fallback' }}" data-gallery-cover-wrap>
-        @if($coverUrl)<img src="{{ $coverUrl }}" alt="{{ $gallery->title }}" loading="lazy" data-gallery-cover>@endif
+        @if($coverUrl)<img src="{{ $coverUrl }}" alt="{{ $gallery->title }}" loading="lazy" decoding="async" @if(image_srcset($gallery->cover_image)) srcset="{{ image_srcset($gallery->cover_image) }}" sizes="(max-width: 768px) 100vw, 400px" @endif data-gallery-cover>@endif
         <span class="gallery-directory-media-fallback" aria-hidden="true">
             <svg viewBox="0 0 48 48"><rect x="7" y="10" width="34" height="28" rx="3"/><circle cx="17" cy="20" r="3"/><path d="m10 34 9-9 6 6 5-5 8 8"/></svg>
         </span>

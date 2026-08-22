@@ -23,7 +23,7 @@
 <main class="single-post-page">
 <div class="site-container single-post-layout">
 <article class="single-post-article">
-<img alt="{{ $post->title }}" class="post-featured-img" src="{{ $post->featured_image_url }}" loading="lazy"/>
+<img alt="{{ $post->featuredMedia?->alt_text ?: $post->title }}" class="post-featured-img" src="{{ $post->featured_image_url }}" loading="eager" fetchpriority="high" decoding="async" @if($post->featuredMedia?->srcset) srcset="{{ $post->featuredMedia->srcset }}" sizes="(max-width: 768px) 100vw, 1200px" @endif @if($post->featuredMedia?->width && $post->featuredMedia?->height) width="{{ $post->featuredMedia->width }}" height="{{ $post->featuredMedia->height }}" @endif/>
 <div class="single-post-body">
 <div class="post-meta">
 <span>تاریخ انتشار: {{ jalali_date($post->published_at) ?: jalali_date($post->created_at) }}</span>
@@ -51,10 +51,10 @@
 <h3>گالری تصاویر</h3>
 <div class="post-gallery-grid">
 @foreach($post->mediaGallery as $media)
-<div class="post-gallery-item" data-gallery-item="{{ $media->url }}"><img src="{{ $media->url }}" alt="{{ $media->alt_text ?: $post->title }}" loading="lazy"/></div>
+<div class="post-gallery-item" data-gallery-item="{{ $media->url }}"><img src="{{ $media->url }}" alt="{{ $media->alt_text ?: $post->title }}" loading="lazy" decoding="async" @if($media->srcset) srcset="{{ $media->srcset }}" sizes="(max-width: 768px) 100vw, 50vw" @endif @if($media->width && $media->height) width="{{ $media->width }}" height="{{ $media->height }}" @endif/></div>
 @endforeach
 @foreach($post->galleries as $image)
-<div class="post-gallery-item" data-gallery-item="{{ $image->image_url }}"><img src="{{ $image->image_url }}" alt="{{ $image->caption ?? $post->title }}" loading="lazy"/></div>
+<div class="post-gallery-item" data-gallery-item="{{ $image->image_url }}"><img src="{{ $image->image_url }}" alt="{{ $image->caption ?? $post->title }}" loading="lazy" decoding="async" @if(image_srcset($image->image)) srcset="{{ image_srcset($image->image) }}" sizes="(max-width: 768px) 100vw, 50vw" @endif/></div>
 @endforeach
 </div>
 </div>

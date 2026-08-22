@@ -25,7 +25,7 @@
                 <article class="guild-card">
                     <div class="guild-card-logo">
                         @if ($union->manager_image)
-                            <img alt="{{ $union->manager_name }}" src="{{ $assetImage($union->manager_image) }}">
+                            <img alt="{{ $union->manager_name }}" src="{{ $assetImage($union->manager_image) }}" loading="lazy" decoding="async">
                         @else
                             <span>{{ $initial($union->manager_name ?: $union->display_title) }}</span>
                         @endif

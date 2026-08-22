@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Post;
+use App\Rules\SafeImageUpload;
 use App\Services\SlugService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -34,7 +35,7 @@ class UpdatePostRequest extends FormRequest
             'slug' => ['nullable', 'string', 'max:190', 'regex:/^[\p{Arabic}A-Za-z0-9\-]+$/u'],
             'excerpt' => ['nullable', 'string', 'max:1000'],
             'body' => ['nullable', 'string'],
-            'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
+            'featured_image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'featured_media_id' => ['nullable', 'exists:media,id'],
             'gallery_media_ids' => ['nullable', 'array'],
             'gallery_media_ids.*' => ['integer', 'exists:media,id'],
@@ -53,7 +54,7 @@ class UpdatePostRequest extends FormRequest
             'meta_keywords.*' => ['nullable', 'string', 'max:80'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'gallery_images' => ['nullable', 'array'],
-            'gallery_images.*' => ['image', 'max:4096'],
+            'gallery_images.*' => ['bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'gallery_captions' => ['nullable', 'array'],
             'gallery_captions.*' => ['nullable', 'string', 'max:190'],
             'delete_gallery' => ['nullable', 'array'],
@@ -117,7 +118,6 @@ class UpdatePostRequest extends FormRequest
     }
 
     /**
-     * @param mixed $value
      * @return array<int, string>
      */
     private function normalizeMetaKeywords(mixed $value): array

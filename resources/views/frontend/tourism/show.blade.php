@@ -62,7 +62,7 @@
                 </div>
                 <div class="col-lg-6">
                     <div class="ratio ratio-16x9 rounded-4 overflow-hidden shadow-sm bg-secondary-subtle">
-                        <img class="w-100 h-100 object-fit-cover" src="{{ $featuredImage }}" alt="{{ $title }}" loading="lazy">
+                        <img class="w-100 h-100 object-fit-cover" src="{{ $featuredImage }}" alt="{{ $title }}" loading="eager" fetchpriority="high" decoding="async">
                     </div>
                 </div>
             </div>
@@ -135,7 +135,7 @@
                                     <div class="col-6 col-md-4">
                                         <button type="button" class="btn p-0 border-0 bg-transparent w-100 rounded-4 overflow-hidden shadow-sm" data-gallery-item="{{ $image['url'] }}" aria-label="مشاهده تصویر {{ $image['caption'] ?? $title }}">
                                             <span class="ratio ratio-1x1 d-block bg-secondary-subtle">
-                                                <img class="w-100 h-100 object-fit-cover" src="{{ $image['url'] }}" alt="{{ $image['caption'] ?? $title }}" loading="lazy">
+                                                <img class="w-100 h-100 object-fit-cover" src="{{ $image['url'] }}" alt="{{ $image['caption'] ?? $title }}" loading="lazy" decoding="async">
                                             </span>
                                         </button>
                                     </div>
@@ -172,7 +172,7 @@
                                             <a class="card h-100 border-0 bg-light rounded-4 text-decoration-none text-dark overflow-hidden" href="{{ route('tourism.show', $related->slug) }}">
                                                 <div class="row g-0 align-items-stretch">
                                                     <div class="col-4">
-                                                        <img class="w-100 h-100 object-fit-cover" src="{{ $relatedImage }}" alt="{{ $related->title }}" loading="lazy">
+                                                        <img class="w-100 h-100 object-fit-cover" src="{{ $relatedImage }}" alt="{{ $related->title }}" loading="lazy" decoding="async">
                                                     </div>
                                                     <div class="col-8">
                                                         <div class="card-body p-3">

@@ -37,7 +37,7 @@
 <div class="header-top site-container">
 <a class="brand-note" href="{{ route('home') }}" aria-label="{{ $siteTitle }}">
 <span class="brand-note-media">
-<img alt="{{ $siteTitle }}" class="header-logo-simple" src="{{ $logo }}" onerror="this.onerror=null;this.src='{{ asset('assets/img/asnaf-seal.svg') }}';"/>
+<img alt="{{ $siteTitle }}" class="header-logo-simple" src="{{ $logo }}" loading="eager" decoding="async" onerror="this.onerror=null;this.src='{{ asset('assets/img/asnaf-seal.svg') }}';"/>
 </span>
 <span class="brand-note-copy">
 <span>{{ $todayLabel }}</span>
@@ -77,7 +77,7 @@
 <div aria-hidden="true" class="collapse navbar-collapse" id="mainNav" tabindex="-1">
 <div class="mobile-drawer-header">
 <a class="mobile-drawer-brand" href="{{ route('home') }}">
-<img alt="" src="{{ $logo }}" onerror="this.onerror=null;this.src='{{ asset('assets/img/asnaf-seal.svg') }}';"/>
+<img alt="{{ $siteTitle }}" src="{{ $logo }}" loading="eager" decoding="async" onerror="this.onerror=null;this.src='{{ asset('assets/img/asnaf-seal.svg') }}';"/>
 <span>{{ $siteTitle }}</span>
 </a>
 <button aria-label="بستن منو" class="mobile-drawer-close mobile-icon-button" type="button">

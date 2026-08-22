@@ -3,7 +3,7 @@
     <article class="daily-news-item">
         <a class="daily-news-card" href="{{ route('posts.show', $post->slug) }}">
             <time class="daily-news-time" datetime="{{ $post->published_at?->toIso8601String() }}">{{ jalali_to_persian_digits($post->published_at?->format('H:i')) }}</time>
-            <img class="daily-news-thumb" src="{{ $post->featured_image_url }}" alt="{{ $post->title }}" loading="lazy">
+            <img class="daily-news-thumb" src="{{ $post->featured_image_url }}" alt="{{ $post->title }}" loading="lazy" decoding="async">
             <div class="daily-news-content">
                 <div class="daily-news-meta">
                     @if($post->category)<span class="daily-news-category" onclick="event.preventDefault(); window.location='{{ route('posts.index', ['category_id' => $post->category_id]) }}'">{{ $post->category->title }}</span>@else<span class="daily-news-category">عمومی</span>@endif

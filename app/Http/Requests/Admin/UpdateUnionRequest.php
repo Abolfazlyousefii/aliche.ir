@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\GuildUnion;
+use App\Rules\SafeImageUpload;
 use App\Services\SlugService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -31,8 +32,8 @@ class UpdateUnionRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:190'],
             'slug' => ['nullable', 'string', 'max:190', 'regex:/^[\p{Arabic}A-Za-z0-9\-]+$/u', Rule::unique('unions', 'slug')->ignore($unionId)],
-            'logo' => ['nullable', 'image', 'max:5120'],
-            'cover_image' => ['nullable', 'image', 'max:5120'],
+            'logo' => ['nullable', 'bail', 'file', 'image', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
+            'cover_image' => ['nullable', 'bail', 'file', 'image', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'description' => ['nullable', 'string'],
             'short_description' => ['nullable', 'string', 'max:1000'],
             'address' => ['nullable', 'string', 'max:1000'],
@@ -45,7 +46,7 @@ class UpdateUnionRequest extends FormRequest
             'manager_description' => ['nullable', 'string', 'max:3000'],
             'union_type' => ['nullable', 'string', 'max:190'],
             'union_type_id' => ['nullable', 'exists:union_types,id'],
-            'manager_image' => ['nullable', 'image', 'max:5120'],
+            'manager_image' => ['nullable', 'bail', 'file', 'image', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'working_hours' => ['nullable', 'string', 'max:500'],
             'social_links' => ['nullable', 'array'],
             'social_links.*' => ['nullable', 'url', 'max:190'],
@@ -61,7 +62,7 @@ class UpdateUnionRequest extends FormRequest
             'selected_posts' => ['nullable', 'array'],
             'selected_posts.*' => ['nullable', 'integer', 'exists:posts,id'],
             'price_list_mode' => ['required', Rule::in(['image', 'table'])],
-            'price_list_image' => ['nullable', 'image', 'max:5120'],
+            'price_list_image' => ['nullable', 'bail', 'file', 'image', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'complaint_enabled' => ['required', 'boolean'],
             'congratulations_enabled' => ['required', 'boolean'],
             'news_enabled' => ['required', 'boolean'],
