@@ -1,0 +1,39 @@
+این Route عمومی فعلی را از routes/web.php کامل حذف کن:
+
+Route::get('/system/clear-cache-7f3a9d', function (Request $request) {
+    $secretKey = 'Aliche-2026-Clear-Cache-X9p4K7';
+
+    abort_unless(
+        hash_equals($secretKey, (string) $request->query('key')),
+        403,
+        'Access denied.'
+    );
+
+    try {
+        $results = [];
+
+        Artisan::call('optimize:clear');
+        $results['optimize:clear'] = trim(
+            Artisan::output()
+        );
+
+        Artisan::call('view:clear');
+        $results['view:clear'] = trim(
+            Artisan::output()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Laravel caches cleared successfully.',
+            'results' => $results,
+        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+    } catch (Throwable $exception) {
+        report($exception);
+
+        return response()->json([
+            'success' => false,
+            'message' => $exception->getMessage(),
+        ], 500, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    }
+})->middleware('throttle:2,1');

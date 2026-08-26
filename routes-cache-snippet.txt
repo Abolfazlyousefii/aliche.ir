@@ -1,0 +1,28 @@
+// داخل همین گروه موجود اضافه شود:
+// Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+
+Route::get('cache', function () {
+    return view('admin.system.cache');
+})
+    ->middleware('permission:settings.edit')
+    ->name('cache.index');
+
+Route::post('cache/clear', function () {
+    try {
+        Artisan::call('optimize:clear');
+
+        return redirect()
+            ->route('admin.cache.index')
+            ->with('success', 'کش Laravel با موفقیت پاک شد.');
+    } catch (\Throwable $exception) {
+        report($exception);
+
+        return redirect()
+            ->route('admin.cache.index')
+            ->with('error', 'پاک‌سازی کش انجام نشد: '.$exception->getMessage());
+    }
+})
+    ->middleware(['permission:settings.edit', 'throttle:2,1'])
+    ->name('cache.clear');
+
+// }

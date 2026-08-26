@@ -23,7 +23,10 @@ class PostSinglePageTest extends TestCase
         $response->assertOk()
             ->assertViewIs('frontend.posts.show')
             ->assertSee('آخرین اخبار')
-            ->assertSee('برچسب‌ها')
+            ->assertSee('برچسب‌های این خبر')
+            ->assertSee('تازه‌ترین مطالب')
+            ->assertSee('post-heading-eyebrow', false)
+            ->assertSee('latest-news-index', false)
             ->assertSee('اصناف')
             ->assertSee('گرگان')
             ->assertSee('اتحادیه ها')
@@ -42,7 +45,8 @@ class PostSinglePageTest extends TestCase
         $this->assertNotFalse($keywordsPosition);
         $this->assertLessThan($imagePosition, $titlePosition, 'عنوان خبر باید قبل از تصویر شاخص رندر شود.');
         $this->assertLessThan($keywordsPosition, $contentPosition, 'برچسب‌ها باید بعد از محتوای خبر رندر شوند.');
-        $this->assertSame(1, substr_count($html, '>برچسب‌ها<'), 'باکس برچسب ثابت سایدبار نباید باقی بماند.');
+        $this->assertSame(1, substr_count($html, '>برچسب‌های این خبر<'), 'برچسب‌های داینامیک باید فقط یک‌بار و پایین محتوای خبر نمایش داده شوند.');
+        $this->assertStringNotContainsString('post-taxonomy-chip', $html, 'نمایش متادیتا نباید دوباره به کارت‌های سنگین پایین مقاله برگردد.');
     }
 
     public function test_sidebar_receives_only_the_latest_15_other_published_editorial_posts(): void
