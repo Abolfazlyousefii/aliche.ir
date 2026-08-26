@@ -12,6 +12,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet">
     <link href="{{ asset('assets/admin/css/admin.css') }}?v={{ filemtime(public_path('assets/admin/css/admin.css')) }}" rel="stylesheet">
+
+    @if(request()->routeIs('admin.unions.*', 'admin.union_members.*'))
+        @php
+            $unionAdminStylesPath = public_path('assets/admin/css/union-admin.css');
+            $unionAdminStylesVersion = is_file($unionAdminStylesPath) ? filemtime($unionAdminStylesPath) : '1';
+        @endphp
+        <link href="{{ asset('assets/admin/css/union-admin.css') }}?v={{ $unionAdminStylesVersion }}" rel="stylesheet">
+    @endif
 </head>
 <body>
     <div class="admin-shell">

@@ -9,3 +9,11 @@
 <link href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" rel="stylesheet"/>
 <link href="{{ asset('assets/css/styles.css') }}?v={{ $mainStylesVersion }}" rel="stylesheet"/>
 <link href="{{ asset('assets/css/home-layout-lock.css') }}?v={{ $layoutLockVersion }}" rel="stylesheet"/>
+
+@if(request()->routeIs('guilds.show'))
+    @php
+        $guildProfileStylesPath = public_path('assets/css/guild-profile.css');
+        $guildProfileStylesVersion = is_file($guildProfileStylesPath) ? filemtime($guildProfileStylesPath) : '1';
+    @endphp
+    <link href="{{ asset('assets/css/guild-profile.css') }}?v={{ $guildProfileStylesVersion }}" rel="stylesheet"/>
+@endif

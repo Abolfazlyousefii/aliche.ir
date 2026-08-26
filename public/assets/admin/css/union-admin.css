@@ -1,0 +1,290 @@
+/* =========================================================
+   Union administration — route-scoped presentation layer
+   Loaded only for admin.unions.* and admin.union_members.*.
+   ========================================================= */
+
+.admin-content {
+  --ua-ink: #102a43;
+  --ua-muted: #64748b;
+  --ua-primary: #0c74b9;
+  --ua-border: rgba(15, 35, 52, .11);
+  --ua-soft: #f5f9fc;
+}
+
+.admin-content .admin-panel-card {
+  padding: 26px !important;
+  border: 1px solid var(--ua-border) !important;
+  border-radius: 22px !important;
+  background: #fff !important;
+  box-shadow: 0 14px 36px rgba(15, 35, 52, .065) !important;
+}
+
+.admin-content .admin-panel-card > .row {
+  --bs-gutter-x: 1rem;
+  --bs-gutter-y: 1rem;
+}
+
+.admin-content .admin-panel-card .row > .col-12 > h3,
+.admin-content .admin-panel-card .row > .col-12 > h4 {
+  position: relative;
+  margin: 16px 0 2px !important;
+  padding: 14px 14px 12px 45px;
+  border-top: 1px solid rgba(15, 35, 52, .07);
+  color: var(--ua-ink);
+  font-size: 15px !important;
+  font-weight: 900;
+  line-height: 1.7;
+}
+
+.admin-content .admin-panel-card .row > .col-12:first-child > h3,
+.admin-content .admin-panel-card .row > .col-12:first-child > h4 {
+  margin-top: 0 !important;
+  border-top: 0;
+  padding-top: 0;
+}
+
+.admin-content .admin-panel-card .row > .col-12 > h3::before,
+.admin-content .admin-panel-card .row > .col-12 > h4::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 14px;
+  top: 50%;
+  width: 21px;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0c74b9, #55a9dd);
+  transform: translateY(-50%);
+}
+
+.admin-content .admin-panel-card .row > .col-12:first-child > h3::before,
+.admin-content .admin-panel-card .row > .col-12:first-child > h4::before {
+  top: 8px;
+}
+
+.admin-content .form-label {
+  margin-bottom: 7px;
+  color: #1f3c52;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.admin-content .form-control,
+.admin-content .form-select {
+  min-height: 45px;
+  border: 1px solid rgba(15, 35, 52, .13);
+  border-radius: 12px;
+  background-color: #fff;
+  color: #163449;
+  font-size: 13px;
+  box-shadow: none;
+  transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+
+.admin-content textarea.form-control {
+  min-height: 108px;
+  line-height: 1.95;
+  resize: vertical;
+}
+
+.admin-content .form-control:hover,
+.admin-content .form-select:hover {
+  border-color: rgba(12, 116, 185, .28);
+}
+
+.admin-content .form-control:focus,
+.admin-content .form-select:focus {
+  border-color: rgba(12, 116, 185, .55);
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgba(12, 116, 185, .08);
+}
+
+.admin-content input[type="file"].form-control {
+  padding: 8px 10px;
+  background: #fbfdfe;
+}
+
+.admin-content select[multiple].form-control {
+  min-height: 190px;
+  padding: 8px;
+}
+
+.admin-content small.text-muted {
+  color: #768697 !important;
+  font-size: 11px;
+  line-height: 1.85;
+}
+
+.admin-content [data-image-preview] {
+  min-height: 0;
+}
+
+.admin-content [data-image-preview] img {
+  display: block;
+  max-width: 100%;
+  padding: 7px;
+  border: 1px solid rgba(15, 35, 52, .10);
+  border-radius: 14px !important;
+  background:
+    linear-gradient(45deg, #f1f5f8 25%, transparent 25%),
+    linear-gradient(-45deg, #f1f5f8 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f1f5f8 75%),
+    linear-gradient(-45deg, transparent 75%, #f1f5f8 75%),
+    #fff;
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  box-shadow: 0 8px 20px rgba(15, 35, 52, .06);
+}
+
+.admin-content .union-dynamic-section {
+  padding: 4px 0 0;
+}
+
+.admin-content .union-dynamic-section [data-row] {
+  margin-bottom: 10px !important;
+  padding: 16px !important;
+  border: 1px solid rgba(12, 116, 185, .12) !important;
+  border-radius: 16px !important;
+  background: linear-gradient(180deg, #fff, #f9fcfe);
+}
+
+.admin-content .union-dynamic-section [data-add-row] {
+  min-height: 42px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.admin-content .form-check {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 11px;
+  border: 1px solid rgba(15, 35, 52, .08);
+  border-radius: 11px;
+  background: #f8fafc;
+  color: #365166;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.admin-content .form-check-input {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.admin-content .admin-primary-btn,
+.admin-content .admin-secondary-btn,
+.admin-content .btn {
+  min-height: 41px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  font-weight: 800;
+}
+
+.admin-content .mt-3.d-flex.gap-2 {
+  flex-wrap: wrap;
+}
+
+/* Member attachments */
+.admin-content .admin-panel-card .border.rounded.p-2.h-100 {
+  border-color: rgba(15, 35, 52, .10) !important;
+  border-radius: 14px !important;
+  background: #fbfdfe;
+}
+
+.admin-content .admin-panel-card .border.rounded.p-2.h-100 a {
+  color: var(--ua-primary);
+  font-size: 12px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.admin-content .admin-panel-card .border.rounded.p-2.h-100 label {
+  color: #7a4a4a;
+  font-size: 11px;
+}
+
+/* Stronger distinction between image roles without touching the form markup. */
+.admin-content label[for="cover_image"]::after {
+  content: " — کاور صفحه و کارت";
+  color: var(--ua-primary);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.admin-content label[for="logo"]::after {
+  content: " — نشان هویتی";
+  color: #1f8f66;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.admin-content label[for="manager_image"]::after {
+  content: " — تصویر پرتره";
+  color: #7c5bbd;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+/* Important switches and ordering fields remain easy to scan. */
+.admin-content #services_enabled,
+.admin-content #news_enabled,
+.admin-content #members_enabled,
+.admin-content #is_active,
+.admin-content #sort_order,
+.admin-content #news_mode {
+  border-color: rgba(12, 116, 185, .23);
+  background-color: #fafdff;
+}
+
+@media (max-width: 767.98px) {
+  .admin-content .admin-panel-card {
+    padding: 18px !important;
+    border-radius: 18px !important;
+  }
+
+  .admin-content .admin-panel-card .row > .col-12 > h3,
+  .admin-content .admin-panel-card .row > .col-12 > h4 {
+    padding-inline: 12px 38px;
+  }
+
+  .admin-content .union-dynamic-section [data-row] {
+    padding: 13px !important;
+  }
+
+  .admin-content .mt-3.d-flex.gap-2 > * {
+    flex: 1 1 160px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .admin-content .admin-panel-card {
+    padding: 15px !important;
+  }
+
+  .admin-content .form-control,
+  .admin-content .form-select {
+    min-height: 47px;
+    font-size: 14px;
+  }
+
+  .admin-content .form-label {
+    font-size: 12.5px;
+  }
+
+  .admin-content select[multiple].form-control {
+    min-height: 220px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-content *,
+  .admin-content *::before,
+  .admin-content *::after {
+    transition-duration: .001ms !important;
+    animation-duration: .001ms !important;
+  }
+}
