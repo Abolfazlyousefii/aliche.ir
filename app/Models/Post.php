@@ -61,7 +61,6 @@ class Post extends Model
         ];
     }
 
-
     public function getShortDescriptionAttribute(): ?string
     {
         return $this->excerpt;
@@ -75,6 +74,25 @@ class Post extends Model
     public function getSummaryAttribute(): string
     {
         return plain_text($this->excerpt ?: $this->body, 120);
+    }
+
+    /**
+     * Return the post meta keywords as clean, unique, display-ready tags.
+     *
+     * @return array<int, string>
+     */
+    public function getTagsAttribute(): array
+    {
+        if (blank($this->meta_keywords)) {
+            return [];
+        }
+
+        return collect(preg_split('/[,،\r\n]+/u', (string) $this->meta_keywords) ?: [])
+            ->map(fn ($tag) => trim((string) $tag))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 
     public function getCategoryTitleAttribute(): string
@@ -170,7 +188,6 @@ class Post extends Model
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
-
 
     public function canBeApproved(): bool
     {

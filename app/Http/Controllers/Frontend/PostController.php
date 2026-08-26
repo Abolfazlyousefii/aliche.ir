@@ -34,7 +34,8 @@ class PostController extends Controller
             ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
                 ->where('title', 'like', "%{$search}%")
                 ->orWhere('excerpt', 'like', "%{$search}%")
-                ->orWhere('body', 'like', "%{$search}%")))
+                ->orWhere('body', 'like', "%{$search}%")
+                ->orWhere('meta_keywords', 'like', "%{$search}%")))
             ->when($categoryId, fn ($query) => $query->where('category_id', $categoryId))
             ->when($unionId, fn ($query) => $query->where('union_id', $unionId))
             ->when($date, fn ($query) => $query->whereDate('published_at', $date))
@@ -113,16 +114,14 @@ class PostController extends Controller
         $post->increment('views_count');
         $post->refresh();
 
-        $relatedPosts = Post::query()
+        $latestPosts = Post::query()
             ->published()
             ->editorial()
             ->whereKeyNot($post->id)
-            ->with(['category', 'galleries'])
-            ->withCount('galleries')
-            ->when($post->category_id, fn ($query) => $query->where('category_id', $post->category_id))
             ->orderByDesc('published_at')
-            ->take(5)
-            ->get();
+            ->orderByDesc('id')
+            ->take(15)
+            ->get(['id', 'title', 'slug', 'published_at']);
 
         $previousPost = Post::query()
             ->published()
@@ -138,6 +137,6 @@ class PostController extends Controller
             ->orderBy('published_at')
             ->first();
 
-        return view('frontend.posts.show', compact('post', 'relatedPosts', 'previousPost', 'nextPost'));
+        return view('frontend.posts.show', compact('post', 'latestPosts', 'previousPost', 'nextPost'));
     }
 }
