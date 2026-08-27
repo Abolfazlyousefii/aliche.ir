@@ -75,7 +75,7 @@ class PostController extends Controller
             ->when($filterError !== null, fn ($query) => $query->whereRaw('1 = 0'))
             ->orderBy('sort_order')
             ->latest()
-            ->paginate(15)
+            ->paginate(30)
             ->withQueryString();
 
         $statusCounts = Post::query()
@@ -124,9 +124,11 @@ class PostController extends Controller
         if ($request->ajax() || $request->expectsJson()) {
             return response()->json([
                 'html' => view('admin.posts.partials.results', $viewData)->render(),
+                'rows_html' => view('admin.posts.partials.rows', $viewData)->render(),
                 'url' => $request->fullUrl(),
                 'current_page' => $posts->currentPage(),
                 'last_page' => $posts->lastPage(),
+                'next_page_url' => $posts->nextPageUrl(),
                 'total' => $posts->total(),
                 'from' => $posts->firstItem(),
                 'to' => $posts->lastItem(),
