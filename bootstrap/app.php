@@ -5,12 +5,19 @@ use App\Http\Middleware\ConvertJalaliDates;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Route;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
+        then: function (): void {
+            Route::middleware(['web', 'auth'])
+                ->prefix('admin')
+                ->name('admin.maintenance.')
+                ->group(base_path('routes/admin-maintenance.php'));
+        },
     )
     ->withCommands([
         __DIR__.'/../app/Console/Commands',
