@@ -90,10 +90,10 @@ class UnionMemberController extends Controller
         $this->authorizeVisible($request, $unionMember);
         $data = $this->memberData($request->validated());
 
-        if ($request->boolean('remove_image')) {
-            $data['image'] = null;
-        } elseif ($image = $this->uploadedOrSelectedImage($request, 'image', 'union-members/images')) {
+        if ($image = $this->uploadedOrSelectedImage($request, 'image', 'union-members/images')) {
             $data['image'] = $image;
+        } elseif ($request->boolean('remove_image')) {
+            $data['image'] = null;
         }
 
         $data['attachments'] = $this->updatedAttachments($request, $unionMember);
