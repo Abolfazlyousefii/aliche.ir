@@ -82,8 +82,6 @@ class GuildUnion extends Model
         ];
     }
 
-
-
     public static function priceListModeLabels(): array
     {
         return [
@@ -147,6 +145,30 @@ class GuildUnion extends Model
     public function isSectionEnabled(string $key, bool $default = true): bool
     {
         $settings = $this->settings ?? [];
+
+        // `show_news` is the current source of truth. Older rows can contain
+        // only `show_news_slider`; use it strictly as a fallback when the new
+        // key is absent. When the new key exists, the legacy key must never
+        // override an explicit false value.
+        if ($key === 'show_news') {
+            if (array_key_exists('show_news', $settings)) {
+                return (bool) $settings['show_news'];
+            }
+
+            if (array_key_exists('show_news_slider', $settings)) {
+                return (bool) $settings['show_news_slider'];
+            }
+
+            return $default;
+        }
+
+        // The current frontend still asks for the legacy key as the second
+        // side of an OR expression. Neutralize that legacy side whenever the
+        // current key exists so it cannot re-enable a deliberately hidden
+        // news section.
+        if ($key === 'show_news_slider' && array_key_exists('show_news', $settings)) {
+            return false;
+        }
 
         return array_key_exists($key, $settings) ? (bool) $settings[$key] : $default;
     }
@@ -228,7 +250,6 @@ class GuildUnion extends Model
         return $this->hasMany(UnionCommission::class, 'union_id')->orderBy('sort_order')->orderBy('id');
     }
 
-
     public function rules(): HasMany
     {
         return $this->hasMany(UnionRule::class, 'union_id')->orderBy('sort_order')->orderBy('id');
@@ -302,7 +323,6 @@ class GuildUnion extends Model
             self::TYPE_SPECIALIZED => 'اتحادیه‌های تخصصی',
         ];
     }
-
 
     public static function newsModeLabels(): array
     {
