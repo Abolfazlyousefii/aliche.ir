@@ -17,3 +17,13 @@
     @endphp
     <link href="{{ asset('assets/css/guild-profile.css') }}?v={{ $guildProfileStylesVersion }}" rel="stylesheet"/>
 @endif
+
+@if(request()->routeIs('posts.index'))
+    @php
+        $newsArchivePaginationStylesPath = public_path('assets/css/news-archive-pagination.css');
+        $newsArchivePaginationStylesVersion = is_file($newsArchivePaginationStylesPath)
+            ? filemtime($newsArchivePaginationStylesPath)
+            : '1';
+    @endphp
+    <link href="/assets/css/news-archive-pagination.css?v={{ $newsArchivePaginationStylesVersion }}" rel="stylesheet"/>
+@endif

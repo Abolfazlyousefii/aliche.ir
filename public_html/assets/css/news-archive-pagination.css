@@ -1,0 +1,173 @@
+/*
+|--------------------------------------------------------------------------
+| News archive pagination
+|--------------------------------------------------------------------------
+| Scoped to /posts only. The shared Laravel paginator stays untouched for
+| guilds, homepage news and other archive pages.
+*/
+
+.news-archive-page [data-news-archive-results] {
+  scroll-margin-top: 110px;
+}
+
+.news-archive-page .news-archive-pagination {
+  direction: rtl;
+  display: flex;
+  grid-template-columns: none;
+  grid-template-areas: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 32px 0 0;
+}
+
+.news-archive-page .news-archive-pagination .pagination {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: max-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #e0e8ef;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(20, 52, 76, 0.06);
+}
+
+.news-archive-page .news-archive-pagination .page-item {
+  margin: 0;
+}
+
+.news-archive-page .news-archive-pagination .page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 40px;
+  min-height: 40px;
+  margin: 0;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: #f7f9fb;
+  color: #31485b;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  box-shadow: none;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.news-archive-page .news-archive-pagination a.page-link:hover {
+  border-color: #c8dce9;
+  background: #edf6fb;
+  color: var(--color-primary, #0d638f);
+}
+
+.news-archive-page .news-archive-pagination a.page-link:focus-visible {
+  border-color: var(--color-primary, #0d638f);
+  outline: 3px solid #cfe6f2;
+  outline-offset: 2px;
+  background: #f3f9fc;
+  color: var(--color-primary, #0d638f);
+}
+
+.news-archive-page .news-archive-pagination a.page-link:active {
+  background: #e2f0f7;
+  color: #0b4f73;
+}
+
+.news-archive-page .news-archive-pagination .page-item.active .page-link {
+  border-color: var(--color-primary, #0d638f);
+  background: var(--color-primary, #0d638f);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(13, 99, 143, 0.18);
+}
+
+.news-archive-page .news-archive-pagination .page-item.disabled .page-link {
+  border-color: transparent;
+  background: #f5f7f9;
+  color: #9aa8b4;
+  opacity: 1;
+  cursor: default;
+}
+
+.news-archive-page .news-archive-pagination .page-item-previous .page-link,
+.news-archive-page .news-archive-pagination .page-item-next .page-link {
+  min-width: 84px;
+  padding-inline: 14px;
+  background: #f4f8fb;
+  color: #263f53;
+}
+
+.news-archive-page .news-archive-pagination .pagination-ellipsis {
+  min-width: 26px;
+  padding-inline: 5px;
+  background: transparent;
+  color: #8696a4;
+}
+
+.news-archive-page [data-news-archive-results].is-loading .news-archive-pagination {
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.news-archive-page [data-news-archive-results].is-loading .news-archive-results-content {
+  opacity: 0.58;
+  transition: opacity 160ms ease;
+}
+
+@media (max-width: 575.98px) {
+  .news-archive-page [data-news-archive-results] {
+    scroll-margin-top: 84px;
+  }
+
+  .news-archive-page .news-archive-pagination {
+    margin-top: 24px;
+  }
+
+  .news-archive-page .news-archive-pagination .pagination {
+    gap: 3px;
+    padding: 5px;
+    border-radius: 12px;
+  }
+
+  .news-archive-page .news-archive-pagination .page-link {
+    min-width: 34px;
+    min-height: 34px;
+    padding-inline: 7px;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+
+  .news-archive-page .news-archive-pagination .page-item-previous .page-link,
+  .news-archive-page .news-archive-pagination .page-item-next .page-link {
+    width: 34px;
+    min-width: 34px;
+    padding-inline: 0;
+  }
+
+  .news-archive-page .news-archive-pagination .page-item-previous .page-link span:last-child,
+  .news-archive-page .news-archive-pagination .page-item-next .page-link span:first-child {
+    display: none;
+  }
+
+  .news-archive-page .news-archive-pagination .pagination-ellipsis {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .news-archive-page .news-archive-pagination .page-link,
+  .news-archive-page [data-news-archive-results].is-loading .news-archive-results-content {
+    transition: none;
+  }
+}
