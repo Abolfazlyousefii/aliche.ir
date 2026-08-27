@@ -22,5 +22,6 @@
 @include('frontend.partials.footer')
 @yield('after_footer')
 @include('frontend.partials.scripts')
+@stack('scripts')
 </body>
 </html>

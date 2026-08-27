@@ -1,31 +1,25 @@
-راهنمای نصب FTP - مدیریت امن کش
+Core AJAX Fix — FTP deployment
 
-1) ابتدا چون ممکن است Route Cache فعلی فعال باشد، Route کش‌پاک‌کن موجود پروژه را فقط یک‌بار اجرا کن تا کش فعلی خالی شود.
-   این Route در نسخه فعلی routes/web.php وجود دارد.
-   بعد از انجام این مرحله، Route عمومی قدیمی باید حذف شود.
+Production files:
+1) public/assets/js/ajax-core.js
+2) resources/views/frontend/partials/scripts.blade.php
+3) resources/views/frontend/layouts/app.blade.php
 
-2) فایل زیر را آپلود کن:
-   resources/views/admin/system/cache.blade.php
+No database migration is required.
+No Model/Controller/route changes are required.
 
-3) فایل routes/web.php را باز کن.
-   داخل گروه موجود:
-   Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-   محتوای routes-cache-snippet.txt را اضافه کن.
+After upload:
+- Clear Laravel caches if available.
+- Hard refresh once.
+- Test:
+  * Homepage tabs (unions / tourism / multimedia)
+  * Homepage latest-news pagination
+  * /guilds type filters
+  * /guilds search
+  * /guilds pagination
+  * Browser Back/Forward after changing /guilds filters/pages
 
-4) Route عمومی قدیمی مشخص‌شده در REMOVE-OLD-PUBLIC-ROUTE.txt را کامل حذف کن.
-
-5) ذخیره/آپلود کن.
-
-6) از این به بعد:
-   https://gorganasnaf.ir/admin/cache
-
-   باید ابتدا لاگین باشی و دسترسی settings.edit داشته باشی.
-   super-admin طبق مدل User به‌صورت خودکار همه دسترسی‌ها را دارد.
-
-7) دکمه «پاک‌سازی کش Laravel» یک POST دارای CSRF است و optimize:clear اجرا می‌کند.
-
-نکته:
-- دیتابیس پاک نمی‌شود.
-- Migration اجرا نمی‌شود.
-- فایل‌های آپلودی حذف نمی‌شوند.
-- فقط View/Route/Config/Application cache پاک می‌شود.
+Security:
+- No eval/new Function/unsafe-eval was added.
+- GET AJAX requests use same-origin credentials and X-Requested-With.
+- If AJAX fails, normal Laravel links remain the fallback.
