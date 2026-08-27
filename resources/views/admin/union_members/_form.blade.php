@@ -20,6 +20,23 @@
             <input class="form-control" id="position" name="position" value="{{ old('position', $member?->position) }}" placeholder="مثلاً رئیس هیئت‌مدیره">
         </div>
         <div class="col-md-4">
+            <label class="form-label" for="image">تصویر عضو هیئت‌مدیره</label>
+            <input class="form-control" id="image" name="image" type="file" accept="image/*">
+            <small class="text-muted d-block mt-1">می‌توانید عکس جدید آپلود کنید یا از کتابخانه رسانه انتخاب کنید. حداکثر حجم مطابق تنظیمات رسانه سایت است.</small>
+            <div class="mt-2" data-union-member-image-preview>
+                @if ($member?->image)
+                    <img src="{{ $member->image_url }}" alt="تصویر فعلی {{ $member->full_name }}" class="img-fluid rounded" style="width:120px;height:120px;object-fit:cover">
+                @endif
+            </div>
+            @if ($member?->image)
+                <label class="d-flex align-items-center gap-2 small mt-2">
+                    <input type="hidden" name="remove_image" value="0">
+                    <input type="checkbox" name="remove_image" value="1" @checked(old('remove_image'))>
+                    حذف تصویر فعلی
+                </label>
+            @endif
+        </div>
+        <div class="col-md-4">
             <label class="form-label" for="sort_order">ترتیب نمایش</label>
             <input class="form-control" id="sort_order" name="sort_order" type="number" min="0" value="{{ old('sort_order', $member?->sort_order ?? 0) }}">
         </div>
@@ -97,3 +114,18 @@
     <button class="admin-primary-btn" type="submit">ذخیره عضو</button>
     <a class="admin-secondary-btn" href="{{ route('admin.union_members.index') }}">انصراف</a>
 </div>
+
+@push('scripts')
+<script>
+document.getElementById('image')?.addEventListener('change', (event) => {
+    const input = event.currentTarget;
+    const file = input.files && input.files[0];
+    const preview = document.querySelector('[data-union-member-image-preview]');
+    if (!file || !preview) return;
+
+    const url = URL.createObjectURL(file);
+    preview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر عضو" class="img-fluid rounded" style="width:120px;height:120px;object-fit:cover">`;
+    preview.querySelector('img')?.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+});
+</script>
+@endpush
