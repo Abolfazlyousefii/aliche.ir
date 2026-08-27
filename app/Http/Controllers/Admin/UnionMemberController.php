@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\SelectsMedia;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUnionMemberRequest;
 use App\Http\Requests\Admin\UpdateUnionMemberRequest;
@@ -14,6 +15,8 @@ use Illuminate\View\View;
 
 class UnionMemberController extends Controller
 {
+    use SelectsMedia;
+
     public function index(Request $request): View
     {
         $search = trim((string) $request->query('search'));
@@ -55,6 +58,7 @@ class UnionMemberController extends Controller
     public function store(StoreUnionMemberRequest $request): RedirectResponse
     {
         $data = $this->memberData($request->validated());
+        $data['image'] = $this->uploadedOrSelectedImage($request, 'image', 'union-members/images');
         $data['attachments'] = $this->storeAttachments($request);
 
         $member = UnionMember::create($data);
@@ -85,6 +89,13 @@ class UnionMemberController extends Controller
     {
         $this->authorizeVisible($request, $unionMember);
         $data = $this->memberData($request->validated());
+
+        if ($request->boolean('remove_image')) {
+            $data['image'] = null;
+        } elseif ($image = $this->uploadedOrSelectedImage($request, 'image', 'union-members/images')) {
+            $data['image'] = $image;
+        }
+
         $data['attachments'] = $this->updatedAttachments($request, $unionMember);
 
         $unionMember->update($data);
