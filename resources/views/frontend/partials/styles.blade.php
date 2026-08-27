@@ -14,8 +14,11 @@
     @php
         $guildProfileStylesPath = public_path('assets/css/guild-profile.css');
         $guildProfileStylesVersion = is_file($guildProfileStylesPath) ? filemtime($guildProfileStylesPath) : '1';
+        $guildMemberImagesPath = public_path('assets/css/guild-member-images.css');
+        $guildMemberImagesVersion = is_file($guildMemberImagesPath) ? filemtime($guildMemberImagesPath) : '1';
     @endphp
     <link href="{{ asset('assets/css/guild-profile.css') }}?v={{ $guildProfileStylesVersion }}" rel="stylesheet"/>
+    <link href="{{ asset('assets/css/guild-member-images.css') }}?v={{ $guildMemberImagesVersion }}" rel="stylesheet"/>
 @endif
 
 @if(request()->routeIs('posts.index'))
