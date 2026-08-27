@@ -19,6 +19,7 @@ use App\Observers\SlugHistoryObserver;
 use App\Services\ContentApprovalService;
 use App\Support\PublicStorage;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -38,6 +39,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        /*
+         * Production is HTTPS-only. This is a second safety net for hosts/CDNs
+         * where the origin connection is HTTP even though visitors use HTTPS.
+         */
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         Paginator::defaultView('vendor.pagination.bootstrap-rtl');
         PublicStorage::ensureDirectories(['media', 'posts/featured']);
 

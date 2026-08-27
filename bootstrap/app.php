@@ -25,6 +25,18 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         /*
         |--------------------------------------------------------------------------
+        | Trusted Proxies
+        |--------------------------------------------------------------------------
+        |
+        | The production website is served behind a cloud proxy/CDN (Arvan).
+        | Trusting the proxy lets Laravel honor X-Forwarded-Proto and generate
+        | HTTPS form actions / URLs instead of insecure HTTP URLs.
+        |
+        */
+        $middleware->trustProxies(at: '*');
+
+        /*
+        |--------------------------------------------------------------------------
         | Web Middleware
         |--------------------------------------------------------------------------
         */

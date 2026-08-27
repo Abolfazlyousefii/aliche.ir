@@ -1,39 +1,41 @@
-فیلتر حرفه‌ای + Ajax صفحه مدیریت اخبار
+فارسی‌سازی خطاها + رفع هشدار ناامن بودن فرم
 
-فایل‌های PHP/Blade:
-1) app/Http/Controllers/Admin/PostController.php
-2) resources/views/admin/posts/index.blade.php
-3) resources/views/admin/posts/partials/results.blade.php
+مشکل هشدار انگلیسی Chrome:
+"This form is not secure. Autofill has been turned off."
+این پیام از خود مرورگر است و قابل ترجمه توسط Laravel نیست.
+علت محتمل در این پروژه: سایت پشت Arvan/CDN با HTTPS باز می‌شود ولی Laravel به علت Trusted Proxy نبودن، بعضی URL/form actionها را HTTP تولید می‌کند.
 
-فایل JS جدید:
-4) public/assets/admin/js/posts-index-filters.js
+فایل‌های رفع HTTPS:
+- bootstrap/app.php
+- app/Providers/AppServiceProvider.php
 
-برای ساختار فعلی این پروژه که ممکن است public_path() روی public_html باشد، همان JS در بسته در این مسیر هم قرار داده شده:
-5) public_html/assets/admin/js/posts-index-filters.js
+روی Production حتماً در .env:
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://gorganasnaf.ir
 
-قابلیت‌ها:
-- جستجوی Ajax با debounce
-- فیلتر Ajax وضعیت، نوع محتوا، اتحادیه، دسته‌بندی و جایگاه صفحه اصلی
-- تاریخ شمسی با DatePicker موجود پروژه
-- تبدیل تاریخ شمسی به بازه واقعی published_at در Backend
-- شروع روز برای «از تاریخ» و پایان روز برای «تا تاریخ»
-- نمایش خطای بازه تاریخ نامعتبر
-- پاک کردن کامل فیلترها
-- شمارنده فیلترهای فعال
-- میانبرهای Ajax برای همه/منتشرشده/پیش‌نویس/در انتظار تایید/تاپ/ویژه/امروز
-- Pagination بدون رفرش صفحه
-- پشتیبانی Back/Forward مرورگر
-- لغو درخواست Ajax قدیمی با AbortController
-- fallback کامل GET در صورت غیرفعال بودن JavaScript
-- حفظ تایید حذف برای ردیف‌هایی که بعد از Ajax بارگذاری می‌شوند
-
-Migration و Route جدید لازم نیست.
-
-بعد از جایگزینی:
+بعد:
 php artisan optimize:clear
 
-Deploy:
-- فایل‌های app و resources در روت Laravel قرار می‌گیرند.
-- اگر runtime سایت public_html است، فایل JS حتماً باید در:
-  public_html/assets/admin/js/posts-index-filters.js
-  موجود باشد.
+فارسی‌سازی فوری بدون نیاز به Composer روی هاست:
+- lang/fa/auth.php
+- lang/fa/pagination.php
+- lang/fa/passwords.php
+- lang/fa/validation.php
+- resources/views/errors/*
+
+این فایل‌ها باعث می‌شوند Validationهای Laravel مثل validation.max.file دیگر خام/انگلیسی نمایش داده نشوند و صفحات 403/404/419/422/429/500/503 هم فارسی باشند.
+
+پکیج پیشنهادی برای نگهداری ترجمه‌ها:
+laravel-lang/common
+
+روی لوکال یا cPanel دارای Terminal:
+composer require laravel-lang/common:^6.7
+php artisan lang:add fa
+php artisan lang:update
+php artisan optimize:clear
+
+سپس composer.json و composer.lock و فایل‌های lang تولیدشده را commit کنید.
+
+نکته مهم:
+پیام‌های خود مرورگر Chrome/Firefox، افزونه‌های مرورگر و DevTools بخشی از Laravel نیستند و زبان آن‌ها با زبان خود مرورگر تعیین می‌شود. هدف این تغییر این است که تمام پیام‌های قابل‌کنترل توسط نرم‌افزار Laravel فارسی باشند و هشدار امنیتی مرورگر نیز با اصلاح HTTPS حذف شود.
