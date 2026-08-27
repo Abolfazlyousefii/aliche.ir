@@ -35,6 +35,11 @@
     </div>
     <div class="col-lg-4">
         <div class="admin-panel-card">
+            @if ($member->image)
+                <div class="text-center mb-3">
+                    <img src="{{ $member->image_url }}" alt="{{ $member->full_name }}" class="rounded" style="width:140px;height:140px;object-fit:cover">
+                </div>
+            @endif
             <dl class="row mb-0">
                 <dt class="col-5">اتحادیه</dt><dd class="col-7">{{ $member->union?->display_title ?: '—' }}</dd>
                 <dt class="col-5">کد ملی</dt><dd class="col-7">{{ $member->national_code ?: '—' }}</dd>
