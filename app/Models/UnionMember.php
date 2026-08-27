@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\PublicFileUrl;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,7 @@ class UnionMember extends Model
         'union_id',
         'full_name',
         'position',
+        'image',
         'national_code',
         'mobile',
         'phone',
@@ -42,6 +44,11 @@ class UnionMember extends Model
     public function union(): BelongsTo
     {
         return $this->belongsTo(GuildUnion::class, 'union_id');
+    }
+
+    public function getImageUrlAttribute(): string
+    {
+        return PublicFileUrl::make($this->image);
     }
 
     public function scopeVisibleTo($query, User $user)
