@@ -7,28 +7,56 @@ use App\Http\Requests\Admin\StorePostRequest;
 use App\Http\Requests\Admin\UpdatePostRequest;
 use App\Models\Category;
 use App\Models\GuildUnion;
-use App\Models\Post;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use App\Models\Media;
+use App\Models\Post;
 use App\Services\MediaLibraryService;
 use App\Services\SlugService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Throwable;
 
 class PostController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
-        $search = trim((string) $request->query('search'));
-        $status = (string) $request->query('status', '');
-        $type = (string) $request->query('type', '');
-        $categoryId = $request->query('category_id');
-        $authorId = $request->query('author_id');
-        $from = $request->query('from');
-        $to = $request->query('to');
+        $search = mb_substr(trim((string) $request->query('search', '')), 0, 150);
+
+        $requestedStatus = (string) $request->query('status', '');
+        $status = in_array($requestedStatus, Post::STATUSES, true) ? $requestedStatus : '';
+
+        $requestedType = (string) $request->query('type', '');
+        $type = in_array($requestedType, Post::TYPES, true) ? $requestedType : '';
+
+        $categoryId = $this->positiveInteger($request->query('category_id'));
+        $unionId = $this->positiveInteger($request->query('union_id'));
+
+        $homepagePositionLabels = Post::homepagePositionLabels();
+        $requestedHomepagePosition = (string) $request->query('homepage_position', '');
+        $homepagePosition = array_key_exists($requestedHomepagePosition, $homepagePositionLabels)
+            ? $requestedHomepagePosition
+            : '';
+
+        $from = mb_substr(trim((string) $request->query('from', '')), 0, 30);
+        $to = mb_substr(trim((string) $request->query('to', '')), 0, 30);
         $today = $request->boolean('today');
+
+        $fromDate = $this->postFilterDate($from, false);
+        $toDate = $this->postFilterDate($to, true);
+
+        $filterError = null;
+
+        if ($from !== '' && ! $fromDate) {
+            $filterError = 'تاریخ شروع معتبر نیست. تاریخ را به صورت شمسی، مانند ۱۴۰۴/۰۶/۰۵، وارد کنید.';
+        } elseif ($to !== '' && ! $toDate) {
+            $filterError = 'تاریخ پایان معتبر نیست. تاریخ را به صورت شمسی، مانند ۱۴۰۴/۰۶/۰۵، وارد کنید.';
+        } elseif (! $today && $fromDate && $toDate && $fromDate->gt($toDate)) {
+            $filterError = 'تاریخ شروع نمی‌تواند بعد از تاریخ پایان باشد.';
+        }
 
         $posts = Post::query()
             ->with(['category', 'union', 'author'])
@@ -39,19 +67,74 @@ class PostController extends Controller
             ->when($status !== '', fn ($query) => $query->where('status', $status))
             ->when($type !== '', fn ($query) => $query->where('type', $type))
             ->when($categoryId, fn ($query) => $query->where('category_id', $categoryId))
-            ->when($authorId, fn ($query) => $query->where('created_by', $authorId))
-            ->when($request->query('homepage_position'), fn ($query, $position) => $query->where('homepage_position', $position))
+            ->when($unionId, fn ($query) => $query->where('union_id', $unionId))
+            ->when($homepagePosition !== '', fn ($query) => $query->where('homepage_position', $homepagePosition))
             ->when($today, fn ($query) => $query->published()->publishedOn(now()))
-            ->when($from, fn ($query) => $query->whereDate('published_at', '>=', $from))
-            ->when($to, fn ($query) => $query->whereDate('published_at', '<=', $to))
+            ->when(! $today && ! $filterError && $fromDate, fn ($query) => $query->where('published_at', '>=', $fromDate))
+            ->when(! $today && ! $filterError && $toDate, fn ($query) => $query->where('published_at', '<=', $toDate))
+            ->when($filterError !== null, fn ($query) => $query->whereRaw('1 = 0'))
             ->orderBy('sort_order')
             ->latest()
             ->paginate(15)
             ->withQueryString();
 
-        $statusCounts = Post::query()->selectRaw('status, count(*) as aggregate')->groupBy('status')->pluck('aggregate', 'status');
+        $statusCounts = Post::query()
+            ->selectRaw('status, count(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
         $todayPublishedCount = Post::query()->published()->publishedOn(now())->count();
-        return view('admin.posts.index', compact('posts', 'search', 'status', 'type', 'statusCounts', 'todayPublishedCount')); 
+        $topNewsCount = Post::query()->where('homepage_position', 'top')->count();
+        $featuredNewsCount = Post::query()->where('homepage_position', 'featured')->count();
+
+        $filterCategories = Category::query()
+            ->active()
+            ->where('type', 'news')
+            ->orderBy('sort_order')
+            ->orderBy('title')
+            ->get(['id', 'title']);
+
+        $filterUnions = GuildUnion::query()
+            ->orderByDesc('is_active')
+            ->orderBy('title')
+            ->orderBy('name')
+            ->get(['id', 'title', 'name', 'is_active']);
+
+        $viewData = compact(
+            'posts',
+            'search',
+            'status',
+            'type',
+            'categoryId',
+            'unionId',
+            'homepagePosition',
+            'homepagePositionLabels',
+            'from',
+            'to',
+            'today',
+            'filterError',
+            'statusCounts',
+            'todayPublishedCount',
+            'topNewsCount',
+            'featuredNewsCount',
+            'filterCategories',
+            'filterUnions'
+        );
+
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'html' => view('admin.posts.partials.results', $viewData)->render(),
+                'url' => $request->fullUrl(),
+                'current_page' => $posts->currentPage(),
+                'last_page' => $posts->lastPage(),
+                'total' => $posts->total(),
+                'from' => $posts->firstItem(),
+                'to' => $posts->lastItem(),
+                'filter_error' => $filterError,
+            ]);
+        }
+
+        return view('admin.posts.index', $viewData);
     }
 
     public function create(): View
@@ -326,5 +409,33 @@ class PostController extends Controller
         }
 
         return array_values(array_unique($statuses));
+    }
+
+    private function positiveInteger(mixed $value): ?int
+    {
+        $value = filter_var($value, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1],
+        ]);
+
+        return $value === false ? null : $value;
+    }
+
+    private function postFilterDate(?string $value, bool $endOfDay): ?Carbon
+    {
+        if (blank($value)) {
+            return null;
+        }
+
+        try {
+            $converted = jalali_to_gregorian_datetime($value, $endOfDay);
+
+            if (blank($converted)) {
+                return null;
+            }
+
+            return Carbon::parse($converted);
+        } catch (Throwable) {
+            return null;
+        }
     }
 }
