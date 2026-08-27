@@ -198,6 +198,13 @@ class GuildUnion extends Model
         return $this->hasMany(Post::class, 'union_id');
     }
 
+    /**
+     * Direct latest published news relation.
+     *
+     * The public property with the same name is resolved by the accessor below
+     * so homepage/union AJAX previews can also respect manual/disabled modes
+     * without duplicating that decision logic across controllers and views.
+     */
     public function latestPublishedNews(): HasOne
     {
         return $this->hasOne(Post::class, 'union_id')
@@ -213,6 +220,68 @@ class GuildUnion extends Model
             ->withTimestamps()
             ->orderBy('union_selected_posts.sort_order')
             ->orderByDesc('posts.published_at');
+    }
+
+    /**
+     * Published editorial posts explicitly selected by an administrator.
+     *
+     * This is intentionally separate from selectedPosts() so the admin/page
+     * relation keeps its existing behavior while homepage previews only use
+     * valid, currently publishable news.
+     */
+    public function selectedPublishedPosts(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'union_selected_posts', 'union_id', 'post_id')
+            ->withPivot('sort_order')
+            ->withTimestamps()
+            ->published()
+            ->editorial()
+            ->orderBy('union_selected_posts.sort_order')
+            ->orderByDesc('posts.published_at');
+    }
+
+    /**
+     * Resolve the single news item used by homepage and AJAX union previews.
+     *
+     * auto     => latest published editorial post directly connected to union
+     * manual   => first valid manually selected post (pivot sort_order)
+     * disabled => no news; frontend falls back to union introduction
+     *
+     * A strict false news_enabled value also disables the preview. Null is kept
+     * backward-compatible with legacy rows and behaves like enabled.
+     */
+    public function getLatestPublishedNewsAttribute(mixed $value = null): ?Post
+    {
+        $mode = $this->news_mode ?: 'auto';
+
+        if ($this->news_enabled === false || $mode === 'disabled') {
+            return null;
+        }
+
+        if ($mode === 'manual') {
+            if (! $this->relationLoaded('selectedPublishedPosts')) {
+                $this->setRelation(
+                    'selectedPublishedPosts',
+                    $this->selectedPublishedPosts()
+                        ->with('featuredMedia')
+                        ->get()
+                );
+            }
+
+            return $this->getRelation('selectedPublishedPosts')->first();
+        }
+
+        if ($this->relationLoaded('latestPublishedNews')) {
+            return $this->getRelation('latestPublishedNews');
+        }
+
+        $latestNews = $this->latestPublishedNews()
+            ->with('featuredMedia')
+            ->first();
+
+        $this->setRelation('latestPublishedNews', $latestNews);
+
+        return $latestNews;
     }
 
     public function announcements(): HasMany
