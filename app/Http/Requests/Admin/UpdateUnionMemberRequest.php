@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\UnionMember;
+use App\Rules\SafeImageUpload;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,6 +27,9 @@ class UpdateUnionMemberRequest extends FormRequest
             'union_id' => $this->unionRule(),
             'full_name' => ['required', 'string', 'max:190'],
             'position' => ['nullable', 'string', 'max:190'],
+            'image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
+            'image_media_id' => ['nullable', 'integer', 'exists:media,id'],
+            'remove_image' => ['nullable', 'boolean'],
             'national_code' => ['nullable', 'string', 'max:20'],
             'mobile' => ['nullable', 'string', 'max:50'],
             'phone' => ['nullable', 'string', 'max:50'],
