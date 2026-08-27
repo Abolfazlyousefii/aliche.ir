@@ -246,7 +246,12 @@
                     <div class="guild-profile-members">
                         @foreach($union->members as $member)
                             <article class="guild-profile-member">
-                                <span class="guild-profile-member__avatar">{{ $initial($member->full_name) }}</span>
+                                <div class="guild-profile-member__avatar" data-guild-profile-image-wrap>
+                                    @if($member->image)
+                                        <img src="{{ $member->image_url }}" alt="{{ $member->full_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
+                                    @endif
+                                    <span @if($member->image) hidden @endif data-guild-profile-image-fallback>{{ $initial($member->full_name) }}</span>
+                                </div>
                                 <div><h3>{{ $member->full_name }}</h3><strong>{{ $member->position ?: 'عضو اتحادیه' }}</strong>@if($member->business_name)<p>{{ $member->business_name }}</p>@endif</div>
                             </article>
                         @endforeach
