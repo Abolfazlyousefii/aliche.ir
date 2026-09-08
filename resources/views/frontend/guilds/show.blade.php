@@ -295,13 +295,29 @@
             @if($showNews)
                 <section class="guild-profile-section" id="guild-news" data-guild-profile-section>
                     <header class="guild-profile-section__head"><div><span>رسانه اتحادیه</span><h2>آخرین اخبار اتحادیه</h2></div></header>
-                    <div class="guild-profile-posts guild-profile-news-list">
+                    <div class="latest-news-list guild-profile-news-list">
                         @foreach($posts->take(6) as $post)
-                            <article class="guild-profile-post">
-                                <a href="{{ route('posts.show', $post->slug) }}">
-                                    <div class="guild-profile-post__media"><img src="{{ $post->featured_image_url }}" alt="{{ $post->title }}" loading="lazy" decoding="async"></div>
-                                    <div class="guild-profile-post__body"><span>{{ jalali_date($post->published_at) ?: 'بدون تاریخ' }}</span><h3>{{ $post->title }}</h3>@if($post->summary)<p>{{ $post->summary }}</p>@endif</div>
+                            @php($postUrl = route('posts.show', $post->slug))
+                            <article class="latest-news-card">
+                                <a class="latest-news-thumb-link" href="{{ $postUrl }}">
+                                    <img
+                                        src="{{ $post->featured_image_url }}"
+                                        alt="{{ $post->featuredMedia?->alt_text ?: $post->title }}"
+                                        loading="lazy"
+                                        decoding="async"
+                                        @if($post->featuredMedia?->srcset) srcset="{{ $post->featuredMedia->srcset }}" sizes="(max-width: 560px) 100vw, 400px" @endif
+                                        @if($post->featuredMedia?->width && $post->featuredMedia?->height) width="{{ $post->featuredMedia->width }}" height="{{ $post->featuredMedia->height }}" @endif
+                                    >
                                 </a>
+                                <div class="latest-news-card-body">
+                                    <div class="latest-news-meta">
+                                        <time datetime="{{ $post->published_at?->toIso8601String() }}">{{ jalali_datetime($post->published_at) ?: 'بدون تاریخ' }}</time>
+                                        @if(filled($post->category_title))<span>{{ $post->category_title }}</span>@endif
+                                    </div>
+                                    <h3><a href="{{ $postUrl }}">{{ $post->title }}</a></h3>
+                                    <p>{{ \Illuminate\Support\Str::limit(strip_tags($post->excerpt ?: $post->short_description ?: $post->summary ?: $post->body), 135) }}</p>
+                                    <a class="read-more" href="{{ $postUrl }}" aria-label="مشاهده خبر: {{ $post->title }}">مشاهده خبر</a>
+                                </div>
                             </article>
                         @endforeach
                     </div>

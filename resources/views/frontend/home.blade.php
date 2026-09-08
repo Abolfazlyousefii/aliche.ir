@@ -154,12 +154,7 @@
     $commissionItems = ($commissions ?? collect())->take(8)->map(fn ($commission) => ['icon' => '⚖️', 'title' => $commission->title, 'description' => $plain($commission->description, 130), 'tasks' => $commission->activeTasks->take(3)->map(fn ($task) => ['title' => $task->title, 'description' => $plain($task->description, 120)])->values(), 'url' => route('commissions.show', $commission->slug)])->values();
     $commissionItems = $commissionItems->isNotEmpty() ? $commissionItems : $commissionFallbacks;
 
-    $tourismFallbacks = collect([
-        'tourism-fallback-nature' => ['label' => 'طبیعت‌گردی', 'items' => collect([['title' => 'جنگل النگدره', 'description' => 'یکی از زیباترین جاذبه‌های طبیعی استان گلستان در جنوب گرگان', 'badge' => 'طبیعت', 'alt' => 'جنگل النگدره'], ['title' => 'تالاب بین‌المللی گمیشان', 'description' => 'تالاب زیبا و زیستگاه پرندگان مهاجر در شمال استان گلستان', 'badge' => 'طبیعت', 'alt' => 'تالاب گمیشان'], ['title' => 'آبشار کبودوال', 'description' => 'آبشار زیبا و خنک در دل جنگل‌های انبوه استان گلستان', 'badge' => 'طبیعت', 'alt' => 'آبشار کبودوال']])],
-        'tourism-fallback-historic' => ['label' => 'تاریخی', 'items' => collect([['title' => 'برج گنبد قابوس', 'description' => 'بلندترین برج آجری جهان و میراث جهانی یونسکو در استان گلستان', 'badge' => 'تاریخی', 'alt' => 'برج گنبد قابوس'], ['title' => 'دیوار دفاعی گرگان', 'description' => 'دیوار تاریخی گرگان (مار سرخ)، پس از دیوار چین طولانی‌ترین دیوار جهان', 'badge' => 'تاریخی', 'alt' => 'دیوار دفاعی گرگان']])],
-        'tourism-fallback-shop' => ['label' => 'بازار و خرید', 'items' => collect([['title' => 'بازار بزرگ گرگان', 'description' => 'مرکز خرید اصیل و سنتی گرگان با اصناف متنوع و محصولات محلی', 'badge' => 'خرید', 'alt' => 'بازار بزرگ گرگان'], ['title' => 'مرکز خرید گلستان', 'description' => 'مجتمع تجاری مدرن با فروشگاه‌های متنوع و خدمات رفاهی', 'badge' => 'خرید', 'alt' => 'پاساژ گلستان']])],
-    ]);
-    $tourismPanels = ($tourismPanels ?? collect())->isNotEmpty() ? $tourismPanels : $tourismFallbacks;
+    $tourismPanels = $tourismPanels ?? collect();
 
     $videoFallbacks = collect(['گزارش تصویری از خدمات اتاق اصناف مرکز استان گلستان به کسبه شهرستان', 'راهنمای مراحل صدور و تمدید پروانه کسب', 'آموزش احکام تجارت برای متقاضیان', 'بازدید میدانی بازرسان از واحدهای صنفی گرگان', 'نشست هماهنگی اتحادیه‌های صنفی استان گلستان']);
     $galleryFallbacks = collect(['نمایی از ساختمان و مراجعه حضوری فعالان صنفی', 'جلسه هم‌اندیشی اتحادیه‌های صنفی استان گلستان', 'ارائه خدمات مشاوره‌ای به متقاضیان پروانه کسب', 'برگزاری دوره آموزشی احکام تجارت و کسب‌وکار', 'پیگیری طرح‌های نظارتی بازار در استان گلستان', 'بخشنامه‌ها و دستورالعمل‌های جدید صنفی', 'بازار سنتی گرگان و اصناف قدیمی شهر', 'نمایشگاه صنایع دستی و سوغات استان گلستان']);
@@ -512,6 +507,7 @@
 </div>
 </section>
 
+@if($tourismPanels->isNotEmpty())
 <section class="tourism-section" id="tourism">
 <div class="site-container">
 <div class="tourism-tab-controls" data-tab-group="tourism">
@@ -541,22 +537,16 @@
 <div class="tourism-grid">
 @foreach($panelData['items'] as $place)
 @php
-    $isModel = is_object($place);
-    $placeTitle = $isModel ? $place->title : $place['title'];
-    $placeDesc = $isModel ? (plain_text($place->home_description, 120) ?: 'توضیحی برای این جاذبه ثبت نشده است.') : plain_text($place['description'], 120);
-    $placeBadge = $isModel ? $place->home_badge : $place['badge'];
-    $placeAlt = $isModel ? $place->title : $place['alt'];
-    $placeImage = $isModel ? $place->home_image_url : $defaultImage;
-    $placeUrl = $isModel ? route('tourism.show', $place->slug) : $tourismUrl;
+    $placeDesc = plain_text($place->home_description, 120) ?: 'توضیحی برای این جاذبه ثبت نشده است.';
 @endphp
 <div class="tourism-card">
-<a href="{{ $placeUrl }}">
+<a href="{{ route('tourism.show', $place->slug) }}">
 <div class="tourism-img-wrap">
-<img alt="{{ $placeAlt }}" src="{{ $placeImage }}" loading="lazy" decoding="async"/>
-<div class="tourism-badge">{{ $placeBadge }}</div>
+<img alt="{{ $place->title }}" src="{{ $place->home_image_url }}" loading="lazy" decoding="async"/>
+<div class="tourism-badge">{{ $place->home_badge }}</div>
 </div>
 <div class="tourism-card-body">
-<h3>{{ $placeTitle }}</h3>
+<h3>{{ $place->title }}</h3>
 <p>{{ $placeDesc }}</p>
 </div>
 </a>
@@ -568,6 +558,7 @@
 </div>
 </div>
 </section>
+@endif
 
 
 <section class="multimedia-section" id="multimedia">

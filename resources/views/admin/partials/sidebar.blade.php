@@ -48,6 +48,14 @@
             ],
         ],
         [
+            'title' => 'گردشگری', 'icon' => 'tourism', 'route' => 'admin.tourism.index', 'match' => 'admin.tourism.*', 'permission' => 'tourism.view',
+            'children' => [
+                ['title' => 'مکان جدید', 'permission' => 'tourism.create', 'route' => 'admin.tourism.create', 'match' => 'admin.tourism.create'],
+                ['title' => 'همه مکان‌ها', 'permission' => 'tourism.view', 'route' => 'admin.tourism.index', 'match' => 'admin.tourism.index'],
+                ['title' => 'دسته‌بندی گردشگری', 'permission' => 'tourism.view', 'route' => 'admin.categories.index', 'params' => ['type' => 'tourism'], 'match' => 'admin.categories.*', 'active_type' => 'tourism'],
+            ],
+        ],
+        [
             'title' => 'ارتباطات', 'icon' => 'mail', 'route' => 'admin.messages.inbox', 'match' => ['admin.messages.*', 'admin.sms.*', 'admin.contact_messages.*', 'admin.complaints.*'],
             'badge' => $unreadMessagesCount ?? 0,
             'children' => [
@@ -59,13 +67,11 @@
             ],
         ],
         [
-            'title' => 'تنظیمات و بخش‌ها', 'icon' => 'settings', 'route' => 'admin.settings.edit', 'match' => ['admin.settings.*', 'admin.menus.*', 'admin.systems.*', 'admin.electronic_services.*', 'admin.home_sections.*', 'admin.header_settings.*', 'admin.footer_settings.*', 'admin.announcements.*', 'admin.congratulation_messages.*', 'admin.tourism.*', 'admin.commissions.*', 'admin.advertisements.*', 'admin.advertisement_positions.*'],
+            'title' => 'تنظیمات و بخش‌ها', 'icon' => 'settings', 'route' => 'admin.settings.edit', 'match' => ['admin.settings.*', 'admin.menus.*', 'admin.systems.*', 'admin.electronic_services.*', 'admin.home_sections.*', 'admin.header_settings.*', 'admin.footer_settings.*', 'admin.announcements.*', 'admin.congratulation_messages.*', 'admin.commissions.*', 'admin.advertisements.*', 'admin.advertisement_positions.*'],
             'children' => [
                 ['title' => 'سامانه‌ها', 'permission' => 'systems.view', 'route' => 'admin.systems.index', 'match' => 'admin.systems.*'],
                 ['title' => 'سامانه جدید', 'permission' => 'systems.create', 'route' => 'admin.systems.create', 'match' => 'admin.systems.create'],
                 ['title' => 'اطلاعیه‌ها', 'route' => 'admin.announcements.index', 'match' => 'admin.announcements.*'],
-                ['title' => 'گردشگری', 'route' => 'admin.tourism.index', 'match' => 'admin.tourism.*'],
-                ['title' => 'دسته‌بندی گردشگری', 'permission' => 'tourism.view', 'route' => 'admin.categories.index', 'params' => ['type' => 'tourism'], 'match' => 'admin.categories.*', 'active_type' => 'tourism'],
                 ['title' => 'کمیسیون‌ها', 'route' => 'admin.commissions.index', 'match' => 'admin.commissions.*'],
                 ['title' => 'تبلیغات', 'route' => 'admin.advertisements.index', 'match' => ['admin.advertisements.*', 'admin.advertisement_positions.*']],
                 ['title' => 'منوها', 'route' => 'admin.menus.index', 'match' => 'admin.menus.*'],

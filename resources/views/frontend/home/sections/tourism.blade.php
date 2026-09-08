@@ -5,19 +5,15 @@
             <a class="tab-pill" href="{{ route('tourism.index') }}">مشاهده همه</a>
         </div>
         <div aria-label="گردشگری" class="tabs" data-tab-group="tourism" role="tablist">
-            <button class="tab-pill active" data-tab-target="tourism-nature" type="button">طبیعت‌گردی</button>
-            <button class="tab-pill" data-tab-target="tourism-historic" type="button">تاریخی</button>
-            <button class="tab-pill" data-tab-target="tourism-shop" type="button">بازار و خرید</button>
+            @foreach ($tourismPanels as $panelId => $panel)
+                <button class="tab-pill {{ $loop->first ? 'active' : '' }}" data-tab-target="{{ $panelId }}" type="button" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}">{{ $panel['label'] }}</button>
+            @endforeach
         </div>
         <div data-tab-panels="tourism">
-        @foreach ([
-            'tourism-nature' => $tourismNature ?? collect(),
-            'tourism-historic' => $tourismHistoric ?? collect(),
-            'tourism-shop' => $tourismShop ?? collect(),
-        ] as $panel => $places)
-            <div class="tab-panel {{ $loop->first ? 'active' : '' }}" data-tab-panel="{{ $panel }}">
+        @foreach ($tourismPanels as $panelId => $panel)
+            <div class="tab-panel {{ $loop->first ? 'active' : '' }}" data-tab-panel="{{ $panelId }}" role="tabpanel">
                 <div class="tourism-grid">
-                    @forelse ($places as $place)
+                    @foreach ($panel['items'] as $place)
                         <div class="tourism-card">
                             <a href="{{ route('tourism.show', $place->slug) }}">
                                 <div class="tourism-img-wrap">
@@ -31,19 +27,7 @@
                                 </div>
                             </a>
                         </div>
-                    @empty
-                        <div class="tourism-card">
-                            <div class="tourism-img-wrap">
-                                <img src="{{ asset('assets/img/asnaf-gorgan-default.jpg') }}" alt="موردی موجود نیست" loading="lazy" decoding="async"/>
-                                <div class="tourism-badge">گردشگری</div>
-                            </div>
-                            <div class="tourism-card-body">
-                                <h3>موردی موجود نیست</h3>
-                                <p>در حال حاضر آیتمی برای این دسته گردشگری ثبت نشده است.</p>
-                                <div class="tourism-card-footer"><span>اتاق اصناف مرکز استان گلستان</span></div>
-                            </div>
-                        </div>
-                    @endforelse
+                    @endforeach
                 </div>
             </div>
         @endforeach
