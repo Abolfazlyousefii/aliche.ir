@@ -1740,3 +1740,246 @@ a.guild-profile-contact-card:focus-visible {
     transform: none;
   }
 }
+
+
+/* ---------- Guild news refinement ---------- */
+
+.guild-profile-hero-news {
+  justify-self: end;
+  width: min(100%, 460px);
+  margin: 0;
+}
+
+.guild-profile-hero-news > a {
+  position: relative;
+  display: block;
+  min-height: 300px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 24px;
+  background: #082c43;
+  color: #fff;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, .25);
+  isolation: isolate;
+}
+
+.guild-profile-hero-news img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .35s ease;
+}
+
+.guild-profile-hero-news__shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(5, 31, 48, .06) 18%, rgba(5, 31, 48, .94) 100%);
+}
+
+.guild-profile-hero-news__content {
+  position: absolute;
+  inset-inline: 22px;
+  bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.guild-profile-hero-news__content small {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--gp-primary-dark);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.guild-profile-hero-news__content strong {
+  color: #fff;
+  font-size: clamp(17px, 2vw, 22px);
+  font-weight: 900;
+  line-height: 1.75;
+  text-wrap: balance;
+}
+
+.guild-profile-hero-news__content time {
+  color: rgba(255, 255, 255, .72);
+  font-size: 11px;
+}
+
+.guild-profile-hero-news > a:hover img {
+  transform: scale(1.035);
+}
+
+.guild-profile-news-head {
+  align-items: end;
+}
+
+.guild-profile-news-head > a {
+  flex: 0 0 auto;
+  padding: 9px 14px;
+  border: 1px solid var(--gp-border-strong);
+  border-radius: 10px;
+  background: var(--gp-primary-soft);
+  color: var(--gp-primary-dark);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.guild-profile-news-list {
+  display: grid;
+  gap: 0;
+}
+
+.guild-profile-news-list .latest-news-card {
+  display: grid;
+  grid-template-columns: 155px minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  margin: 0;
+  padding: 18px 0;
+  border: 0;
+  border-bottom: 1px solid var(--gp-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.guild-profile-news-list .latest-news-card:first-child {
+  padding-top: 4px;
+}
+
+.guild-profile-news-list .latest-news-card:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.guild-profile-news-list .latest-news-thumb-link {
+  display: block;
+  overflow: hidden;
+  border-radius: 13px;
+  background: #eaf0f4;
+}
+
+.guild-profile-news-list .latest-news-thumb-link img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 0;
+  transition: transform .25s ease;
+}
+
+.guild-profile-news-list .latest-news-card:hover .latest-news-thumb-link img {
+  transform: scale(1.035);
+}
+
+.guild-profile-news-list .latest-news-card-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.guild-profile-news-list .latest-news-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px 12px;
+  margin-bottom: 5px;
+  color: var(--gp-muted);
+  font-size: 10px;
+}
+
+.guild-profile-news-list .latest-news-meta time {
+  margin: 0;
+}
+
+.guild-profile-news-list .latest-news-meta span {
+  color: var(--gp-primary);
+  font-weight: 800;
+}
+
+.guild-profile-news-list .latest-news-card h3 {
+  margin: 0 0 5px;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.8;
+}
+
+.guild-profile-news-list .latest-news-card h3 a {
+  color: var(--gp-ink);
+}
+
+.guild-profile-news-list .latest-news-card p {
+  display: -webkit-box;
+  margin: 0 0 7px;
+  overflow: hidden;
+  color: var(--gp-muted);
+  font-size: 12px;
+  line-height: 1.9;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.guild-profile-news-list .read-more {
+  color: var(--gp-primary);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+@media (max-width: 991.98px) {
+  .guild-profile-hero-news {
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  .guild-profile-hero-news > a {
+    min-height: 320px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .guild-profile-hero-news > a {
+    min-height: 245px;
+    border-radius: 18px;
+  }
+
+  .guild-profile-hero-news__content {
+    inset-inline: 16px;
+    bottom: 15px;
+  }
+
+  .guild-profile-news-head {
+    align-items: stretch;
+  }
+
+  .guild-profile-news-head > a {
+    align-self: flex-start;
+  }
+
+  .guild-profile-news-list .latest-news-card {
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px 0;
+  }
+
+  .guild-profile-news-list .latest-news-card h3 {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.75;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .guild-profile-news-list .latest-news-card p,
+  .guild-profile-news-list .read-more {
+    display: none;
+  }
+}
