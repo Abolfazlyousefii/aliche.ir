@@ -215,295 +215,6 @@
 </style>
 @endpush
 
-@push('styles')
-<style data-home-union-news-styles>
-/* =========================================================
-   Homepage union news feed
-   ========================================================= */
-
-.union-news-section {
-  padding: 72px 0 68px;
-}
-
-.union-news-section .representatives-heading {
-  margin-bottom: 24px;
-}
-
-.union-news-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(330px, .85fr);
-  gap: 20px;
-  align-items: stretch;
-  direction: rtl;
-}
-
-.union-news-featured {
-  min-width: 0;
-  min-height: 430px;
-  margin: 0;
-}
-
-.union-news-featured > a {
-  position: relative;
-  display: block;
-  height: 100%;
-  min-height: 430px;
-  overflow: hidden;
-  border-radius: 12px;
-  background: #0b3048;
-  color: #fff;
-  isolation: isolate;
-}
-
-.union-news-featured img {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform .35s ease;
-}
-
-.union-news-featured__shade {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(180deg, rgba(4, 25, 39, .05) 20%, rgba(4, 25, 39, .92) 100%);
-}
-
-.union-news-featured__copy {
-  position: absolute;
-  inset-inline: 28px;
-  bottom: 25px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 7px;
-}
-
-.union-news-featured__copy > span {
-  padding: 5px 10px;
-  border-radius: 6px;
-  background: #0c74b9;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.union-news-featured__copy h3 {
-  max-width: 720px;
-  margin: 0;
-  color: #fff;
-  font-size: clamp(20px, 2.25vw, 27px);
-  font-weight: 800;
-  line-height: 1.65;
-  text-wrap: balance;
-}
-
-.union-news-featured__copy p {
-  max-width: 700px;
-  margin: 0;
-  color: rgba(255, 255, 255, .82);
-  font-size: 12px;
-  line-height: 1.9;
-}
-
-.union-news-featured__copy time {
-  color: rgba(255, 255, 255, .68);
-  font-size: 10px;
-}
-
-.union-news-featured > a:hover img {
-  transform: scale(1.025);
-}
-
-.union-news-feed {
-  min-width: 0;
-  height: 430px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid #e2e9ee;
-  border-radius: 12px;
-  background: #f8fafb;
-}
-
-.union-news-feed__head {
-  min-height: 58px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e4eaee;
-  background: #fff;
-}
-
-.union-news-feed__head strong {
-  color: #102b3e;
-  font-size: 13px;
-  font-weight: 750;
-}
-
-.union-news-feed__head small {
-  color: #738694;
-  font-size: 10px;
-}
-
-.union-news-feed__scroll {
-  min-height: 0;
-  flex: 1;
-  overflow-y: auto;
-  padding: 4px 12px 10px;
-  scrollbar-width: thin;
-  scrollbar-color: #9bc7e2 transparent;
-}
-
-.union-news-feed__scroll::-webkit-scrollbar {
-  width: 5px;
-}
-
-.union-news-feed__scroll::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: #9bc7e2;
-}
-
-.union-news-feed__item {
-  min-height: 88px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 2px;
-  border-bottom: 1px solid #e7ecef;
-  color: inherit;
-  text-decoration: none;
-}
-
-.union-news-feed__item:last-child {
-  border-bottom: 0;
-}
-
-.union-news-feed__thumb {
-  position: relative;
-  width: 104px;
-  height: 66px;
-  flex: 0 0 104px;
-  overflow: hidden;
-  border-radius: 7px;
-  background: #e9eff3;
-}
-
-.union-news-feed__thumb img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform .25s ease;
-}
-
-.union-news-feed__body {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.union-news-feed__body small {
-  max-width: 100%;
-  overflow: hidden;
-  color: #0c74b9;
-  font-size: 9px;
-  font-weight: 650;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.union-news-feed__body strong {
-  display: -webkit-box;
-  margin-top: 3px;
-  overflow: hidden;
-  color: #152f42;
-  font-size: 11.5px;
-  font-weight: 750;
-  line-height: 1.7;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.union-news-feed__body time {
-  margin-top: 3px;
-  color: #8997a2;
-  font-size: 8.5px;
-}
-
-.union-news-feed__item:hover {
-  color: inherit;
-  background: #fff;
-}
-
-.union-news-feed__item:hover img {
-  transform: scale(1.04);
-}
-
-@media (max-width: 900px) {
-  .union-news-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .union-news-featured,
-  .union-news-featured > a {
-    min-height: 360px;
-  }
-
-  .union-news-feed {
-    height: 390px;
-  }
-}
-
-@media (max-width: 575.98px) {
-  .union-news-section {
-    padding: 46px 0;
-  }
-
-  .union-news-section .representatives-heading {
-    align-items: center;
-    margin-bottom: 18px;
-  }
-
-  .union-news-featured,
-  .union-news-featured > a {
-    min-height: 285px;
-  }
-
-  .union-news-featured__copy {
-    inset-inline: 17px;
-    bottom: 16px;
-  }
-
-  .union-news-featured__copy h3 {
-    font-size: 17px;
-  }
-
-  .union-news-featured__copy p {
-    display: none;
-  }
-
-  .union-news-feed {
-    height: 365px;
-  }
-
-  .union-news-feed__thumb {
-    width: 92px;
-    height: 60px;
-    flex-basis: 92px;
-  }
-}
-
-</style>
-@endpush
-
 @section('content')
 <main class="home-main">
 <section class="hero-section site-container">
@@ -648,7 +359,7 @@
 @endforeach
 </section>
 
-<section class="representatives-section section-white union-news-section" id="representatives">
+<section class="representatives-section section-white" id="representatives" data-union-ajax-url="{{ route('guilds.ajax-search') }}">
 <div class="site-container">
 <div class="section-heading home-refined-heading representatives-heading">
 <div><h2>اتحادیه‌های صنفی استان گلستان</h2></div>
@@ -656,59 +367,95 @@
 <a class="home-refined-action" href="{{ $guildsUrl }}">فهرست کامل اتحادیه‌ها</a>
 @endif
 </div>
-
-@if($featuredUnionNews)
-<div class="union-news-layout">
-<article class="union-news-featured">
-<a href="{{ route('posts.show', $featuredUnionNews->slug) }}">
-<img
-    src="{{ $featuredUnionNews->featured_image_url }}"
-    alt="{{ $featuredUnionNews->featuredMedia?->alt_text ?: $featuredUnionNews->title }}"
-    loading="lazy"
-    decoding="async"
-    @if($featuredUnionNews->featuredMedia?->srcset) srcset="{{ $featuredUnionNews->featuredMedia->srcset }}" sizes="(max-width: 900px) 100vw, 680px" @endif
->
-<span class="union-news-featured__shade" aria-hidden="true"></span>
-<div class="union-news-featured__copy">
-@if($featuredUnionNews->union)
-<span>{{ $featuredUnionNews->union->display_title }}</span>
-@endif
-<h3>{{ $featuredUnionNews->title }}</h3>
-@if($featuredUnionNews->summary || $featuredUnionNews->excerpt)
-<p>{{ $plain($featuredUnionNews->summary ?: $featuredUnionNews->excerpt, 160) }}</p>
-@endif
-<time datetime="{{ $featuredUnionNews->published_at?->toIso8601String() }}">{{ jalali_datetime($featuredUnionNews->published_at) ?: 'بدون تاریخ' }}</time>
-</div>
-</a>
-</article>
-
-@if($unionNewsList->isNotEmpty())
-<aside class="union-news-feed" aria-label="هشت خبر اخیر اتحادیه‌ها">
-<div class="union-news-feed__head">
-<strong>تازه‌ترین اخبار اتحادیه‌ها</strong>
-<small>{{ fa_number($unionNewsList->count()) }} خبر اخیر</small>
-</div>
-<div class="union-news-feed__scroll">
-@foreach($unionNewsList as $post)
-<a class="union-news-feed__item" href="{{ route('posts.show', $post->slug) }}">
-<span class="union-news-feed__thumb">
-<img src="{{ $post->featured_image_url }}" alt="{{ $post->featuredMedia?->alt_text ?: $post->title }}" loading="lazy" decoding="async">
-</span>
-<span class="union-news-feed__body">
-@if($post->union)<small>{{ $post->union->display_title }}</small>@endif
-<strong>{{ $post->title }}</strong>
-<time datetime="{{ $post->published_at?->toIso8601String() }}">{{ jalali_datetime($post->published_at) ?: 'بدون تاریخ' }}</time>
-</span>
-</a>
+@php
+    $displayUnionPanels = ($unionPanels ?? collect())->filter(fn ($data) => collect($data['items'] ?? [])->isNotEmpty());
+@endphp
+@if($displayUnionPanels->isNotEmpty())
+<div aria-label="گروه‌بندی اتحادیه‌ها" class="tabs representatives-tabs" data-tab-group="representatives" role="tablist">
+@foreach($displayUnionPanels as $panel => $data)
+<button class="tab-pill {{ $loop->first ? 'active' : '' }}" data-tab-target="{{ $panel }}" type="button">
+<x-union-type-icon :icon="$data['icon'] ?? 'storefront'" />
+<span>{{ $data['label'] }}</span>
+</button>
 @endforeach
 </div>
+<div class="tab-panels" data-tab-panels="representatives">
+@foreach($displayUnionPanels as $panel => $data)
+@php
+    $panelUnions = collect($data['items']);
+    $initialUnion = $panelUnions->first(fn ($item) => $item->latestPublishedNews !== null) ?: $panelUnions->first();
+    $initialNews = $initialUnion?->latestPublishedNews;
+    $initialUnionImage = $initialUnion?->primary_image;
+    $initialPreviewUrl = $initialNews
+        ? route('posts.show', $initialNews->slug)
+        : ($initialUnion ? route('guilds.show', $initialUnion->slug) : $guildsUrl);
+    $initialPreviewImage = $initialNews?->featured_image_url ?: $assetImage($initialUnionImage);
+    $initialPreviewTitle = $initialNews?->title ?: ($initialUnion?->display_title ?? $data['label']);
+    $initialPreviewExcerpt = $initialNews?->summary
+        ?: $plain($initialUnion?->short_description ?: $initialUnion?->description, 150);
+    $initialPreviewLabel = $initialNews ? 'آخرین خبر مرتبط' : 'معرفی اتحادیه';
+@endphp
+<div class="tab-panel {{ $loop->first ? 'active' : '' }}" data-tab-panel="{{ $panel }}">
+<div class="representative-layout">
+<div class="representative-map" data-union-preview>
+<a class="union-news-preview-card" href="{{ $initialPreviewUrl }}" data-union-preview-link>
+<img alt="{{ $initialPreviewTitle }}" class="map-img" src="{{ $initialPreviewImage }}" loading="lazy" decoding="async" data-union-preview-image/>
+<div class="union-news-preview-shade"></div>
+<div class="union-news-preview-copy">
+<span data-union-preview-label>{{ $initialPreviewLabel }}</span>
+<h3 data-union-preview-title>{{ $initialPreviewTitle }}</h3>
+<p data-union-preview-excerpt>{{ $initialPreviewExcerpt }}</p>
+</div>
+</a>
+</div>
+<aside class="people-panel" data-search-area="">
+<div class="searchbox"><span class="search-icon"></span><input data-union-ajax-input="" data-union-type="{{ str_replace('rep-', '', $panel) }}" placeholder="جستجوی سریع اتحادیه..." type="search"/></div>
+<div class="people-scroll-wrap">
+<ul class="person-list" data-union-results="{{ $panel }}">
+@foreach($panelUnions as $union)
+@php
+    $previewNews = $union->latestPublishedNews;
+    $unionUrl = route('guilds.show', $union->slug);
+    $unionImage = $union->primary_image;
+    $previewUrl = $previewNews ? route('posts.show', $previewNews->slug) : $unionUrl;
+    $previewImage = $previewNews?->featured_image_url ?: $assetImage($unionImage);
+    $previewTitle = $previewNews?->title ?: $union->display_title;
+    $previewExcerpt = $previewNews?->summary
+        ?: $plain($union->short_description ?: $union->description ?: $union->manager_name, 150);
+    $previewLabel = $previewNews ? 'آخرین خبر مرتبط' : 'معرفی اتحادیه';
+@endphp
+<li
+    class="union-home-item"
+    data-union-preview-item
+    data-preview-url="{{ $previewUrl }}"
+    data-preview-image="{{ $previewImage }}"
+    data-preview-title="{{ $previewTitle }}"
+    data-preview-excerpt="{{ $previewExcerpt }}"
+    data-preview-label="{{ $previewLabel }}"
+>
+<a href="{{ $unionUrl }}" class="union-home-link">
+<span class="person-avatar avatar-{{ ($loop->iteration % 6) + 1 }}">
+<img src="{{ $assetImage($unionImage) }}" alt="{{ $union->display_title }}" loading="lazy" decoding="async">
+</span>
+<div>
+<strong>{{ $union->display_title }}</strong>
+<small>{{ $plain($union->short_description ?: $union->manager_name ?: $union->union_type_label, 90) }}</small>
+</div>
+</a>
+</li>
+@endforeach
+</ul>
+<div class="union-ajax-status" data-union-status="{{ $panel }}" hidden></div>
+</div>
 </aside>
-@endif
+</div>
+</div>
+@endforeach
 </div>
 @else
 <div class="empty-state union-empty-state">
-<h3>هنوز خبر منتشرشده‌ای برای اتحادیه‌ها ثبت نشده است.</h3>
-<p>به‌محض انتشار خبر مرتبط با یکی از اتحادیه‌های فعال، این بخش به‌صورت خودکار بروزرسانی می‌شود.</p>
+<h3>اتحادیه فعالی برای نمایش در صفحه اصلی ثبت نشده است.</h3>
+<p>به‌زودی اطلاعات اتحادیه‌های فعال در این بخش نمایش داده می‌شود.</p>
 </div>
 @endif
 </div>
