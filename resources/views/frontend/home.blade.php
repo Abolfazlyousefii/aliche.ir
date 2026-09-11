@@ -132,15 +132,6 @@
 
     $adItems = ($homeAdvertisements ?? collect())->take(4)->filter(fn ($ad) => filled($ad->image))->map(fn ($ad) => ['title' => $ad->title ?: 'تبلیغات', 'url' => $ad->link, 'image' => $assetImage($ad->image), 'target' => $ad->target ?: '_self', 'alt' => data_get($ad, 'alt') ?: ($ad->title ?: 'تبلیغات')])->values();
 
-    $unionPanels = ($unionPanels ?? collect());
-    if ($unionPanels->isEmpty()) {
-        $unionPanels = collect([
-            'rep-production' => ['label' => 'اتحادیه‌های تولیدی', 'icon' => 'factory', 'items' => ($productionUnions ?? collect())],
-            'rep-distribution' => ['label' => 'اتحادیه‌های توزیعی', 'icon' => 'cart', 'items' => ($distributionUnions ?? collect())],
-            'rep-service' => ['label' => 'اتحادیه‌های خدماتی', 'icon' => 'briefcase', 'items' => ($serviceUnions ?? collect())],
-        ]);
-    }
-
     $commissionFallbacks = collect([
         ['icon' => '⚖️', 'title' => 'کمیسیون تشخیص', 'description' => 'نظارت بر عملکرد واحدهای صنفی، اجرای طرح‌های بازرسی دوره‌ای و رسیدگی به تخلفات صنفی در سطح شهرستان'],
         ['icon' => '🎓', 'title' => 'کمیسیون آموزش', 'description' => 'برنامه‌ریزی و برگزاری دوره‌های آموزش احکام تجارت و کسب‌وکار برای متقاضیان پروانه کسب و فعالان صنفی'],
@@ -212,6 +203,306 @@
             .home-main > {{ $selector }} { order: {{ (int) $matchingOrders->min() }}; }
         @endif
     @endforeach
+
+    /* Isolated homepage union-news section; no selector escapes .home-union-news. */
+    .home-union-news {
+        padding-block: 58px;
+        background: #fff;
+    }
+    .home-union-news .home-union-news__heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    .home-union-news .home-union-news__heading h2 {
+        margin: 0;
+        color: #172f40;
+        font-size: 21px;
+        font-weight: 700;
+        line-height: 1.6;
+    }
+    .home-union-news .home-union-news__heading p {
+        margin: 4px 0 0;
+        color: #75838d;
+        font-size: 12px;
+        line-height: 1.8;
+    }
+    .home-union-news .home-union-news__archive {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 7px 15px;
+        border: 1px solid rgba(12, 116, 185, .25);
+        border-radius: 7px;
+        color: #0c74b9;
+        background: #fff;
+        font-size: 11.5px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: border-color .18s ease, background-color .18s ease;
+    }
+    .home-union-news .home-union-news__archive:hover {
+        border-color: #0c74b9;
+        background: #f6fafc;
+    }
+    .home-union-news .home-union-news__layout {
+        display: grid;
+        grid-template-columns: minmax(320px, .82fr) minmax(0, 1.18fr);
+        grid-template-areas: "list feature";
+        gap: 18px;
+        min-width: 0;
+        direction: ltr;
+    }
+    .home-union-news .home-union-news__feature {
+        grid-area: feature;
+        position: relative;
+        display: block;
+        min-width: 0;
+        min-height: 410px;
+        overflow: hidden;
+        border: 1px solid rgba(15, 35, 52, .1);
+        border-radius: 10px;
+        background: #e8eef2;
+        color: #fff;
+        text-decoration: none;
+        direction: rtl;
+        isolation: isolate;
+    }
+    .home-union-news .home-union-news__feature img {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        object-fit: cover;
+        object-position: center;
+        transition: transform .3s ease;
+    }
+    .home-union-news .home-union-news__feature:hover img {
+        transform: scale(1.02);
+    }
+    .home-union-news .home-union-news__shade {
+        position: absolute;
+        z-index: 1;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(5, 23, 36, .04) 28%, rgba(5, 23, 36, .88) 100%);
+    }
+    .home-union-news .home-union-news__feature-copy {
+        position: absolute;
+        z-index: 2;
+        right: 22px;
+        bottom: 20px;
+        left: 22px;
+    }
+    .home-union-news .home-union-news__meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 7px;
+        color: rgba(255,255,255,.8);
+        font-size: 10.5px;
+        line-height: 1.7;
+    }
+    .home-union-news .home-union-news__meta span + span::before {
+        content: "";
+        display: inline-block;
+        width: 3px;
+        height: 3px;
+        margin-inline-end: 7px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.58);
+        vertical-align: middle;
+    }
+    .home-union-news .home-union-news__feature h3 {
+        display: -webkit-box;
+        max-width: 92%;
+        overflow: hidden;
+        margin: 0;
+        color: #fff;
+        font-size: clamp(17px, 1.8vw, 23px);
+        font-weight: 700;
+        line-height: 1.7;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+    .home-union-news .home-union-news__feature p {
+        display: -webkit-box;
+        max-width: 88%;
+        overflow: hidden;
+        margin: 7px 0 0;
+        color: rgba(255,255,255,.78);
+        font-size: 11.5px;
+        line-height: 1.85;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+    .home-union-news .home-union-news__list-panel {
+        grid-area: list;
+        min-width: 0;
+        height: 410px;
+        overflow: hidden;
+        border: 1px solid rgba(15, 35, 52, .1);
+        border-radius: 10px;
+        background: #fff;
+        direction: rtl;
+    }
+    .home-union-news .home-union-news__list {
+        height: 100%;
+        margin: 0;
+        padding: 6px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(12,116,185,.35) transparent;
+        list-style: none;
+    }
+    .home-union-news .home-union-news__list::-webkit-scrollbar {
+        width: 5px;
+    }
+    .home-union-news .home-union-news__list::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background: rgba(12,116,185,.35);
+    }
+    .home-union-news .home-union-news__item + .home-union-news__item {
+        border-top: 1px solid rgba(15, 35, 52, .075);
+    }
+    .home-union-news .home-union-news__item a {
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr);
+        align-items: center;
+        gap: 11px;
+        min-height: 76px;
+        padding: 9px 7px;
+        color: inherit;
+        text-decoration: none;
+        transition: background-color .16s ease;
+    }
+    .home-union-news .home-union-news__item a:hover {
+        background: #f7fafc;
+    }
+    .home-union-news .home-union-news__thumb {
+        display: block;
+        width: 72px;
+        height: 56px;
+        overflow: hidden;
+        border-radius: 7px;
+        background: #edf2f5;
+    }
+    .home-union-news .home-union-news__thumb img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .home-union-news .home-union-news__item-copy {
+        min-width: 0;
+    }
+    .home-union-news .home-union-news__item-meta {
+        display: block;
+        overflow: hidden;
+        margin-bottom: 2px;
+        color: #7f8d97;
+        font-size: 9.5px;
+        line-height: 1.6;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .home-union-news .home-union-news__item strong {
+        display: -webkit-box;
+        overflow: hidden;
+        color: #213746;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.75;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+    .home-union-news .home-union-news__empty {
+        grid-column: 1 / -1;
+        padding: 34px;
+        border: 1px solid rgba(15, 35, 52, .1);
+        border-radius: 10px;
+        color: #6f7e88;
+        background: #f8fafb;
+        font-size: 12px;
+        line-height: 1.9;
+        text-align: center;
+        direction: rtl;
+    }
+    @media (max-width: 991.98px) {
+        .home-union-news .home-union-news__layout {
+            grid-template-columns: minmax(280px, .88fr) minmax(0, 1.12fr);
+            gap: 14px;
+        }
+        .home-union-news .home-union-news__feature,
+        .home-union-news .home-union-news__list-panel {
+            min-height: 360px;
+            height: 360px;
+        }
+    }
+    @media (max-width: 767.98px) {
+        .home-union-news {
+            padding-block: 44px;
+        }
+        .home-union-news .home-union-news__heading {
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .home-union-news .home-union-news__heading h2 {
+            font-size: 18px;
+        }
+        .home-union-news .home-union-news__heading p {
+            font-size: 10.5px;
+        }
+        .home-union-news .home-union-news__archive {
+            min-height: 34px;
+            padding-inline: 11px;
+            font-size: 10.5px;
+        }
+        .home-union-news .home-union-news__layout {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-areas: "feature" "list";
+            gap: 12px;
+        }
+        .home-union-news .home-union-news__feature {
+            min-height: 245px;
+            height: 245px;
+        }
+        .home-union-news .home-union-news__list-panel {
+            min-height: 0;
+            height: 382px;
+        }
+        .home-union-news .home-union-news__feature-copy {
+            right: 15px;
+            bottom: 14px;
+            left: 15px;
+        }
+        .home-union-news .home-union-news__feature h3 {
+            max-width: 100%;
+            font-size: 16px;
+        }
+        .home-union-news .home-union-news__feature p {
+            display: none;
+        }
+    }
+    @media (max-width: 479.98px) {
+        .home-union-news .home-union-news__heading p {
+            display: none;
+        }
+        .home-union-news .home-union-news__item a {
+            grid-template-columns: 66px minmax(0, 1fr);
+        }
+        .home-union-news .home-union-news__thumb {
+            width: 66px;
+            height: 52px;
+        }
+    }
 </style>
 @endpush
 
@@ -359,105 +650,79 @@
 @endforeach
 </section>
 
-<section class="representatives-section section-white" id="representatives" data-union-ajax-url="{{ route('guilds.ajax-search') }}">
+<section class="home-union-news" id="representatives" aria-labelledby="home-union-news-title">
 <div class="site-container">
-<div class="section-heading home-refined-heading representatives-heading">
-<div><h2>اتحادیه‌های صنفی استان گلستان</h2></div>
-@if(($homeUnions ?? collect())->isNotEmpty())
-<a class="home-refined-action" href="{{ $guildsUrl }}">فهرست کامل اتحادیه‌ها</a>
+<div class="home-union-news__heading">
+<div>
+<h2 id="home-union-news-title">آخرین اخبار اتحادیه‌ها</h2>
+<p>جدیدترین خبرهای منتشرشده از اتحادیه‌های صنفی استان گلستان</p>
+</div>
+<a class="home-union-news__archive" href="{{ $postsUrl }}">آرشیو اخبار</a>
+</div>
+
+<div class="home-union-news__layout">
+@if($featuredUnionNews)
+@php
+    $featuredUnionNewsUrl = route('posts.show', $featuredUnionNews->slug);
+    $featuredUnionNewsImage = $featuredUnionNews->featured_image_url ?: $defaultImage;
+@endphp
+<a class="home-union-news__feature" href="{{ $featuredUnionNewsUrl }}">
+<img
+    src="{{ $featuredUnionNewsImage }}"
+    alt="{{ $featuredUnionNews->title }}"
+    loading="lazy"
+    decoding="async"
+    fetchpriority="low"
+>
+<span class="home-union-news__shade" aria-hidden="true"></span>
+<div class="home-union-news__feature-copy">
+<div class="home-union-news__meta">
+<span>{{ $featuredUnionNews->union?->title ?? 'اتحادیه صنفی' }}</span>
+@if($featuredUnionNews->published_at)
+<span>{{ $featuredUnionNews->published_at->format('Y/m/d') }}</span>
 @endif
 </div>
-@php
-    $displayUnionPanels = ($unionPanels ?? collect())->filter(fn ($data) => collect($data['items'] ?? [])->isNotEmpty());
-@endphp
-@if($displayUnionPanels->isNotEmpty())
-<div aria-label="گروه‌بندی اتحادیه‌ها" class="tabs representatives-tabs" data-tab-group="representatives" role="tablist">
-@foreach($displayUnionPanels as $panel => $data)
-<button class="tab-pill {{ $loop->first ? 'active' : '' }}" data-tab-target="{{ $panel }}" type="button">
-<x-union-type-icon :icon="$data['icon'] ?? 'storefront'" />
-<span>{{ $data['label'] }}</span>
-</button>
-@endforeach
-</div>
-<div class="tab-panels" data-tab-panels="representatives">
-@foreach($displayUnionPanels as $panel => $data)
-@php
-    $panelUnions = collect($data['items']);
-    $initialUnion = $panelUnions->first(fn ($item) => $item->latestPublishedNews !== null) ?: $panelUnions->first();
-    $initialNews = $initialUnion?->latestPublishedNews;
-    $initialUnionImage = $initialUnion?->primary_image;
-    $initialPreviewUrl = $initialNews
-        ? route('posts.show', $initialNews->slug)
-        : ($initialUnion ? route('guilds.show', $initialUnion->slug) : $guildsUrl);
-    $initialPreviewImage = $initialNews?->featured_image_url ?: $assetImage($initialUnionImage);
-    $initialPreviewTitle = $initialNews?->title ?: ($initialUnion?->display_title ?? $data['label']);
-    $initialPreviewExcerpt = $initialNews?->summary
-        ?: $plain($initialUnion?->short_description ?: $initialUnion?->description, 150);
-    $initialPreviewLabel = $initialNews ? 'آخرین خبر مرتبط' : 'معرفی اتحادیه';
-@endphp
-<div class="tab-panel {{ $loop->first ? 'active' : '' }}" data-tab-panel="{{ $panel }}">
-<div class="representative-layout">
-<div class="representative-map" data-union-preview>
-<a class="union-news-preview-card" href="{{ $initialPreviewUrl }}" data-union-preview-link>
-<img alt="{{ $initialPreviewTitle }}" class="map-img" src="{{ $initialPreviewImage }}" loading="lazy" decoding="async" data-union-preview-image/>
-<div class="union-news-preview-shade"></div>
-<div class="union-news-preview-copy">
-<span data-union-preview-label>{{ $initialPreviewLabel }}</span>
-<h3 data-union-preview-title>{{ $initialPreviewTitle }}</h3>
-<p data-union-preview-excerpt>{{ $initialPreviewExcerpt }}</p>
+<h3>{{ $featuredUnionNews->title }}</h3>
+@if(filled($featuredUnionNews->excerpt))
+<p>{{ $plain($featuredUnionNews->excerpt, 150) }}</p>
+@endif
 </div>
 </a>
-</div>
-<aside class="people-panel" data-search-area="">
-<div class="searchbox"><span class="search-icon"></span><input data-union-ajax-input="" data-union-type="{{ str_replace('rep-', '', $panel) }}" placeholder="جستجوی سریع اتحادیه..." type="search"/></div>
-<div class="people-scroll-wrap">
-<ul class="person-list" data-union-results="{{ $panel }}">
-@foreach($panelUnions as $union)
-@php
-    $previewNews = $union->latestPublishedNews;
-    $unionUrl = route('guilds.show', $union->slug);
-    $unionImage = $union->primary_image;
-    $previewUrl = $previewNews ? route('posts.show', $previewNews->slug) : $unionUrl;
-    $previewImage = $previewNews?->featured_image_url ?: $assetImage($unionImage);
-    $previewTitle = $previewNews?->title ?: $union->display_title;
-    $previewExcerpt = $previewNews?->summary
-        ?: $plain($union->short_description ?: $union->description ?: $union->manager_name, 150);
-    $previewLabel = $previewNews ? 'آخرین خبر مرتبط' : 'معرفی اتحادیه';
-@endphp
-<li
-    class="union-home-item"
-    data-union-preview-item
-    data-preview-url="{{ $previewUrl }}"
-    data-preview-image="{{ $previewImage }}"
-    data-preview-title="{{ $previewTitle }}"
-    data-preview-excerpt="{{ $previewExcerpt }}"
-    data-preview-label="{{ $previewLabel }}"
+
+@if($unionNewsList->isNotEmpty())
+<aside class="home-union-news__list-panel" aria-label="هشت خبر اخیر اتحادیه‌ها">
+<ul class="home-union-news__list">
+@foreach($unionNewsList as $unionNewsItem)
+<li class="home-union-news__item">
+<a href="{{ route('posts.show', $unionNewsItem->slug) }}">
+<span class="home-union-news__thumb">
+<img
+    src="{{ $unionNewsItem->featured_image_url ?: $defaultImage }}"
+    alt=""
+    loading="lazy"
+    decoding="async"
+    fetchpriority="low"
 >
-<a href="{{ $unionUrl }}" class="union-home-link">
-<span class="person-avatar avatar-{{ ($loop->iteration % 6) + 1 }}">
-<img src="{{ $assetImage($unionImage) }}" alt="{{ $union->display_title }}" loading="lazy" decoding="async">
 </span>
-<div>
-<strong>{{ $union->display_title }}</strong>
-<small>{{ $plain($union->short_description ?: $union->manager_name ?: $union->union_type_label, 90) }}</small>
-</div>
+<span class="home-union-news__item-copy">
+<span class="home-union-news__item-meta">
+{{ $unionNewsItem->union?->title ?? 'اتحادیه صنفی' }}
+@if($unionNewsItem->published_at)
+ · {{ $unionNewsItem->published_at->format('Y/m/d') }}
+@endif
+</span>
+<strong>{{ $unionNewsItem->title }}</strong>
+</span>
 </a>
 </li>
 @endforeach
 </ul>
-<div class="union-ajax-status" data-union-status="{{ $panel }}" hidden></div>
-</div>
 </aside>
-</div>
-</div>
-@endforeach
-</div>
-@else
-<div class="empty-state union-empty-state">
-<h3>اتحادیه فعالی برای نمایش در صفحه اصلی ثبت نشده است.</h3>
-<p>به‌زودی اطلاعات اتحادیه‌های فعال در این بخش نمایش داده می‌شود.</p>
-</div>
 @endif
+@else
+<div class="home-union-news__empty">هنوز خبری برای اتحادیه‌های صنفی منتشر نشده است.</div>
+@endif
+</div>
 </div>
 </section>
 
