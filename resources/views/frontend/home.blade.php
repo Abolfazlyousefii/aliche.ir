@@ -359,7 +359,7 @@
 @endforeach
 </section>
 
-<section class="representatives-section section-white" id="representatives" data-union-ajax-url="{{ route('guilds.ajax-search') }}">
+<section class="representatives-section section-white union-news-section" id="representatives">
 <div class="site-container">
 <div class="section-heading home-refined-heading representatives-heading">
 <div><h2>اتحادیه‌های صنفی استان گلستان</h2></div>
@@ -367,95 +367,59 @@
 <a class="home-refined-action" href="{{ $guildsUrl }}">فهرست کامل اتحادیه‌ها</a>
 @endif
 </div>
-@php
-    $displayUnionPanels = ($unionPanels ?? collect())->filter(fn ($data) => collect($data['items'] ?? [])->isNotEmpty());
-@endphp
-@if($displayUnionPanels->isNotEmpty())
-<div aria-label="گروه‌بندی اتحادیه‌ها" class="tabs representatives-tabs" data-tab-group="representatives" role="tablist">
-@foreach($displayUnionPanels as $panel => $data)
-<button class="tab-pill {{ $loop->first ? 'active' : '' }}" data-tab-target="{{ $panel }}" type="button">
-<x-union-type-icon :icon="$data['icon'] ?? 'storefront'" />
-<span>{{ $data['label'] }}</span>
-</button>
-@endforeach
-</div>
-<div class="tab-panels" data-tab-panels="representatives">
-@foreach($displayUnionPanels as $panel => $data)
-@php
-    $panelUnions = collect($data['items']);
-    $initialUnion = $panelUnions->first(fn ($item) => $item->latestPublishedNews !== null) ?: $panelUnions->first();
-    $initialNews = $initialUnion?->latestPublishedNews;
-    $initialUnionImage = $initialUnion?->primary_image;
-    $initialPreviewUrl = $initialNews
-        ? route('posts.show', $initialNews->slug)
-        : ($initialUnion ? route('guilds.show', $initialUnion->slug) : $guildsUrl);
-    $initialPreviewImage = $initialNews?->featured_image_url ?: $assetImage($initialUnionImage);
-    $initialPreviewTitle = $initialNews?->title ?: ($initialUnion?->display_title ?? $data['label']);
-    $initialPreviewExcerpt = $initialNews?->summary
-        ?: $plain($initialUnion?->short_description ?: $initialUnion?->description, 150);
-    $initialPreviewLabel = $initialNews ? 'آخرین خبر مرتبط' : 'معرفی اتحادیه';
-@endphp
-<div class="tab-panel {{ $loop->first ? 'active' : '' }}" data-tab-panel="{{ $panel }}">
-<div class="representative-layout">
-<div class="representative-map" data-union-preview>
-<a class="union-news-preview-card" href="{{ $initialPreviewUrl }}" data-union-preview-link>
-<img alt="{{ $initialPreviewTitle }}" class="map-img" src="{{ $initialPreviewImage }}" loading="lazy" decoding="async" data-union-preview-image/>
-<div class="union-news-preview-shade"></div>
-<div class="union-news-preview-copy">
-<span data-union-preview-label>{{ $initialPreviewLabel }}</span>
-<h3 data-union-preview-title>{{ $initialPreviewTitle }}</h3>
-<p data-union-preview-excerpt>{{ $initialPreviewExcerpt }}</p>
-</div>
-</a>
-</div>
-<aside class="people-panel" data-search-area="">
-<div class="searchbox"><span class="search-icon"></span><input data-union-ajax-input="" data-union-type="{{ str_replace('rep-', '', $panel) }}" placeholder="جستجوی سریع اتحادیه..." type="search"/></div>
-<div class="people-scroll-wrap">
-<ul class="person-list" data-union-results="{{ $panel }}">
-@foreach($panelUnions as $union)
-@php
-    $previewNews = $union->latestPublishedNews;
-    $unionUrl = route('guilds.show', $union->slug);
-    $unionImage = $union->primary_image;
-    $previewUrl = $previewNews ? route('posts.show', $previewNews->slug) : $unionUrl;
-    $previewImage = $previewNews?->featured_image_url ?: $assetImage($unionImage);
-    $previewTitle = $previewNews?->title ?: $union->display_title;
-    $previewExcerpt = $previewNews?->summary
-        ?: $plain($union->short_description ?: $union->description ?: $union->manager_name, 150);
-    $previewLabel = $previewNews ? 'آخرین خبر مرتبط' : 'معرفی اتحادیه';
-@endphp
-<li
-    class="union-home-item"
-    data-union-preview-item
-    data-preview-url="{{ $previewUrl }}"
-    data-preview-image="{{ $previewImage }}"
-    data-preview-title="{{ $previewTitle }}"
-    data-preview-excerpt="{{ $previewExcerpt }}"
-    data-preview-label="{{ $previewLabel }}"
+
+@if($featuredUnionNews)
+<div class="union-news-layout">
+<article class="union-news-featured">
+<a href="{{ route('posts.show', $featuredUnionNews->slug) }}">
+<img
+    src="{{ $featuredUnionNews->featured_image_url }}"
+    alt="{{ $featuredUnionNews->featuredMedia?->alt_text ?: $featuredUnionNews->title }}"
+    loading="lazy"
+    decoding="async"
+    @if($featuredUnionNews->featuredMedia?->srcset) srcset="{{ $featuredUnionNews->featuredMedia->srcset }}" sizes="(max-width: 900px) 100vw, 680px" @endif
 >
-<a href="{{ $unionUrl }}" class="union-home-link">
-<span class="person-avatar avatar-{{ ($loop->iteration % 6) + 1 }}">
-<img src="{{ $assetImage($unionImage) }}" alt="{{ $union->display_title }}" loading="lazy" decoding="async">
-</span>
-<div>
-<strong>{{ $union->display_title }}</strong>
-<small>{{ $plain($union->short_description ?: $union->manager_name ?: $union->union_type_label, 90) }}</small>
+<span class="union-news-featured__shade" aria-hidden="true"></span>
+<div class="union-news-featured__copy">
+@if($featuredUnionNews->union)
+<span>{{ $featuredUnionNews->union->display_title }}</span>
+@endif
+<h3>{{ $featuredUnionNews->title }}</h3>
+@if($featuredUnionNews->summary || $featuredUnionNews->excerpt)
+<p>{{ $plain($featuredUnionNews->summary ?: $featuredUnionNews->excerpt, 160) }}</p>
+@endif
+<time datetime="{{ $featuredUnionNews->published_at?->toIso8601String() }}">{{ jalali_datetime($featuredUnionNews->published_at) ?: 'بدون تاریخ' }}</time>
 </div>
 </a>
-</li>
+</article>
+
+@if($unionNewsList->isNotEmpty())
+<aside class="union-news-feed" aria-label="هشت خبر اخیر اتحادیه‌ها">
+<div class="union-news-feed__head">
+<strong>تازه‌ترین اخبار اتحادیه‌ها</strong>
+<small>{{ fa_number($unionNewsList->count()) }} خبر اخیر</small>
+</div>
+<div class="union-news-feed__scroll">
+@foreach($unionNewsList as $post)
+<a class="union-news-feed__item" href="{{ route('posts.show', $post->slug) }}">
+<span class="union-news-feed__thumb">
+<img src="{{ $post->featured_image_url }}" alt="{{ $post->featuredMedia?->alt_text ?: $post->title }}" loading="lazy" decoding="async">
+</span>
+<span class="union-news-feed__body">
+@if($post->union)<small>{{ $post->union->display_title }}</small>@endif
+<strong>{{ $post->title }}</strong>
+<time datetime="{{ $post->published_at?->toIso8601String() }}">{{ jalali_datetime($post->published_at) ?: 'بدون تاریخ' }}</time>
+</span>
+</a>
 @endforeach
-</ul>
-<div class="union-ajax-status" data-union-status="{{ $panel }}" hidden></div>
 </div>
 </aside>
-</div>
-</div>
-@endforeach
+@endif
 </div>
 @else
 <div class="empty-state union-empty-state">
-<h3>اتحادیه فعالی برای نمایش در صفحه اصلی ثبت نشده است.</h3>
-<p>به‌زودی اطلاعات اتحادیه‌های فعال در این بخش نمایش داده می‌شود.</p>
+<h3>هنوز خبر منتشرشده‌ای برای اتحادیه‌ها ثبت نشده است.</h3>
+<p>به‌محض انتشار خبر مرتبط با یکی از اتحادیه‌های فعال، این بخش به‌صورت خودکار بروزرسانی می‌شود.</p>
 </div>
 @endif
 </div>
