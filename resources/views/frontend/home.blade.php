@@ -215,6 +215,295 @@
 </style>
 @endpush
 
+@push('styles')
+<style data-home-union-news-styles>
+/* =========================================================
+   Homepage union news feed
+   ========================================================= */
+
+.union-news-section {
+  padding: 72px 0 68px;
+}
+
+.union-news-section .representatives-heading {
+  margin-bottom: 24px;
+}
+
+.union-news-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(330px, .85fr);
+  gap: 20px;
+  align-items: stretch;
+  direction: rtl;
+}
+
+.union-news-featured {
+  min-width: 0;
+  min-height: 430px;
+  margin: 0;
+}
+
+.union-news-featured > a {
+  position: relative;
+  display: block;
+  height: 100%;
+  min-height: 430px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #0b3048;
+  color: #fff;
+  isolation: isolate;
+}
+
+.union-news-featured img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .35s ease;
+}
+
+.union-news-featured__shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(4, 25, 39, .05) 20%, rgba(4, 25, 39, .92) 100%);
+}
+
+.union-news-featured__copy {
+  position: absolute;
+  inset-inline: 28px;
+  bottom: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.union-news-featured__copy > span {
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: #0c74b9;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.union-news-featured__copy h3 {
+  max-width: 720px;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(20px, 2.25vw, 27px);
+  font-weight: 800;
+  line-height: 1.65;
+  text-wrap: balance;
+}
+
+.union-news-featured__copy p {
+  max-width: 700px;
+  margin: 0;
+  color: rgba(255, 255, 255, .82);
+  font-size: 12px;
+  line-height: 1.9;
+}
+
+.union-news-featured__copy time {
+  color: rgba(255, 255, 255, .68);
+  font-size: 10px;
+}
+
+.union-news-featured > a:hover img {
+  transform: scale(1.025);
+}
+
+.union-news-feed {
+  min-width: 0;
+  height: 430px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e2e9ee;
+  border-radius: 12px;
+  background: #f8fafb;
+}
+
+.union-news-feed__head {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e4eaee;
+  background: #fff;
+}
+
+.union-news-feed__head strong {
+  color: #102b3e;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.union-news-feed__head small {
+  color: #738694;
+  font-size: 10px;
+}
+
+.union-news-feed__scroll {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 12px 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #9bc7e2 transparent;
+}
+
+.union-news-feed__scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.union-news-feed__scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #9bc7e2;
+}
+
+.union-news-feed__item {
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 2px;
+  border-bottom: 1px solid #e7ecef;
+  color: inherit;
+  text-decoration: none;
+}
+
+.union-news-feed__item:last-child {
+  border-bottom: 0;
+}
+
+.union-news-feed__thumb {
+  position: relative;
+  width: 104px;
+  height: 66px;
+  flex: 0 0 104px;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #e9eff3;
+}
+
+.union-news-feed__thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .25s ease;
+}
+
+.union-news-feed__body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.union-news-feed__body small {
+  max-width: 100%;
+  overflow: hidden;
+  color: #0c74b9;
+  font-size: 9px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.union-news-feed__body strong {
+  display: -webkit-box;
+  margin-top: 3px;
+  overflow: hidden;
+  color: #152f42;
+  font-size: 11.5px;
+  font-weight: 750;
+  line-height: 1.7;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.union-news-feed__body time {
+  margin-top: 3px;
+  color: #8997a2;
+  font-size: 8.5px;
+}
+
+.union-news-feed__item:hover {
+  color: inherit;
+  background: #fff;
+}
+
+.union-news-feed__item:hover img {
+  transform: scale(1.04);
+}
+
+@media (max-width: 900px) {
+  .union-news-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .union-news-featured,
+  .union-news-featured > a {
+    min-height: 360px;
+  }
+
+  .union-news-feed {
+    height: 390px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .union-news-section {
+    padding: 46px 0;
+  }
+
+  .union-news-section .representatives-heading {
+    align-items: center;
+    margin-bottom: 18px;
+  }
+
+  .union-news-featured,
+  .union-news-featured > a {
+    min-height: 285px;
+  }
+
+  .union-news-featured__copy {
+    inset-inline: 17px;
+    bottom: 16px;
+  }
+
+  .union-news-featured__copy h3 {
+    font-size: 17px;
+  }
+
+  .union-news-featured__copy p {
+    display: none;
+  }
+
+  .union-news-feed {
+    height: 365px;
+  }
+
+  .union-news-feed__thumb {
+    width: 92px;
+    height: 60px;
+    flex-basis: 92px;
+  }
+}
+
+</style>
+@endpush
+
 @section('content')
 <main class="home-main">
 <section class="hero-section site-container">
