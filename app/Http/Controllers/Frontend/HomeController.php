@@ -175,26 +175,44 @@ class HomeController extends Controller
         $unionLimit = $this->sectionLimit($sections, 'unions', 24);
         $homeUnions = GuildUnion::query()
             ->active()
+            ->with(['unionType', 'latestPublishedNews.featuredMedia'])
+            ->withCount(['posts as published_posts_count' => fn ($query) => $query->published()])
             ->orderBy('sort_order')
             ->orderBy('title')
             ->take($unionLimit)
             ->get();
 
-        // Chronological feed of published news directly connected to active unions.
-        // The first item is the featured story and the following eight form the scrollable list.
-        $unionNewsPosts = Post::query()
-            ->published()
-            ->editorial()
-            ->whereNotNull('union_id')
-            ->whereHas('union', fn ($query) => $query->active())
-            ->with(['union', 'category', 'featuredMedia'])
-            ->latest('published_at')
-            ->latest('id')
-            ->take(9)
-            ->get();
+        $unionTypes = UnionType::query()->active()->orderBy('sort_order')->orderBy('title')->get();
+        $unionTypeTabs = $unionTypes->mapWithKeys(fn (UnionType $unionType) => [
+            $unionType->slug => [
+                'label' => $unionType->title,
+                'icon' => $unionType->resolved_icon,
+                'items' => $this->unionsByTypeDefinition($unionType, $unionLimit),
+            ],
+        ]);
 
-        $featuredUnionNews = $unionNewsPosts->first();
-        $unionNewsList = $unionNewsPosts->skip(1)->take(8)->values();
+        $productionUnions = $unionTypeTabs->get('production')['items'] ?? $this->unionsByType(GuildUnion::TYPE_PRODUCTION);
+        $distributionUnions = $unionTypeTabs->get('distribution')['items'] ?? $this->unionsByType(GuildUnion::TYPE_DISTRIBUTION);
+        $serviceUnions = $unionTypeTabs->get('service')['items'] ?? $this->unionsByType(GuildUnion::TYPE_SERVICE);
+
+        $unionPanels = $unionTypeTabs
+            ->mapWithKeys(fn (array $data, string $slug) => ['rep-'.$slug => $data])
+            ->filter(fn (array $data) => collect($data['items'] ?? [])->isNotEmpty());
+
+        if ($unionPanels->isEmpty()) {
+            $legacyPanels = collect([
+                'rep-production' => ['label' => 'اتحادیه‌های تولیدی', 'icon' => UnionType::ICON_FACTORY, 'items' => $productionUnions],
+                'rep-distribution' => ['label' => 'اتحادیه‌های توزیعی', 'icon' => UnionType::ICON_CART, 'items' => $distributionUnions],
+                'rep-service' => ['label' => 'اتحادیه‌های خدماتی', 'icon' => UnionType::ICON_BRIEFCASE, 'items' => $serviceUnions],
+            ]);
+            $unionPanels = $legacyPanels->filter(fn (array $data) => collect($data['items'] ?? [])->isNotEmpty());
+        }
+
+        if ($unionPanels->isEmpty() && $homeUnions->isNotEmpty()) {
+            $unionPanels = collect([
+                'rep-all' => ['label' => 'همه اتحادیه‌های فعال', 'icon' => UnionType::ICON_STOREFRONT, 'items' => $homeUnions],
+            ]);
+        }
 
         $electronicServices = ElectronicService::query()
             ->published()
@@ -316,9 +334,12 @@ class HomeController extends Controller
             'announcements',
             'homeUnions',
             'unions',
-            'unionNewsPosts',
-            'featuredUnionNews',
-            'unionNewsList',
+            'unionTypes',
+            'unionTypeTabs',
+            'productionUnions',
+            'distributionUnions',
+            'serviceUnions',
+            'unionPanels',
             'electronicServices',
             'galleries',
             'latestGalleries',
