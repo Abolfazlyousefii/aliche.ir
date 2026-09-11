@@ -375,9 +375,8 @@
                 <section class="guild-profile-section" id="guild-education" data-guild-profile-section>
                     <header class="guild-profile-section__head"><div><span>توانمندسازی اعضا</span><h2>آموزش‌های اتحادیه</h2></div></header>
                     <div class="guild-profile-education">
-                        @foreach($union?->educations ?? [] as $education)
-                            @php $educationUrl = $education?->link ?? '#guild-education'; @endphp
-                            <a href="{{ $educationUrl }}" @if(str_starts_with($educationUrl, 'http')) target="_blank" rel="noopener noreferrer" @endif><span><x-ui-icon :name="$education?->icon ?? 'education'" /></span><div><h3>{{ $education?->title ?? '' }}</h3>@if($education?->description)<p>{{ $plain($education->description, 150) }}</p>@endif</div></a>
+                        @foreach($union->educations as $education)
+                            <a href="{{ filled($education->link) ? $education->link : '#guild-education' }}" @if(filled($education->link) && str_starts_with($education->link, 'http')) target="_blank" rel="noopener noreferrer" @endif><span><x-ui-icon :name="$education->icon ?: 'education'" /></span><div><h3>{{ $education->title }}</h3>@if(filled($education->description))<p>{{ $plain($education->description, 150) }}</p>@endif</div></a>
                         @endforeach
                     </div>
                 </section>
