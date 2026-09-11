@@ -359,7 +359,107 @@
 @endforeach
 </section>
 
-@include('frontend.home.sections.union-latest-news')
+<section class="representatives-section section-white" id="representatives" data-union-ajax-url="{{ route('guilds.ajax-search') }}">
+<div class="site-container">
+<div class="section-heading home-refined-heading representatives-heading">
+<div><h2>اتحادیه‌های صنفی استان گلستان</h2></div>
+@if(($homeUnions ?? collect())->isNotEmpty())
+<a class="home-refined-action" href="{{ $guildsUrl }}">فهرست کامل اتحادیه‌ها</a>
+@endif
+</div>
+@php
+    $displayUnionPanels = ($unionPanels ?? collect())->filter(fn ($data) => collect($data['items'] ?? [])->isNotEmpty());
+@endphp
+@if($displayUnionPanels->isNotEmpty())
+<div aria-label="گروه‌بندی اتحادیه‌ها" class="tabs representatives-tabs" data-tab-group="representatives" role="tablist">
+@foreach($displayUnionPanels as $panel => $data)
+<button class="tab-pill {{ $loop->first ? 'active' : '' }}" data-tab-target="{{ $panel }}" type="button">
+<x-union-type-icon :icon="$data['icon'] ?? 'storefront'" />
+<span>{{ $data['label'] }}</span>
+</button>
+@endforeach
+</div>
+<div class="tab-panels" data-tab-panels="representatives">
+@foreach($displayUnionPanels as $panel => $data)
+@php
+    $panelUnions = collect($data['items']);
+    $initialUnion = $panelUnions->first(fn ($item) => $item->latestPublishedNews !== null) ?: $panelUnions->first();
+    $initialNews = $initialUnion?->latestPublishedNews;
+    $initialUnionImage = $initialUnion?->primary_image;
+    $initialPreviewUrl = $initialNews
+        ? route('posts.show', $initialNews->slug)
+        : ($initialUnion ? route('guilds.show', $initialUnion->slug) : $guildsUrl);
+    $initialPreviewImage = $initialNews?->featured_image_url ?: $assetImage($initialUnionImage);
+    $initialPreviewTitle = $initialNews?->title ?: ($initialUnion?->display_title ?? $data['label']);
+    $initialPreviewExcerpt = $initialNews?->summary
+        ?: $plain($initialUnion?->short_description ?: $initialUnion?->description, 150);
+    $initialPreviewLabel = $initialNews ? 'آخرین خبر مرتبط' : 'معرفی اتحادیه';
+@endphp
+<div class="tab-panel {{ $loop->first ? 'active' : '' }}" data-tab-panel="{{ $panel }}">
+<div class="representative-layout">
+<div class="representative-map" data-union-preview>
+<a class="union-news-preview-card" href="{{ $initialPreviewUrl }}" data-union-preview-link>
+<img alt="{{ $initialPreviewTitle }}" class="map-img" src="{{ $initialPreviewImage }}" loading="lazy" decoding="async" data-union-preview-image/>
+<div class="union-news-preview-shade"></div>
+<div class="union-news-preview-copy">
+<span data-union-preview-label>{{ $initialPreviewLabel }}</span>
+<h3 data-union-preview-title>{{ $initialPreviewTitle }}</h3>
+<p data-union-preview-excerpt>{{ $initialPreviewExcerpt }}</p>
+</div>
+</a>
+</div>
+<aside class="people-panel" data-search-area="">
+<div class="searchbox"><span class="search-icon"></span><input data-union-ajax-input="" data-union-type="{{ str_replace('rep-', '', $panel) }}" placeholder="جستجوی سریع اتحادیه..." type="search"/></div>
+<div class="people-scroll-wrap">
+<ul class="person-list" data-union-results="{{ $panel }}">
+@foreach($panelUnions as $union)
+@php
+    $previewNews = $union->latestPublishedNews;
+    $unionUrl = route('guilds.show', $union->slug);
+    $unionImage = $union->primary_image;
+    $previewUrl = $previewNews ? route('posts.show', $previewNews->slug) : $unionUrl;
+    $previewImage = $previewNews?->featured_image_url ?: $assetImage($unionImage);
+    $previewTitle = $previewNews?->title ?: $union->display_title;
+    $previewExcerpt = $previewNews?->summary
+        ?: $plain($union->short_description ?: $union->description ?: $union->manager_name, 150);
+    $previewLabel = $previewNews ? 'آخرین خبر مرتبط' : 'معرفی اتحادیه';
+@endphp
+<li
+    class="union-home-item"
+    data-union-preview-item
+    data-preview-url="{{ $previewUrl }}"
+    data-preview-image="{{ $previewImage }}"
+    data-preview-title="{{ $previewTitle }}"
+    data-preview-excerpt="{{ $previewExcerpt }}"
+    data-preview-label="{{ $previewLabel }}"
+>
+<a href="{{ $unionUrl }}" class="union-home-link">
+<span class="person-avatar avatar-{{ ($loop->iteration % 6) + 1 }}">
+<img src="{{ $assetImage($unionImage) }}" alt="{{ $union->display_title }}" loading="lazy" decoding="async">
+</span>
+<div>
+<strong>{{ $union->display_title }}</strong>
+<small>{{ $plain($union->short_description ?: $union->manager_name ?: $union->union_type_label, 90) }}</small>
+</div>
+</a>
+</li>
+@endforeach
+</ul>
+<div class="union-ajax-status" data-union-status="{{ $panel }}" hidden></div>
+</div>
+</aside>
+</div>
+</div>
+@endforeach
+</div>
+@else
+<div class="empty-state union-empty-state">
+<h3>اتحادیه فعالی برای نمایش در صفحه اصلی ثبت نشده است.</h3>
+<p>به‌زودی اطلاعات اتحادیه‌های فعال در این بخش نمایش داده می‌شود.</p>
+</div>
+@endif
+</div>
+</section>
 
 <section class="commissions-section ds-tint-block office-services-section home-systems-section" id="commissions">
 <div class="site-container">

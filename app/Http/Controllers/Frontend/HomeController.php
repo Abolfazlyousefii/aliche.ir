@@ -182,21 +182,6 @@ class HomeController extends Controller
             ->take($unionLimit)
             ->get();
 
-        // Isolated homepage feed: published news directly connected to active unions.
-        $unionLatestNews = Post::query()
-            ->published()
-            ->editorial()
-            ->whereNotNull('union_id')
-            ->whereHas('union', fn ($query) => $query->active())
-            ->with(['union', 'featuredMedia'])
-            ->latest('published_at')
-            ->latest('id')
-            ->take(9)
-            ->get();
-
-        $unionFeaturedNews = $unionLatestNews->first();
-        $unionRecentNews = $unionLatestNews->skip(1)->take(8)->values();
-
         $unionTypes = UnionType::query()->active()->orderBy('sort_order')->orderBy('title')->get();
         $unionTypeTabs = $unionTypes->mapWithKeys(fn (UnionType $unionType) => [
             $unionType->slug => [
@@ -349,9 +334,6 @@ class HomeController extends Controller
             'announcements',
             'homeUnions',
             'unions',
-            'unionLatestNews',
-            'unionFeaturedNews',
-            'unionRecentNews',
             'unionTypes',
             'unionTypeTabs',
             'productionUnions',
