@@ -17,7 +17,9 @@
 </head>
 <body>
 @include('frontend.partials.header')
+{{-- Market ticker is temporarily hidden until a reliable pricing API is connected.
 @include('frontend.partials.market-ticker')
+--}}
 @yield('content')
 @include('frontend.partials.footer')
 @yield('after_footer')
