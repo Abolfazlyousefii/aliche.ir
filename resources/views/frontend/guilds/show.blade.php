@@ -95,6 +95,7 @@
     $officePhone = $settings->get('site.phone', '01732152912');
     $officePhoneHref = $normalizePhone($officePhone);
     $officeEmail = $settings->get('site.email', 'info@asnaf-gorgan.ir');
+    $featuredHeroPost = $showNews ? $posts->first() : null;
 @endphp
 
 @section('content')
@@ -137,21 +138,42 @@
                 </div>
             </div>
 
-            <div class="guild-profile-hero__identity {{ $union->logo ? '' : 'guild-profile-hero__identity--fallback' }}">
-                <div class="guild-profile-emblem {{ $union->logo ? '' : 'guild-profile-emblem--fallback' }}" data-guild-profile-image-wrap>
-                    @if($union->logo)
-                        <img src="{{ $assetImage($union->logo, '') }}" alt="لوگوی {{ $union->display_title }}" loading="eager" decoding="async" data-guild-profile-optional-image>
-                    @endif
-                    <span @if($union->logo) hidden @endif data-guild-profile-image-fallback>{{ $initial($union->display_title) }}</span>
-                </div>
-                @if($heroStats->isNotEmpty())
-                    <div class="guild-profile-hero__stats" aria-label="آمار اتحادیه">
-                        @foreach($heroStats as $stat)
-                            <div><strong>{{ fa_number(number_format($stat['value'])) }}</strong><span>{{ $stat['label'] }}</span></div>
-                        @endforeach
+            @if($featuredHeroPost)
+                <article class="guild-profile-hero-news">
+                    <a href="{{ route('posts.show', $featuredHeroPost->slug) }}">
+                        <img
+                            src="{{ $featuredHeroPost->featured_image_url }}"
+                            alt="{{ $featuredHeroPost->featuredMedia?->alt_text ?: $featuredHeroPost->title }}"
+                            loading="eager"
+                            decoding="async"
+                            fetchpriority="high"
+                            @if($featuredHeroPost->featuredMedia?->srcset) srcset="{{ $featuredHeroPost->featuredMedia->srcset }}" sizes="(max-width: 992px) 100vw, 440px" @endif
+                        >
+                        <span class="guild-profile-hero-news__shade" aria-hidden="true"></span>
+                        <span class="guild-profile-hero-news__content">
+                            <small>آخرین خبر اتحادیه</small>
+                            <strong>{{ $featuredHeroPost->title }}</strong>
+                            <time datetime="{{ $featuredHeroPost->published_at?->toIso8601String() }}">{{ jalali_datetime($featuredHeroPost->published_at) ?: 'بدون تاریخ' }}</time>
+                        </span>
+                    </a>
+                </article>
+            @else
+                <div class="guild-profile-hero__identity {{ $union->logo ? '' : 'guild-profile-hero__identity--fallback' }}">
+                    <div class="guild-profile-emblem {{ $union->logo ? '' : 'guild-profile-emblem--fallback' }}" data-guild-profile-image-wrap>
+                        @if($union->logo)
+                            <img src="{{ $assetImage($union->logo, '') }}" alt="لوگوی {{ $union->display_title }}" loading="eager" decoding="async" data-guild-profile-optional-image>
+                        @endif
+                        <span @if($union->logo) hidden @endif data-guild-profile-image-fallback>{{ $initial($union->display_title) }}</span>
                     </div>
-                @endif
-            </div>
+                    @if($heroStats->isNotEmpty())
+                        <div class="guild-profile-hero__stats" aria-label="آمار اتحادیه">
+                            @foreach($heroStats as $stat)
+                                <div><strong>{{ fa_number(number_format($stat['value'])) }}</strong><span>{{ $stat['label'] }}</span></div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endif
         </div>
     </section>
 
@@ -294,7 +316,7 @@
 
             @if($showNews)
                 <section class="guild-profile-section" id="guild-news" data-guild-profile-section>
-                    <header class="guild-profile-section__head"><div><span>رسانه اتحادیه</span><h2>آخرین اخبار اتحادیه</h2></div></header>
+                    <header class="guild-profile-section__head guild-profile-news-head"><div><span>رسانه اتحادیه</span><h2>آخرین اخبار اتحادیه</h2><p>جدیدترین خبرها و اطلاع‌رسانی‌های مرتبط با {{ $union->display_title }}</p></div><a href="{{ route('posts.index') }}">آرشیو اخبار</a></header>
                     <div class="latest-news-list guild-profile-news-list">
                         @foreach($posts->take(6) as $post)
                             @php($postUrl = route('posts.show', $post->slug))
