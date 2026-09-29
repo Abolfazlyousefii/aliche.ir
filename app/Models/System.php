@@ -81,7 +81,8 @@ class System extends Model
         return $query
             ->where('status', 'published')
             ->where('is_active', true)
-            ->where(fn ($query) => $query->whereNull('published_at')->orWhere('published_at', '<=', now()));
+            ->where(fn ($query) => $query->whereNull('published_at')->orWhere('published_at', '<=', now()))
+            ->tap(fn ($query) => \App\Support\Features::excludeComplaintRecords($query));
     }
 
     public static function statusLabels(): array

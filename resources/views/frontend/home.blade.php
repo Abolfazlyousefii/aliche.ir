@@ -26,15 +26,16 @@
     $commissionsUrl = route('commissions.index');
     $complaintsUrl = route('complaints.create');
     $complaintsEnabled = \App\Support\Features::complaintsEnabled();
-    $isComplaintUrl = static fn ($url): bool => preg_match('#/complaints(/|\?|$)#i', (string) $url) === 1;
-    $withoutComplaintLinks = function ($items) use (&$withoutComplaintLinks, $complaintsEnabled, $isComplaintUrl) {
+    // $checkTitle=false for news-based lists, so headlines that merely mention «شکایت» stay visible.
+    $withoutComplaintLinks = function ($items, bool $checkTitle = true) use (&$withoutComplaintLinks, $complaintsEnabled) {
         if ($complaintsEnabled) return $items;
 
         return collect($items)
-            ->reject(fn ($item) => $isComplaintUrl(data_get($item, 'url')))
-            ->map(function ($item) use ($withoutComplaintLinks) {
+            ->reject(fn ($item) => \App\Support\Features::isComplaintUrl(data_get($item, 'url'))
+                || ($checkTitle && \App\Support\Features::isComplaintTitle(data_get($item, 'title'))))
+            ->map(function ($item) use ($withoutComplaintLinks, $checkTitle) {
                 if (is_array($item) && isset($item['children'])) {
-                    $item['children'] = $withoutComplaintLinks($item['children']);
+                    $item['children'] = $withoutComplaintLinks($item['children'], $checkTitle);
                 }
 
                 return $item;
@@ -83,7 +84,7 @@
         ])->values();
     }
     $heroItems = $heroItems->isNotEmpty() ? $heroItems : $heroFallbacks;
-    $heroItems = $withoutComplaintLinks($heroItems);
+    $heroItems = $withoutComplaintLinks($heroItems, false);
 
     $sideItems = ($sidePosts ?? collect())->take(2)->map(fn ($post) => [
         'title' => $post->title,
@@ -188,6 +189,7 @@
             ->take(18)
             ->values();
     }
+    $followTopics = $withoutComplaintLinks($followTopics);
 @endphp
 
 
