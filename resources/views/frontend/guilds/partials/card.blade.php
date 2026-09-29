@@ -50,7 +50,7 @@
 
     <div class="guild-directory-actions">
         <a class="guild-directory-view" href="{{ route('guilds.show', $union->slug) }}">مشاهده اطلاعات</a>
-        @if($union->complaint_enabled)
+        @if(\App\Support\Features::complaintsEnabled() && $union->complaint_enabled)
             <a class="guild-directory-complaint" href="{{ route('complaints.create', ['union' => $union->id]) }}">ثبت شکایت</a>
         @endif
     </div>

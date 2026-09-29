@@ -25,6 +25,22 @@
     $servicesUrl = route('electronic-services.index');
     $commissionsUrl = route('commissions.index');
     $complaintsUrl = route('complaints.create');
+    $complaintsEnabled = \App\Support\Features::complaintsEnabled();
+    $isComplaintUrl = static fn ($url): bool => preg_match('#/complaints(/|\?|$)#i', (string) $url) === 1;
+    $withoutComplaintLinks = function ($items) use (&$withoutComplaintLinks, $complaintsEnabled, $isComplaintUrl) {
+        if ($complaintsEnabled) return $items;
+
+        return collect($items)
+            ->reject(fn ($item) => $isComplaintUrl(data_get($item, 'url')))
+            ->map(function ($item) use ($withoutComplaintLinks) {
+                if (is_array($item) && isset($item['children'])) {
+                    $item['children'] = $withoutComplaintLinks($item['children']);
+                }
+
+                return $item;
+            })
+            ->values();
+    };
     $normalizeInternalUrl = static function (?string $value): string {
         $value = trim((string) $value);
         if ($value === '') return '';
@@ -67,6 +83,7 @@
         ])->values();
     }
     $heroItems = $heroItems->isNotEmpty() ? $heroItems : $heroFallbacks;
+    $heroItems = $withoutComplaintLinks($heroItems);
 
     $sideItems = ($sidePosts ?? collect())->take(2)->map(fn ($post) => [
         'title' => $post->title,
@@ -96,6 +113,7 @@
         'children' => $item->children->map(fn ($child) => ['title' => trim($child->title), 'url' => $child->resolved_url ?: '#']),
     ])->values();
     $quickItems = $quickItems->isNotEmpty() ? $quickItems : $quickFallbacks;
+    $quickItems = $withoutComplaintLinks($quickItems);
 
     $serviceFallbacks = collect([
         ['icon' => '📋', 'title' => 'نحوه صدور پروانه کسب', 'description' => 'راهنمای گام‌به‌گام دریافت پروانه کسب جدید و تشکیل پرونده صنفی برای متقاضیان', 'url' => $servicesUrl, 'label' => 'مشاهده راهنما ←'],
@@ -114,6 +132,7 @@
         'label' => 'مشاهده راهنما ←',
     ])->take(6)->values();
     $serviceItems = $serviceItems->isNotEmpty() ? $serviceItems : $serviceFallbacks;
+    $serviceItems = $withoutComplaintLinks($serviceItems);
 
     $systemFallbacks = collect([
         ['icon' => '💻', 'title' => 'سامانه نوین اصناف', 'description' => 'ورود به سامانه الکترونیک اصناف برای پیگیری پرونده و استعلام وضعیت پروانه کسب', 'url' => $systemsUrl, 'target' => '_self', 'label' => 'ورود به سامانه ←'],
@@ -129,6 +148,7 @@
         'label' => 'ورود به سامانه ←',
     ])->take(6)->values();
     $systemItems = $systemItems->isNotEmpty() ? $systemItems : $systemFallbacks;
+    $systemItems = $withoutComplaintLinks($systemItems);
 
     $adItems = ($homeAdvertisements ?? collect())->take(4)->filter(fn ($ad) => filled($ad->image))->map(fn ($ad) => ['title' => $ad->title ?: 'تبلیغات', 'url' => $ad->link, 'image' => $assetImage($ad->image), 'target' => $ad->target ?: '_self', 'alt' => data_get($ad, 'alt') ?: ($ad->title ?: 'تبلیغات')])->values();
 

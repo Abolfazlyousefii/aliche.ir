@@ -144,11 +144,13 @@ Route::get('/search', [FrontendSearchController::class, 'index'])->name('search'
 Route::get('/contact', [FrontendContactController::class, 'create'])->name('contact.create');
 Route::post('/contact', [FrontendContactController::class, 'store'])->middleware('throttle:5,1')->name('contact.store');
 Route::get('/pages/{page:slug}', [FrontendPageController::class, 'show'])->name('pages.show');
-Route::get('/complaints/create/{union?}', [FrontendComplaintController::class, 'create'])->name('complaints.create');
-Route::post('/complaints', [FrontendComplaintController::class, 'store'])->middleware('throttle:3,1')->name('complaints.store');
-Route::get('/complaints/track', [FrontendComplaintController::class, 'track'])->name('complaints.track');
-Route::post('/complaints/track', [FrontendComplaintController::class, 'trackResult'])->middleware('throttle:10,1')->name('complaints.track.result');
-Route::post('/complaints/lookup', [FrontendComplaintController::class, 'lookup'])->middleware('throttle:10,1')->name('complaints.lookup');
+Route::middleware(\App\Http\Middleware\EnsureComplaintsEnabled::class)->group(function () {
+    Route::get('/complaints/create/{union?}', [FrontendComplaintController::class, 'create'])->name('complaints.create');
+    Route::post('/complaints', [FrontendComplaintController::class, 'store'])->middleware('throttle:3,1')->name('complaints.store');
+    Route::get('/complaints/track', [FrontendComplaintController::class, 'track'])->name('complaints.track');
+    Route::post('/complaints/track', [FrontendComplaintController::class, 'trackResult'])->middleware('throttle:10,1')->name('complaints.track.result');
+    Route::post('/complaints/lookup', [FrontendComplaintController::class, 'lookup'])->middleware('throttle:10,1')->name('complaints.lookup');
+});
 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     Route::post('rich-text/upload', [RichTextUploadController::class, 'store'])

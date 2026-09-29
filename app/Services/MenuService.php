@@ -19,6 +19,6 @@ class MenuService
             ->latest('id')
             ->first();
 
-        return $menu?->rootItems ?? collect();
+        return \App\Support\Features::filterMenuItems($menu?->rootItems ?? collect());
     }
 }

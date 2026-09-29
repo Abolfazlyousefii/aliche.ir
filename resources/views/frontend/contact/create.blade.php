@@ -52,6 +52,7 @@ $hasResponseHours = $isMeaningfulValue($responseHours);
                     <p>پیام خود را از طریق فرم ارسال کنید. اطلاعات ثبت‌شده فقط برای بررسی درخواست و برقراری ارتباط با شما استفاده می‌شود.</p>
                 </div>
 
+                @if (\App\Support\Features::complaintsEnabled())
                 <aside class="contact-complaint-notice" aria-label="راهنمای ثبت شکایت صنفی">
                     <span class="contact-complaint-notice-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24">
@@ -64,6 +65,7 @@ $hasResponseHours = $isMeaningfulValue($responseHours);
                     </span>
                     <a href="{{ route('complaints.create') }}">ثبت شکایت</a>
                 </aside>
+                @endif
             </section>
 
             @if ($hasPhone || $hasEmail || $hasMap)

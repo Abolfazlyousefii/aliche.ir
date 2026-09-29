@@ -34,7 +34,7 @@
     $showNews = $union->news_enabled && ($union->isSectionEnabled('show_news', true) || $union->isSectionEnabled('show_news_slider', true)) && $posts->isNotEmpty();
     $showArticles = $union->news_enabled && $union->isSectionEnabled('show_articles', true) && $articles->isNotEmpty();
     $showPrices = $union->isSectionEnabled('show_prices', false) && ($union->prices->isNotEmpty() || filled($union->price_list_image));
-    $showComplaint = $union->complaint_enabled && $union->isSectionEnabled('show_complaint', true);
+    $showComplaint = \App\Support\Features::complaintsEnabled() && $union->complaint_enabled && $union->isSectionEnabled('show_complaint', true);
     $showMessages = $union->congratulations_enabled && $union->isSectionEnabled('show_congratulation_messages', true) && $unionMessages->isNotEmpty();
     $showMinutes = $union->isSectionEnabled('show_minutes', true) && $union->minutes->isNotEmpty();
     $showEducation = $union->isSectionEnabled('show_education', true) && $union->educations->isNotEmpty();

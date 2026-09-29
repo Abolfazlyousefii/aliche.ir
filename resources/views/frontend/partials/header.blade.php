@@ -142,7 +142,7 @@
 <form action="{{ route('search') }}" method="GET" class="header-search-form" role="search">
 <label class="header-search-label" for="siteSearchInput">جستجو در سایت</label>
 <div class="header-search-field">
-<input id="siteSearchInput" name="q" value="{{ request('q') }}" placeholder="عبارت مورد نظر را وارد کنید؛ مثل اتحادیه، پروانه کسب، شکایت، آموزش..." type="search"/>
+<input id="siteSearchInput" name="q" value="{{ request('q') }}" placeholder="عبارت مورد نظر را وارد کنید؛ مثل اتحادیه، پروانه کسب، آموزش..." type="search"/>
 <button type="submit">جستجو</button>
 </div>
 <div aria-live="polite" class="header-search-results"></div>
