@@ -110,8 +110,11 @@
     ]);
     $quickItems = ($quickMenuItems ?? collect())->map(fn ($item) => [
         'title' => trim($item->title),
-        'url' => $item->resolved_url ?: '#',
-        'children' => $item->children->map(fn ($child) => ['title' => trim($child->title), 'url' => $child->resolved_url ?: '#']),
+        'url' => $normalizeInternalUrl($item->resolved_url ?: '#'),
+        'children' => $item->children->map(fn ($child) => [
+            'title' => trim($child->title),
+            'url' => $normalizeInternalUrl($child->resolved_url ?: '#'),
+        ]),
     ])->values();
     $quickItems = $quickItems->isNotEmpty() ? $quickItems : $quickFallbacks;
     $quickItems = $withoutComplaintLinks($quickItems);
@@ -124,14 +127,18 @@
         ['icon' => '💻', 'title' => 'سامانه نوین اصناف', 'description' => 'ورود به سامانه الکترونیک اصناف برای پیگیری پرونده و استعلام وضعیت پروانه کسب', 'url' => $systemsUrl, 'label' => 'ورود به سامانه ←'],
         ['icon' => '🎓', 'title' => 'آموزش احکام تجارت', 'description' => 'ثبت‌نام در دوره‌های آموزش احکام تجارت و کسب‌وکار مورد نیاز صدور پروانه کسب', 'url' => $servicesUrl, 'label' => 'ثبت‌نام دوره ←'],
     ]);
-    $serviceItems = ($electronicServices ?? collect())->map(fn ($service) => [
-        'icon' => $service->icon ?: '📋',
-        'title' => $service->title,
-        'description' => $plain($service->short_description ?: $service->body, 120),
-        'url' => ($service->link_type === 'external' && filled($service->link)) ? $service->link : route('electronic-services.show', $service->slug),
-        'target' => ($service->link_type === 'external' && filled($service->link)) ? ($service->target ?: '_blank') : '_self',
-        'label' => 'مشاهده راهنما ←',
-    ])->take(6)->values();
+    $serviceItems = ($electronicServices ?? collect())->map(function ($service) use ($plain) {
+        $publicLink = $service->public_link;
+
+        return [
+            'icon' => $service->icon ?: '📋',
+            'title' => $service->title,
+            'description' => $plain($service->short_description ?: $service->body, 120),
+            'url' => $publicLink ?: route('electronic-services.show', $service->slug),
+            'target' => $publicLink ? ($service->target ?: '_blank') : '_self',
+            'label' => $publicLink ? 'ورود به خدمت ←' : 'مشاهده راهنما ←',
+        ];
+    })->take(6)->values();
     $serviceItems = $serviceItems->isNotEmpty() ? $serviceItems : $serviceFallbacks;
     $serviceItems = $withoutComplaintLinks($serviceItems);
 
@@ -140,14 +147,18 @@
         ['icon' => '🎓', 'title' => 'سامانه آموزش اصناف', 'description' => 'دسترسی به دوره‌های آموزشی و راهنمای ثبت‌نام متقاضیان صنفی', 'url' => $systemsUrl, 'target' => '_self', 'label' => 'ورود به سامانه ←'],
         ['icon' => '🔍', 'title' => 'سامانه استعلام', 'description' => 'پیگیری و استعلام وضعیت درخواست‌ها و مجوزهای صنفی از درگاه‌های مرتبط', 'url' => $systemsUrl, 'target' => '_self', 'label' => 'ورود به سامانه ←'],
     ]);
-    $systemItems = ($systems ?? collect())->map(fn ($system) => [
-        'icon' => $system->icon ?: '💻',
-        'title' => $system->title,
-        'description' => $plain($system->short_description ?: $system->description, 120),
-        'url' => filled($system->link) ? $system->link : route('systems.show', $system->slug),
-        'target' => filled($system->link) ? ($system->target ?: '_blank') : '_self',
-        'label' => 'ورود به سامانه ←',
-    ])->take(6)->values();
+    $systemItems = ($systems ?? collect())->map(function ($system) use ($plain) {
+        $publicLink = $system->public_link;
+
+        return [
+            'icon' => $system->icon ?: '💻',
+            'title' => $system->title,
+            'description' => $plain($system->short_description ?: $system->description, 120),
+            'url' => $publicLink ?: route('systems.show', $system->slug),
+            'target' => $publicLink ? ($system->target ?: '_blank') : '_self',
+            'label' => $publicLink ? 'ورود به سامانه ←' : 'مشاهده جزئیات ←',
+        ];
+    })->take(6)->values();
     $systemItems = $systemItems->isNotEmpty() ? $systemItems : $systemFallbacks;
     $systemItems = $withoutComplaintLinks($systemItems);
 
@@ -182,7 +193,15 @@
                     return ['title' => $item['title'] ?? null, 'url' => $item['url'] ?? $servicesUrl];
                 }
 
-                return ['title' => $item->title ?? null, 'url' => isset($item->slug) ? (filled($item->link ?? null) ? $item->link : $systemsUrl) : $servicesUrl];
+                if ($item instanceof \App\Models\Announcement) {
+                    return ['title' => $item->title, 'url' => route('announcements.show', $item->slug)];
+                }
+
+                if ($item instanceof \App\Models\System) {
+                    return ['title' => $item->title, 'url' => $item->public_link ?: route('systems.show', $item->slug)];
+                }
+
+                return ['title' => $item->title ?? null, 'url' => $systemsUrl];
             })
             ->filter(fn ($topic) => filled($topic['title'] ?? null))
             ->unique('title')
@@ -807,7 +826,7 @@
 @if($primaryTourismPanel !== null)
 <button class="tab-pill active" data-tab-target="{{ $primaryTourismPanel }}" type="button">{{ $tourismPanels->get($primaryTourismPanel)['label'] }}</button>
 @endif
-<a class="home-refined-action" href="{{ $tourismUrl }}">مشاهده همه</a>
+<a class="home-refined-action" href="{{ $tourismUrl }}">مشاهده همه جاذبه‌ها</a>
 </div>
  </div>
 @if($tourismPanels->count() > 1)
