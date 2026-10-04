@@ -94,6 +94,34 @@ class ElectronicService extends Model
         return self::targetLabels()[$this->target] ?? $this->target;
     }
 
+    public function getPublicLinkAttribute(): ?string
+    {
+        $link = trim((string) $this->link);
+
+        if ($this->link_type === 'none' || $link === '' || $link === '#') {
+            return null;
+        }
+
+        if (str_starts_with($link, '/')) {
+            return url($link);
+        }
+
+        if (! filter_var($link, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        $scheme = strtolower((string) parse_url($link, PHP_URL_SCHEME));
+        $host = strtolower((string) parse_url($link, PHP_URL_HOST));
+
+        if (! in_array($scheme, ['http', 'https'], true)
+            || $host === ''
+            || in_array($host, ['example.com', 'www.example.com'], true)) {
+            return null;
+        }
+
+        return $link;
+    }
+
     public static function statusLabels(): array
     {
         return [
