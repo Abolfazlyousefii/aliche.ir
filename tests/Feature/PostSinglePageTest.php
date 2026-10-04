@@ -12,7 +12,7 @@ class PostSinglePageTest extends TestCase
 
     public function test_single_post_places_title_before_image_and_renders_dynamic_keywords_below_content(): void
     {
-        $post = $this->post('خبر اصلی آزمون', 'main-post', [
+        $post = $this->createPost('خبر اصلی آزمون', 'main-post', [
             'featured_image' => 'posts/featured/example.jpg',
             'meta_keywords' => "اصناف، گرگان, اتحادیه ها\nبازار",
             'published_at' => now()->subHour(),
@@ -51,19 +51,19 @@ class PostSinglePageTest extends TestCase
 
     public function test_sidebar_receives_only_the_latest_15_other_published_editorial_posts(): void
     {
-        $current = $this->post('خبر فعلی', 'current-post', [
+        $current = $this->createPost('خبر فعلی', 'current-post', [
             'published_at' => now()->subDays(10),
         ]);
 
         foreach (range(1, 16) as $index) {
-            $this->post(
+            $this->createPost(
                 sprintf('خبر تازه %02d', $index),
                 sprintf('latest-post-%02d', $index),
                 ['published_at' => now()->subMinutes($index)]
             );
         }
 
-        $draft = $this->post('خبر پیش نویس', 'draft-post', [
+        $draft = $this->createPost('خبر پیش نویس', 'draft-post', [
             'status' => 'draft',
             'published_at' => now()->subMinute(),
         ]);
@@ -83,13 +83,13 @@ class PostSinglePageTest extends TestCase
 
     public function test_archive_search_matches_dynamic_meta_keywords(): void
     {
-        $tagged = $this->post('خبر بدون عبارت در عنوان', 'tagged-post', [
+        $tagged = $this->createPost('خبر بدون عبارت در عنوان', 'tagged-post', [
             'excerpt' => 'خلاصه عمومی',
             'body' => 'متن عمومی',
             'meta_keywords' => 'بازرگانی، اصناف',
         ]);
 
-        $other = $this->post('خبر دیگر', 'other-post', [
+        $other = $this->createPost('خبر دیگر', 'other-post', [
             'excerpt' => 'متن متفاوت',
             'body' => 'بدون کلیدواژه هدف',
             'meta_keywords' => 'خدمات',
@@ -102,7 +102,7 @@ class PostSinglePageTest extends TestCase
             ->assertViewHas('posts', fn ($posts) => $posts->total() === 1);
     }
 
-    private function post(string $title, string $slug, array $attributes = []): Post
+    private function createPost(string $title, string $slug, array $attributes = []): Post
     {
         return Post::query()->create(array_merge([
             'title' => $title,
