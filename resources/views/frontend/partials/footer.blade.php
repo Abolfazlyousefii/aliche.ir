@@ -113,7 +113,10 @@
 @endforeach
 </div>
 @endif
-<div class="footer-copy">{{ fa_number($copyright) }}</div>
+<div class="footer-copy">
+    <span>{{ fa_number($copyright) }}</span>
+    <span class="footer-development-credit">طراحی و توسعه با تیم جهش</span>
+</div>
 </div>
 </div>
 </footer>
