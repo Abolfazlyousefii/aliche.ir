@@ -167,7 +167,7 @@
 
                                 <div class="row g-3">
                                     @forelse($relatedPlaces as $related)
-                                        @php($relatedImage = image_url($related->featured_image ?: ($related->image ?: null)))
+                                        @php($relatedImage = $related->directory_image_url ?: asset('assets/img/tourism-placeholder.svg'))
                                         <div class="col-12">
                                             <a class="card h-100 border-0 bg-light rounded-4 text-decoration-none text-dark overflow-hidden" href="{{ route('tourism.show', $related->slug) }}">
                                                 <div class="row g-0 align-items-stretch">
