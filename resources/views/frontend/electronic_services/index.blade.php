@@ -62,8 +62,8 @@
         </div>
         <div class="portal-card-actions">
           <a class="portal-secondary-action" href="{{ route('electronic-services.show', $service->slug) }}">مشاهده جزئیات</a>
-          @if ($service->link_type !== 'none' && $service->link)
-            <a class="portal-primary-action" href="{{ $service->link }}" target="{{ $service->target }}" @if($service->target === '_blank') rel="noopener" @endif>ورود به خدمت</a>
+          @if ($service->public_link)
+            <a class="portal-primary-action" href="{{ $service->public_link }}" target="{{ $service->target }}" @if($service->target === '_blank') rel="noopener noreferrer" @endif>ورود به خدمت</a>
           @endif
         </div>
       </article>
