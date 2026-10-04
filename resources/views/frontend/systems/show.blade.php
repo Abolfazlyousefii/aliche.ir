@@ -40,8 +40,8 @@
           <p class="portal-lead">{{ plain_text($system->short_description) }}</p>
         @endif
         <div class="portal-rich-text">{!! rich_text($system->description, '<p>توضیحات این سامانه هنوز تکمیل نشده است.</p>') !!}</div>
-        @if ($system->link)
-          <a class="portal-primary-action portal-main-link" href="{{ $system->link }}" target="{{ $system->target }}" @if($system->target === '_blank') rel="noopener" @endif>ورود به سامانه</a>
+        @if ($system->public_link)
+          <a class="portal-primary-action portal-main-link" href="{{ $system->public_link }}" target="{{ $system->target }}" @if($system->target === '_blank') rel="noopener noreferrer" @endif>ورود به سامانه</a>
         @endif
       </div>
     </article>
@@ -50,7 +50,7 @@
       <div class="portal-sidebar-card">
         <h3>اطلاعات سریع</h3>
         <div class="portal-stat-row"><span>دسته‌بندی</span><strong>{{ $system->category?->title ?: 'سامانه' }}</strong></div>
-        <div class="portal-stat-row"><span>نوع دسترسی</span><strong>{{ $system->link ? 'دارای لینک ورود' : 'اطلاعاتی' }}</strong></div>
+        <div class="portal-stat-row"><span>نوع دسترسی</span><strong>{{ $system->public_link ? 'دارای لینک ورود' : 'اطلاعاتی' }}</strong></div>
         <a class="portal-secondary-action portal-full-action" href="{{ route('systems.index') }}">بازگشت به سامانه‌ها</a>
       </div>
 
