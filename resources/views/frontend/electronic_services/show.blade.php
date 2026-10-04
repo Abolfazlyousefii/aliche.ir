@@ -40,8 +40,8 @@
           <p class="portal-lead">{{ plain_text($service->short_description) }}</p>
         @endif
         <div class="portal-rich-text">{!! rich_text($service->body, '<p>توضیحات این خدمت هنوز تکمیل نشده است.</p>') !!}</div>
-        @if ($service->link_type !== 'none' && $service->link)
-          <a class="portal-primary-action portal-main-link" href="{{ $service->link }}" target="{{ $service->target }}" @if($service->target === '_blank') rel="noopener" @endif>ورود به خدمت</a>
+        @if ($service->public_link)
+          <a class="portal-primary-action portal-main-link" href="{{ $service->public_link }}" target="{{ $service->target }}" @if($service->target === '_blank') rel="noopener noreferrer" @endif>ورود به خدمت</a>
         @endif
       </div>
     </article>
@@ -50,7 +50,7 @@
       <div class="portal-sidebar-card">
         <h3>اطلاعات سریع</h3>
         <div class="portal-stat-row"><span>دسته‌بندی</span><strong>{{ $service->category?->title ?: 'خدمات الکترونیک' }}</strong></div>
-        <div class="portal-stat-row"><span>نوع دسترسی</span><strong>{{ $service->link_type !== 'none' && $service->link ? 'دارای لینک ورود' : 'راهنمای اطلاعاتی' }}</strong></div>
+        <div class="portal-stat-row"><span>نوع دسترسی</span><strong>{{ $service->public_link ? 'دارای لینک ورود' : 'راهنمای اطلاعاتی' }}</strong></div>
         <a class="portal-secondary-action portal-full-action" href="{{ route('electronic-services.index') }}">بازگشت به خدمات</a>
       </div>
 
