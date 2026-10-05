@@ -265,43 +265,5 @@ document.querySelectorAll('[data-union-media-select]').forEach((select) => {
     select.addEventListener('change', renderSelectedMedia);
 });
 
-const presidentSection = document.querySelector('[data-section="president-buttons"]');
-if (presidentSection) {
-    const rows = presidentSection.querySelector('[data-rows]');
-    const addButton = presidentSection.querySelector('[data-add-row]');
-    const iconOptions = @json($presidentIconOptions);
-
-    const iconOptionsHtml = () => Object.entries(iconOptions)
-        .map(([value, label]) => '<option value="' + value + '">' + label + '</option>')
-        .join('');
-
-    const bindRemove = (row) => {
-        row.querySelector('[data-remove-president-row]')?.addEventListener('click', () => row.remove(), { once: true });
-    };
-
-    presidentSection.querySelectorAll('[data-row]').forEach(bindRemove);
-
-    addButton?.addEventListener('click', () => {
-        const index = Number(presidentSection.dataset.nextIndex || 0);
-        presidentSection.dataset.nextIndex = String(index + 1);
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'border rounded p-3 mb-2';
-        wrapper.dataset.row = '';
-        wrapper.innerHTML = `
-            <div class="row g-2 align-items-end">
-                <div class="col-md-3"><label class="form-label">عنوان</label><input class="form-control" name="president_buttons[${index}][title]"></div>
-                <div class="col-md-3"><label class="form-label">لینک</label><input class="form-control" name="president_buttons[${index}][url]" dir="ltr" placeholder="https://… یا tel:…"></div>
-                <div class="col-md-2"><label class="form-label">آیکون</label><select class="form-control" name="president_buttons[${index}][icon]">${iconOptionsHtml()}</select></div>
-                <div class="col-md-2"><label class="form-label">باز شدن</label><select class="form-control" name="president_buttons[${index}][target]"><option value="_self">همان صفحه</option><option value="_blank">صفحه جدید</option></select></div>
-                <div class="col-md-1"><label class="form-check"><input class="form-check-input" type="checkbox" name="president_buttons[${index}][is_active]" value="1" checked> فعال</label></div>
-                <div class="col-md-1"><button class="btn btn-outline-danger w-100" type="button" data-remove-president-row aria-label="حذف دکمه">حذف</button></div>
-            </div>`;
-
-        rows?.appendChild(wrapper);
-        bindRemove(wrapper);
-        wrapper.querySelector('input')?.focus();
-    });
-}
 </script>
 @endpush
