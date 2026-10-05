@@ -19,7 +19,7 @@
 
     $posts = collect($unionNews ?? []);
     $articles = $union->posts->where('type', 'article')->values();
-    $socialLinks = collect($union->social_links ?? [])->filter(fn ($url) => filled($url));
+    $socialLinks = collect($union->social_link_items);
     $presidentButtons = collect($union->active_president_buttons);
     $unionMessages = collect($unionMessages ?? []);
     $unionPhone = $union->phone ?: $union->mobile;
@@ -250,7 +250,7 @@
                             @if($presidentButtons->isNotEmpty() || filled($unionPhoneHref) || filled($union->email))
                                 <div class="guild-profile-manager__actions">
                                     @forelse($presidentButtons as $button)
-                                        <a href="{{ $button['url'] }}" target="{{ $button['target'] ?? '_self' }}" @if(($button['target'] ?? '_self') === '_blank') rel="noopener noreferrer" @endif><x-ui-icon :name="$button['icon'] ?: 'link'" /> <span>{{ $button['title'] }}</span></a>
+                                        <a href="{{ $button['url'] }}" target="{{ $button['target'] }}" @if($button['target'] === '_blank') rel="noopener noreferrer" @endif><x-ui-icon :name="$button['icon']" /> <span>{{ $button['title'] }}</span></a>
                                     @empty
                                         @if(filled($unionPhoneHref))<a href="tel:{{ $unionPhoneHref }}"><x-ui-icon name="phone" /> <span>تماس با اتحادیه</span></a>@endif
                                         @if($union->email)<a href="mailto:{{ $union->email }}"><x-ui-icon name="email" /> <span>ارسال ایمیل</span></a>@endif
@@ -286,8 +286,9 @@
                     <header class="guild-profile-section__head"><div><span>کمیسیون‌های تخصصی</span><h2>کمیسیون‌های اتحادیه</h2></div></header>
                     <div class="guild-profile-commissions">
                         @foreach($union->commissions as $commission)
+                            @php($commissionIcon = \App\Support\UnionIcon::resolve($commission->icon))
                             <article class="guild-profile-commission">
-                                <span class="guild-profile-commission__number">@if(filled($commission->icon))<x-ui-icon :name="$commission->icon" />@else{{ fa_number($loop->iteration) }}@endif</span>
+                                <span class="guild-profile-commission__number">@if($commissionIcon)<x-ui-icon :name="$commissionIcon" />@else{{ fa_number($loop->iteration) }}@endif</span>
                                 <div><h3>{{ $commission->title }}</h3>@if($commission->description)<p>{{ $plain($commission->description, 180) }}</p>@endif
                                     @if($union->isSectionEnabled('show_commission_tasks', true) && $commission->tasks->isNotEmpty())
                                         <ul>@foreach($commission->tasks as $task)<li>{{ $task->title }}</li>@endforeach</ul>
@@ -305,7 +306,7 @@
                     <div class="guild-profile-documents">
                         @foreach($union->rules as $rule)
                             <article class="guild-profile-document">
-                                <span><x-ui-icon :name="$rule->icon ?: 'document'" /></span>
+                                <span><x-ui-icon :name="\App\Support\UnionIcon::normalize($rule->icon, 'document')" /></span>
                                 <div><h3>{{ $rule->title }}</h3>@if($rule->description)<p>{{ $plain($rule->description, 160) }}</p>@endif</div>
                                 @if($rule->file)<a href="{{ $assetImage($rule->file, '') }}" target="_blank" rel="noopener noreferrer">دانلود فایل</a>@endif
                             </article>
@@ -398,7 +399,8 @@
                     <header class="guild-profile-section__head"><div><span>توانمندسازی اعضا</span><h2>آموزش‌های اتحادیه</h2></div></header>
                     <div class="guild-profile-education">
                         @foreach($union->educations as $education)
-                            <a href="{{ filled($education->link) ? $education->link : '#guild-education' }}" @if(filled($education->link) && str_starts_with($education->link, 'http')) target="_blank" rel="noopener noreferrer" @endif><span><x-ui-icon :name="$education->icon ?: 'education'" /></span><div><h3>{{ $education->title }}</h3>@if(filled($education->description))<p>{{ $plain($education->description, 150) }}</p>@endif</div></a>
+                            @php($educationUrl = \App\Models\GuildUnion::safeActionUrl($education->link) ?: '#guild-education')
+                            <a href="{{ $educationUrl }}" @if(str_starts_with($educationUrl, 'http')) target="_blank" rel="noopener noreferrer" @endif><span><x-ui-icon :name="\App\Support\UnionIcon::normalize($education->icon, 'education')" /></span><div><h3>{{ $education->title }}</h3>@if(filled($education->description))<p>{{ $plain($education->description, 150) }}</p>@endif</div></a>
                         @endforeach
                     </div>
                 </section>
@@ -440,7 +442,7 @@
                         </div>
                         @if($union->isSectionEnabled('show_social_links', true) && $socialLinks->isNotEmpty())
                             <div class="guild-profile-socials">
-                                @foreach($socialLinks as $name => $url)<a class="guild-profile-social guild-profile-social--{{ $name }}" href="{{ $url }}" target="_blank" rel="noopener noreferrer"><x-social-icon :name="$name" /><span>{{ ['instagram'=>'اینستاگرام','telegram'=>'تلگرام','whatsapp'=>'واتساپ','eitaa'=>'ایتا','bale'=>'بله','rubika'=>'روبیکا','website'=>'وب‌سایت'][$name] ?? $name }}</span></a>@endforeach
+                                @foreach($socialLinks as $social)<a class="guild-profile-social guild-profile-social--{{ $social['key'] }}" href="{{ $social['url'] }}" target="_blank" rel="noopener noreferrer"><x-social-icon :name="$social['key']" /><span>{{ $social['label'] }}</span></a>@endforeach
                             </div>
                         @endif
                     @endif

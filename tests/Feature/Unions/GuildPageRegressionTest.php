@@ -71,6 +71,47 @@ class GuildPageRegressionTest extends TestCase
             ->assertSee('نایب رئیس');
     }
 
+    public function test_president_actions_and_social_links_only_render_supported_safe_urls(): void
+    {
+        $union = $this->union([
+            'slug' => 'safe-union-links',
+            'manager_name' => 'مدیر تست',
+            'social_links' => [
+                'instagram' => 'https://instagram.com/example',
+                'unsupported' => 'https://example.com/unsupported',
+            ],
+            'president_buttons' => [
+                [
+                    'title' => 'لینک ناامن',
+                    'url' => 'javascript:alert(1)',
+                    'icon' => 'phone',
+                    'target' => '_blank',
+                    'is_active' => true,
+                ],
+                [
+                    'title' => 'تماس امن',
+                    'url' => 'tel:01712345678',
+                    'icon' => 'phone',
+                    'target' => '_self',
+                    'is_active' => true,
+                ],
+            ],
+            'settings' => [
+                'show_manager' => true,
+                'show_contact' => true,
+                'show_social_links' => true,
+            ],
+        ]);
+
+        $this->get(route('guilds.show', $union->slug))
+            ->assertOk()
+            ->assertSee('تماس امن')
+            ->assertSee('https://instagram.com/example', false)
+            ->assertDontSee('javascript:alert(1)', false)
+            ->assertDontSee('لینک ناامن')
+            ->assertDontSee('https://example.com/unsupported', false);
+    }
+
     public function test_services_section_respects_services_enabled_and_requires_displayable_content(): void
     {
         $disabled = $this->union([

@@ -7854,7 +7854,11 @@ svg { max-width: 100%; }
 .guild-profile-contact-card:focus-visible,
 .guild-profile-socials a:focus-visible,
 .guild-profile-side-card li a:focus-visible,
-.guild-profile-side-contact a:focus-visible {
+.guild-profile-side-contact a:focus-visible,
+.guild-profile-document > a:focus-visible,
+.guild-profile-list > a:focus-visible,
+.guild-profile-education > a:focus-visible,
+.guild-profile-gallery > a:focus-visible {
   outline: 3px solid rgba(62, 174, 226, .45);
   outline-offset: 3px;
 }
@@ -8648,6 +8652,17 @@ svg { max-width: 100%; }
   padding-inline: 11px;
   font-size: 11.5px;
   font-weight: 600;
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.guild-profile-document > a:hover {
+  border-color: #a9cedf;
+  background: #eef7fb;
+  color: #0e5f91;
+}
+
+.guild-profile-document > a:active {
+  background: #e2f0f6;
 }
 
 .guild-profile-posts {
@@ -9983,15 +9998,15 @@ a.guild-profile-contact-card:active {
 @media (max-width: 389.98px) {
 
   .guild-profile-services {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .guild-profile-members {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .guild-profile-commissions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .guild-profile-posts {
@@ -9999,7 +10014,26 @@ a.guild-profile-contact-card:active {
   }
 
   .guild-profile-contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .guild-profile-manager__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .guild-profile-manager__actions a {
+    width: 100%;
+  }
+
+  .guild-profile-socials {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .guild-profile-socials a {
+    justify-content: center;
+    min-width: 0;
   }
 
   .guild-profile-hero__actions {

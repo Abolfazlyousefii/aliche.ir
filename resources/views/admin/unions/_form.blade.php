@@ -13,6 +13,8 @@
     $settings = old('settings', $union?->settings ?? []);
     $settingDefaults = \App\Models\GuildUnion::sectionDefaults();
     $presidentButtons = old('president_buttons', $union?->president_buttons ?? []);
+    $presidentIconOptions = \App\Support\UnionIcon::options();
+    $socialLabels = \App\Models\GuildUnion::socialLinkLabels();
     $selectedPostIds = collect(old('selected_posts', $union?->selectedPosts?->pluck('id')->all() ?? []))->map(fn ($id) => (string) $id)->all();
 @endphp
 
@@ -104,10 +106,18 @@
                 @foreach ($presidentButtons as $index => $button)
                     <div class="border rounded p-3 mb-2" data-row><div class="row g-2 align-items-end">
                         <div class="col-md-3"><label class="form-label">عنوان</label><input class="form-control" name="president_buttons[{{ $index }}][title]" value="{{ $button['title'] ?? '' }}"></div>
-                        <div class="col-md-3"><label class="form-label">لینک</label><input class="form-control" name="president_buttons[{{ $index }}][url]" value="{{ $button['url'] ?? '' }}" dir="ltr"></div>
-                        <div class="col-md-2"><label class="form-label">آیکون</label><input class="form-control" name="president_buttons[{{ $index }}][icon]" value="{{ $button['icon'] ?? '' }}" placeholder="phone, email, document"></div>
+                        <div class="col-md-3"><label class="form-label">لینک</label><input class="form-control" name="president_buttons[{{ $index }}][url]" value="{{ $button['url'] ?? '' }}" dir="ltr" placeholder="https://… یا tel:…"></div>
+                        <div class="col-md-2">
+                            <label class="form-label">آیکون</label>
+                            <select class="form-control" name="president_buttons[{{ $index }}][icon]">
+                                @foreach($presidentIconOptions as $iconKey => $iconLabel)
+                                    <option value="{{ $iconKey }}" @selected(\App\Support\UnionIcon::normalize($button['icon'] ?? null) === $iconKey)>{{ $iconLabel }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="col-md-2"><label class="form-label">باز شدن</label><select class="form-control" name="president_buttons[{{ $index }}][target]"><option value="_self" @selected(($button['target'] ?? '_self') === '_self')>همان صفحه</option><option value="_blank" @selected(($button['target'] ?? '_self') === '_blank')>صفحه جدید</option></select></div>
-                        <div class="col-md-2"><label class="form-check"><input class="form-check-input" type="checkbox" name="president_buttons[{{ $index }}][is_active]" value="1" @checked($button['is_active'] ?? true)> فعال</label></div>
+                        <div class="col-md-1"><label class="form-check"><input class="form-check-input" type="checkbox" name="president_buttons[{{ $index }}][is_active]" value="1" @checked($button['is_active'] ?? true)> فعال</label></div>
+                        <div class="col-md-1"><button class="btn btn-outline-danger w-100" type="button" data-remove-president-row aria-label="حذف دکمه">حذف</button></div>
                     </div></div>
                 @endforeach
             </div>
@@ -129,12 +139,13 @@
         <div class="col-md-3"><label class="form-label" for="website">وب‌سایت</label><input class="form-control" id="website" name="website" type="url" value="{{ old('website', $union?->website) }}" dir="ltr"></div>
 
         <div class="col-12"><h3 class="h6 mt-2">شبکه‌های اجتماعی</h3></div>
-        @foreach (['instagram' => 'اینستاگرام', 'telegram' => 'تلگرام', 'whatsapp' => 'واتساپ', 'eitaa' => 'ایتا', 'bale' => 'بله', 'rubika' => 'روبیکا', 'website' => 'وب‌سایت'] as $key => $label)
+        @foreach ($socialLabels as $key => $label)
             <div class="col-md-3">
                 <label class="form-label" for="social_{{ $key }}">{{ $label }}</label>
                 <input class="form-control" id="social_{{ $key }}" name="social_links[{{ $key }}]" value="{{ $socialLinks[$key] ?? '' }}" dir="ltr" type="url">
             </div>
         @endforeach
+        <div class="col-12"><small class="text-muted">لینک شبکه اجتماعی باید URL کامل و معتبر باشد. فقط شبکه‌های پشتیبانی‌شده در صفحه عمومی نمایش داده می‌شوند.</small></div>
         <div class="col-12"><h3 class="h6 mt-2">امکانات اتحادیه</h3></div>
         @foreach ($featureFields as $field => $label)
             <div class="col-md-3">
@@ -253,5 +264,6 @@ document.querySelectorAll('[data-union-media-select]').forEach((select) => {
 
     select.addEventListener('change', renderSelectedMedia);
 });
+
 </script>
 @endpush

@@ -15,6 +15,7 @@
     $prices = $sectionRows('prices', 'prices');
     $valueOf = fn ($row, string $field, $default = null) => is_array($row) ? ($row[$field] ?? $default) : ($row->{$field} ?? $default);
     $dateValue = fn ($row, string $field) => ($valueOf($row, $field) instanceof \Illuminate\Support\Carbon || $valueOf($row, $field) instanceof \Carbon\CarbonInterface) ? jalali_input_date($valueOf($row, $field)) : $valueOf($row, $field);
+    $unionIconOptions = \App\Support\UnionIcon::options();
 @endphp
 
 <div class="admin-panel-card mt-3">
@@ -36,7 +37,15 @@
                                 <input type="hidden" name="related[commissions][{{ $index }}][id]" value="{{ $valueOf($commission, 'id') }}">
                                 <div class="row g-2 align-items-end">
                                     <div class="col-md-4"><label class="form-label">عنوان کمیسیون</label><input class="form-control" name="related[commissions][{{ $index }}][title]" value="{{ $valueOf($commission, 'title') }}"></div>
-                                    <div class="col-md-2"><label class="form-label">آیکن</label><input class="form-control" name="related[commissions][{{ $index }}][icon]" value="{{ $valueOf($commission, 'icon') }}"></div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">آیکن</label>
+                                        <select class="form-control" name="related[commissions][{{ $index }}][icon]">
+                                            <option value="">شماره ترتیبی</option>
+                                            @foreach($unionIconOptions as $iconKey => $iconLabel)
+                                                <option value="{{ $iconKey }}" @selected(\App\Support\UnionIcon::resolve($valueOf($commission, 'icon')) === $iconKey)>{{ $iconLabel }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     <div class="col-md-2"><label class="form-label">ترتیب</label><input class="form-control" type="number" min="0" name="related[commissions][{{ $index }}][sort_order]" value="{{ $valueOf($commission, 'sort_order', 0) }}"></div>
                                     <div class="col-md-2"><label class="form-label">وضعیت</label><select class="form-control" name="related[commissions][{{ $index }}][is_active]"><option value="1" @selected((string) $valueOf($commission, 'is_active', 1) === '1')>فعال</option><option value="0" @selected((string) $valueOf($commission, 'is_active', 1) === '0')>غیرفعال</option></select></div>
                                     <div class="col-md-2"><label class="form-check"><input class="form-check-input" type="checkbox" name="related[commissions][{{ $index }}][delete]" value="1"> حذف</label></div>
@@ -86,6 +95,13 @@
                                                 <label class="form-label">{{ $label }}</label>
                                                 @if($field === 'description')
                                                     <textarea class="form-control js-rich-editor" name="related[{{ $sectionKey }}][{{ $index }}][{{ $field }}]" rows="2">{{ $valueOf($row, $field) }}</textarea>
+                                                @elseif($field === 'icon')
+                                                    <select class="form-control" name="related[{{ $sectionKey }}][{{ $index }}][{{ $field }}]">
+                                                        <option value="" @selected(\App\Support\UnionIcon::resolve($valueOf($row, $field)) === null)>پیش‌فرض بخش</option>
+                                                        @foreach($unionIconOptions as $iconKey => $iconLabel)
+                                                            <option value="{{ $iconKey }}" @selected(\App\Support\UnionIcon::resolve($valueOf($row, $field)) === $iconKey)>{{ $iconLabel }}</option>
+                                                        @endforeach
+                                                    </select>
                                                 @else
                                                     <input class="form-control" @if(in_array($field, ['meeting_date', 'updated_on'], true)) type="text" data-jalali-datepicker data-jalali-date-only dir="ltr" @elseif($field === 'price') type="number" step="0.01" min="0" @endif name="related[{{ $sectionKey }}][{{ $index }}][{{ $field }}]" value="{{ in_array($field, ['meeting_date', 'updated_on'], true) ? $dateValue($row, $field) : $valueOf($row, $field) }}">
                                                 @endif
@@ -110,6 +126,12 @@
     @push('scripts')
         <script>
             document.addEventListener('click', function (event) {
+                const removePresidentButton = event.target.closest('[data-remove-president-row]');
+                if (removePresidentButton) {
+                    removePresidentButton.closest('[data-row]')?.remove();
+                    return;
+                }
+
                 const button = event.target.closest('[data-add-row]');
                 if (!button) return;
                 const section = button.closest('.union-dynamic-section');
@@ -122,12 +144,20 @@
                 if (window.initializeJalaliDatepickers) window.initializeJalaliDatepickers(rows.lastElementChild || rows);
             });
 
+            const unionIconOptions = @json($unionIconOptions);
+            const unionIconOptionsHtml = (blankLabel = '') => {
+                const options = Object.entries(unionIconOptions)
+                    .map(([value, label]) => '<option value="' + value + '">' + label + '</option>')
+                    .join('');
+                return (blankLabel ? '<option value="">' + blankLabel + '</option>' : '') + options;
+            };
+
             function templateFor(key, index, commissionIndex) {
                 if (key === 'president-buttons') {
-                    return `<div class="border rounded p-3 mb-2" data-row><div class="row g-2 align-items-end"><div class="col-md-3"><label class="form-label">عنوان</label><input class="form-control" name="president_buttons[${index}][title]"></div><div class="col-md-3"><label class="form-label">لینک</label><input class="form-control" name="president_buttons[${index}][url]" dir="ltr"></div><div class="col-md-2"><label class="form-label">آیکون</label><input class="form-control" name="president_buttons[${index}][icon]" placeholder="phone, email, document"></div><div class="col-md-2"><label class="form-label">باز شدن</label><select class="form-control" name="president_buttons[${index}][target]"><option value="_self">همان صفحه</option><option value="_blank">صفحه جدید</option></select></div><div class="col-md-2"><label class="form-check"><input class="form-check-input" type="checkbox" name="president_buttons[${index}][is_active]" value="1" checked> فعال</label></div></div></div>`;
+                    return `<div class="border rounded p-3 mb-2" data-row><div class="row g-2 align-items-end"><div class="col-md-3"><label class="form-label">عنوان</label><input class="form-control" name="president_buttons[${index}][title]"></div><div class="col-md-3"><label class="form-label">لینک</label><input class="form-control" name="president_buttons[${index}][url]" dir="ltr" placeholder="https://… یا tel:…"></div><div class="col-md-2"><label class="form-label">آیکون</label><select class="form-control" name="president_buttons[${index}][icon]">${unionIconOptionsHtml()}</select></div><div class="col-md-2"><label class="form-label">باز شدن</label><select class="form-control" name="president_buttons[${index}][target]"><option value="_self">همان صفحه</option><option value="_blank">صفحه جدید</option></select></div><div class="col-md-1"><label class="form-check"><input class="form-check-input" type="checkbox" name="president_buttons[${index}][is_active]" value="1" checked> فعال</label></div><div class="col-md-1"><button class="btn btn-outline-danger w-100" type="button" data-remove-president-row>حذف</button></div></div></div>`;
                 }
                 if (key === 'commissions') {
-                    return `<div class="border rounded p-3 mb-3" data-row><div class="row g-2 align-items-end"><div class="col-md-4"><label class="form-label">عنوان کمیسیون</label><input class="form-control" name="related[commissions][${index}][title]"></div><div class="col-md-2"><label class="form-label">آیکن</label><input class="form-control" name="related[commissions][${index}][icon]"></div><div class="col-md-2"><label class="form-label">ترتیب</label><input class="form-control" type="number" min="0" name="related[commissions][${index}][sort_order]" value="0"></div><div class="col-md-2"><label class="form-label">وضعیت</label><select class="form-control" name="related[commissions][${index}][is_active]"><option value="1">فعال</option><option value="0">غیرفعال</option></select></div><div class="col-12"><label class="form-label">توضیحات کمیسیون</label><textarea class="form-control" name="related[commissions][${index}][description]" rows="2"></textarea></div></div><div class="mt-3 ps-md-3 border-start union-dynamic-section" data-section="commission-tasks" data-commission-index="${index}" data-next-index="0"><div class="d-flex justify-content-between align-items-center mb-2"><strong>وظایف کمیسیون</strong><button class="btn btn-sm btn-outline-primary" type="button" data-add-row>افزودن وظیفه</button></div><div data-rows></div></div></div>`;
+                    return `<div class="border rounded p-3 mb-3" data-row><div class="row g-2 align-items-end"><div class="col-md-4"><label class="form-label">عنوان کمیسیون</label><input class="form-control" name="related[commissions][${index}][title]"></div><div class="col-md-2"><label class="form-label">آیکن</label><select class="form-control" name="related[commissions][${index}][icon]">${unionIconOptionsHtml('شماره ترتیبی')}</select></div><div class="col-md-2"><label class="form-label">ترتیب</label><input class="form-control" type="number" min="0" name="related[commissions][${index}][sort_order]" value="0"></div><div class="col-md-2"><label class="form-label">وضعیت</label><select class="form-control" name="related[commissions][${index}][is_active]"><option value="1">فعال</option><option value="0">غیرفعال</option></select></div><div class="col-12"><label class="form-label">توضیحات کمیسیون</label><textarea class="form-control" name="related[commissions][${index}][description]" rows="2"></textarea></div></div><div class="mt-3 ps-md-3 border-start union-dynamic-section" data-section="commission-tasks" data-commission-index="${index}" data-next-index="0"><div class="d-flex justify-content-between align-items-center mb-2"><strong>وظایف کمیسیون</strong><button class="btn btn-sm btn-outline-primary" type="button" data-add-row>افزودن وظیفه</button></div><div data-rows></div></div></div>`;
                 }
                 if (key === 'commission-tasks') {
                     return `<div class="row g-2 align-items-end mb-2" data-row><div class="col-md-4"><input class="form-control" name="related[commissions][${commissionIndex}][tasks][${index}][title]" placeholder="عنوان وظیفه"></div><div class="col-md-4"><input class="form-control" name="related[commissions][${commissionIndex}][tasks][${index}][description]" placeholder="توضیح"></div><div class="col-md-2"><input class="form-control" type="number" min="0" name="related[commissions][${commissionIndex}][tasks][${index}][sort_order]" value="0"></div><div class="col-md-2"><select class="form-control" name="related[commissions][${commissionIndex}][tasks][${index}][is_active]"><option value="1">فعال</option><option value="0">غیرفعال</option></select></div></div>`;
@@ -138,7 +168,15 @@
                     educations: [['title', 'عنوان'], ['description', 'توضیحات'], ['icon', 'آیکن'], ['link', 'لینک']],
                     prices: [['title', 'عنوان'], ['price', 'قیمت', 'number'], ['currency', 'واحد'], ['type', 'نوع'], ['updated_on', 'تاریخ بروزرسانی', 'jalali-date']],
                 }[key] || [];
-                const controls = fields.map(([field, label, type]) => `<div class="col-md-${field === 'description' ? '12' : '3'}"><label class="form-label">${label}</label>${field === 'description' ? `<textarea class="form-control" name="related[${key}][${index}][${field}]" rows="2"></textarea>` : `<input class="form-control" type="${type === 'number' ? 'number' : 'text'}" ${type === 'jalali-date' ? 'data-jalali-datepicker data-jalali-date-only dir=\"ltr\"' : ''} name="related[${key}][${index}][${field}]">`}</div>`).join('');
+                const controls = fields.map(([field, label, type]) => {
+                    const control = field === 'description'
+                        ? `<textarea class="form-control" name="related[${key}][${index}][${field}]" rows="2"></textarea>`
+                        : field === 'icon'
+                            ? `<select class="form-control" name="related[${key}][${index}][${field}]">${unionIconOptionsHtml('پیش‌فرض بخش')}</select>`
+                            : `<input class="form-control" type="${type === 'number' ? 'number' : 'text'}" ${type === 'jalali-date' ? 'data-jalali-datepicker data-jalali-date-only dir=\"ltr\"' : ''} name="related[${key}][${index}][${field}]">`;
+
+                    return `<div class="col-md-${field === 'description' ? '12' : '3'}"><label class="form-label">${label}</label>${control}</div>`;
+                }).join('');
                 return `<div class="border rounded p-3 mb-3" data-row><div class="row g-2 align-items-end">${controls}<div class="col-md-2"><label class="form-label">ترتیب</label><input class="form-control" type="number" min="0" name="related[${key}][${index}][sort_order]" value="0"></div><div class="col-md-2"><label class="form-label">وضعیت</label><select class="form-control" name="related[${key}][${index}][is_active]"><option value="1">فعال</option><option value="0">غیرفعال</option></select></div></div></div>`;
             }
         </script>
