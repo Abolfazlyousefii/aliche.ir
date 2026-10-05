@@ -3179,11 +3179,20 @@ img { display: block; max-width: 100%; }
   gap: 12px;
 }
 .gallery-thumb {
+  width: 100%;
   aspect-ratio: 4 / 3;
+  padding: 0;
+  border: 0;
   border-radius: var(--radius-xs);
   overflow: hidden;
   cursor: pointer;
   position: relative;
+  background: #eef3f7;
+  font: inherit;
+}
+.gallery-thumb:focus-visible {
+  outline: 3px solid rgba(12, 116, 185, .4);
+  outline-offset: 3px;
 }
 .gallery-thumb img {
   width: 100%;
@@ -3277,6 +3286,11 @@ img { display: block; max-width: 100%; }
   z-index: 10;
 }
 .lightbox-close:hover { background: rgba(255,255,255,.25); }
+.lightbox-close:focus-visible,
+.lightbox-nav:focus-visible {
+  outline: 3px solid rgba(255,255,255,.72);
+  outline-offset: 3px;
+}
 .lightbox-img {
   max-width: 90%;
   max-height: 85%;
