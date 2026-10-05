@@ -13,7 +13,6 @@ use App\Services\MediaLibraryService;
 use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -103,18 +102,10 @@ class TourismPlaceController extends Controller
         $data = $this->placeData($validated, $tourism);
 
         if ($cardImage = $this->storeImage($request, 'image', 'tourism/cards')) {
-            if ($tourism->image) {
-                Storage::disk('public')->delete($tourism->image);
-            }
-
             $data['image'] = $cardImage;
         }
 
         if ($featuredImage = $this->storeImage($request, 'featured_image', 'tourism/featured')) {
-            if ($tourism->featured_image) {
-                Storage::disk('public')->delete($tourism->featured_image);
-            }
-
             $data['featured_image'] = $featuredImage;
         }
 
@@ -131,14 +122,6 @@ class TourismPlaceController extends Controller
 
     public function destroy(TourismPlace $tourism): RedirectResponse
     {
-        if ($tourism->featured_image) {
-            Storage::disk('public')->delete($tourism->featured_image);
-        }
-
-        foreach ($tourism->gallery ?? [] as $image) {
-            Storage::disk('public')->delete($image['path'] ?? '');
-        }
-
         $tourism->delete();
 
         return redirect()->route('admin.tourism.index')->with('success', 'مکان گردشگری با موفقیت حذف شد.');
@@ -276,8 +259,6 @@ class TourismPlaceController extends Controller
                 'delete' => ($payload['delete'] ?? null) === '1',
             ];
         });
-
-        $gallery->filter(fn ($image) => $image['delete'])->each(fn ($image) => Storage::disk('public')->delete($image['path']));
 
         $kept = $gallery
             ->reject(fn ($image) => $image['delete'])
