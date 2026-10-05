@@ -119,14 +119,6 @@
     $quickItems = $quickItems->isNotEmpty() ? $quickItems : $quickFallbacks;
     $quickItems = $withoutComplaintLinks($quickItems);
 
-    $serviceFallbacks = collect([
-        ['icon' => '📋', 'title' => 'نحوه صدور پروانه کسب', 'description' => 'راهنمای گام‌به‌گام دریافت پروانه کسب جدید و تشکیل پرونده صنفی برای متقاضیان', 'url' => $servicesUrl, 'label' => 'مشاهده راهنما ←'],
-        ['icon' => '🔄', 'title' => 'نحوه تمدید پروانه کسب', 'description' => 'مراحل تمدید سالانه پروانه کسب، مدارک مورد نیاز و فرآیند بررسی در اتحادیه مربوطه', 'url' => $servicesUrl, 'label' => 'مشاهده راهنما ←'],
-        ['icon' => '⚖️', 'title' => 'نحوه ثبت شکایت صنفی', 'description' => 'ثبت گزارش تخلفات صنفی، شکایات مردمی و نحوه پیگیری از طریق کمیسیون نظارت', 'url' => $complaintsUrl, 'label' => 'مشاهده راهنما ←'],
-        ['icon' => '📁', 'title' => 'فرم‌ها و بخشنامه‌ها', 'description' => 'دانلود فرم‌های مورد نیاز، بخشنامه‌های جاری و اطلاعیه‌های جدید اتاق اصناف', 'url' => route('announcements.index'), 'label' => 'مشاهده فرم‌ها ←'],
-        ['icon' => '💻', 'title' => 'سامانه نوین اصناف', 'description' => 'ورود به سامانه الکترونیک اصناف برای پیگیری پرونده و استعلام وضعیت پروانه کسب', 'url' => $systemsUrl, 'label' => 'ورود به سامانه ←'],
-        ['icon' => '🎓', 'title' => 'آموزش احکام تجارت', 'description' => 'ثبت‌نام در دوره‌های آموزش احکام تجارت و کسب‌وکار مورد نیاز صدور پروانه کسب', 'url' => $servicesUrl, 'label' => 'ثبت‌نام دوره ←'],
-    ]);
     $serviceItems = ($electronicServices ?? collect())->map(function ($service) use ($plain) {
         $publicLink = $service->public_link;
 
@@ -139,14 +131,8 @@
             'label' => $publicLink ? 'ورود به خدمت ←' : 'مشاهده راهنما ←',
         ];
     })->take(6)->values();
-    $serviceItems = $serviceItems->isNotEmpty() ? $serviceItems : $serviceFallbacks;
     $serviceItems = $withoutComplaintLinks($serviceItems);
 
-    $systemFallbacks = collect([
-        ['icon' => '💻', 'title' => 'سامانه نوین اصناف', 'description' => 'ورود به سامانه الکترونیک اصناف برای پیگیری پرونده و استعلام وضعیت پروانه کسب', 'url' => $systemsUrl, 'target' => '_self', 'label' => 'ورود به سامانه ←'],
-        ['icon' => '🎓', 'title' => 'سامانه آموزش اصناف', 'description' => 'دسترسی به دوره‌های آموزشی و راهنمای ثبت‌نام متقاضیان صنفی', 'url' => $systemsUrl, 'target' => '_self', 'label' => 'ورود به سامانه ←'],
-        ['icon' => '🔍', 'title' => 'سامانه استعلام', 'description' => 'پیگیری و استعلام وضعیت درخواست‌ها و مجوزهای صنفی از درگاه‌های مرتبط', 'url' => $systemsUrl, 'target' => '_self', 'label' => 'ورود به سامانه ←'],
-    ]);
     $systemItems = ($systems ?? collect())->map(function ($system) use ($plain) {
         $publicLink = $system->public_link;
 
@@ -160,28 +146,14 @@
             'label' => $publicLink ? 'ورود به سامانه' : 'مشاهده جزئیات',
         ];
     })->take(6)->values();
-    $systemItems = $systemItems->isNotEmpty() ? $systemItems : $systemFallbacks;
     $systemItems = $withoutComplaintLinks($systemItems);
 
     $adItems = ($homeAdvertisements ?? collect())->take(4)->filter(fn ($ad) => filled($ad->image))->map(fn ($ad) => ['title' => $ad->title ?: 'تبلیغات', 'url' => $ad->link, 'image' => $assetImage($ad->image), 'target' => $ad->target ?: '_self', 'alt' => data_get($ad, 'alt') ?: ($ad->title ?: 'تبلیغات')])->values();
 
-    $commissionFallbacks = collect([
-        ['icon' => '⚖️', 'title' => 'کمیسیون تشخیص', 'description' => 'نظارت بر عملکرد واحدهای صنفی، اجرای طرح‌های بازرسی دوره‌ای و رسیدگی به تخلفات صنفی در سطح شهرستان'],
-        ['icon' => '🎓', 'title' => 'کمیسیون آموزش', 'description' => 'برنامه‌ریزی و برگزاری دوره‌های آموزش احکام تجارت و کسب‌وکار برای متقاضیان پروانه کسب و فعالان صنفی'],
-        ['icon' => '🤝', 'title' => 'کمیسیون بازرسی', 'description' => 'رسیدگی به اختلافات صنفی میان اعضای اتحادیه‌ها و ارائه راهکارهای سازش و مصالحه'],
-        ['icon' => '📊', 'title' => 'کمیسیون بازاریابی و توسعه', 'description' => 'حمایت از بازاریابی محصولات صنفی، توسعه بازارچه‌های محلی و برگزاری نمایشگاه‌های تخصصی'],
-        ['icon' => '🏛', 'title' => 'کمیسیون صنایع دستی', 'description' => 'حمایت از هنرمندان و فعالان صنایع دستی، ساماندهی تولید و فروش محصولات سنتی و محلی'],
-        ['icon' => '🌿', 'title' => 'کمیسیون گردشگری', 'description' => 'هماهنگی با فعالان حوزه گردشگری، هتل‌داران، رستوران‌داران و آژانس‌های مسافرتی شهرستان'],
-        ['icon' => '💳', 'title' => 'کمیسیون مالی و اداری', 'description' => 'مدیریت منابع مالی، بودجه‌ریزی، امور اداری و پشتیبانی از فعالیت‌های اتاق اصناف شهرستان'],
-        ['icon' => '📋', 'title' => 'کمیسیون امور صنفی', 'description' => 'پیگیری مسائل و نیازهای صنفی اتحادیه‌ها، صدور و تمدید پروانه‌های کسب و رسیدگی به درخواست‌ها'],
-    ]);
     $commissionItems = ($commissions ?? collect())->take(8)->map(fn ($commission) => ['icon' => '⚖️', 'title' => $commission->title, 'description' => $plain($commission->description, 130), 'tasks' => $commission->activeTasks->take(3)->map(fn ($task) => ['title' => $task->title, 'description' => $plain($task->description, 120)])->values(), 'url' => route('commissions.show', $commission->slug)])->values();
-    $commissionItems = $commissionItems->isNotEmpty() ? $commissionItems : $commissionFallbacks;
 
     $tourismPanels = $tourismPanels ?? collect();
 
-    $videoFallbacks = collect(['گزارش تصویری از خدمات اتاق اصناف مرکز استان گلستان به کسبه شهرستان', 'راهنمای مراحل صدور و تمدید پروانه کسب', 'آموزش احکام تجارت برای متقاضیان', 'بازدید میدانی بازرسان از واحدهای صنفی گرگان', 'نشست هماهنگی اتحادیه‌های صنفی استان گلستان']);
-    $galleryFallbacks = collect(['نمایی از ساختمان و مراجعه حضوری فعالان صنفی', 'جلسه هم‌اندیشی اتحادیه‌های صنفی استان گلستان', 'ارائه خدمات مشاوره‌ای به متقاضیان پروانه کسب', 'برگزاری دوره آموزشی احکام تجارت و کسب‌وکار', 'پیگیری طرح‌های نظارتی بازار در استان گلستان', 'بخشنامه‌ها و دستورالعمل‌های جدید صنفی', 'بازار سنتی گرگان و اصناف قدیمی شهر', 'نمایشگاه صنایع دستی و سوغات استان گلستان']);
     $followTopicSettings = collect($sectionSetting('systems', 'topics', []));
     $safeHomeLink = function ($value, string $fallback): string {
         $safe = \App\Models\System::normalizePublicLink(is_string($value) ? $value : null);
@@ -631,14 +603,16 @@
 </div>
 </div>
 <div class="howto-grid">
-@foreach($serviceItems as $item)
-<a class="howto-card" href="{{ $item['url'] }}" target="{{ $item['target'] ?? '_self' }}">
+@forelse($serviceItems as $item)
+<a class="howto-card" href="{{ $item['url'] }}" target="{{ $item['target'] ?? '_self' }}" @if(($item['target'] ?? '_self') === '_blank') rel="noopener noreferrer" @endif>
 <div class="howto-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3.5h8M9 2v3M15 2v3M6 4.5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z"/><path d="m8 12 2.2 2.2L16 8.5M8 18h8"/></svg></div>
 <h3>{{ $item['title'] }}</h3>
 <p>{{ $item['description'] }}</p>
 <span class="howto-link"><span class="howto-link-mobile">مشاهده</span><span class="howto-link-desktop">{{ $item['label'] }}</span></span>
 </a>
-@endforeach
+@empty
+<div class="home-content-empty">خدمت الکترونیکی فعالی برای نمایش ثبت نشده است.</div>
+@endforelse
 </div>
 </section>
 
@@ -665,9 +639,9 @@
     $sidebarAdImage = $ad->image_url ?? data_get($ad, 'image');
 @endphp
 @if($sidebarAdUrl !== '')
-<a class="latest-news-ad" href="{{ $sidebarAdUrl }}" target="{{ $sidebarAdTarget }}" @if($sidebarAdTarget === '_blank') rel="noopener noreferrer" @endif><img loading="lazy" decoding="async" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}"><span>{{ $sidebarAdTitle }}</span></a>
+<a class="latest-news-ad" href="{{ $sidebarAdUrl }}" target="{{ $sidebarAdTarget }}" @if($sidebarAdTarget === '_blank') rel="noopener noreferrer" @endif><img loading="lazy" decoding="async" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}" onerror="this.onerror=null;this.src='{{ $defaultImage }}';"><span>{{ $sidebarAdTitle }}</span></a>
 @else
-<div class="latest-news-ad latest-news-ad-placeholder"><img loading="lazy" decoding="async" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}"><span>{{ $sidebarAdTitle }}</span></div>
+<div class="latest-news-ad latest-news-ad-placeholder"><img loading="lazy" decoding="async" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}" onerror="this.onerror=null;this.src='{{ $defaultImage }}';"><span>{{ $sidebarAdTitle }}</span></div>
 @endif
 @endforeach
 </aside>
@@ -690,13 +664,13 @@
 @endphp
 @if($bannerAdUrl !== '')
 <a class="ad-banner" href="{{ $bannerAdUrl }}" target="{{ $bannerAdTarget }}" @if($bannerAdTarget === '_blank') rel="noopener noreferrer" @endif>
-<img alt="{{ $bannerAdTitle }}" src="{{ $bannerAdImage }}" loading="lazy" decoding="async"/>
+<img alt="{{ $bannerAdTitle }}" src="{{ $bannerAdImage }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ $defaultImage }}';"/>
 <div class="ad-banner-overlay"></div>
 <div class="ad-banner-text">{{ $bannerAdTitle }}</div>
 </a>
 @else
 <div class="ad-banner ad-banner-placeholder">
-<img alt="{{ $bannerAdTitle }}" src="{{ $bannerAdImage }}" loading="lazy" decoding="async"/>
+<img alt="{{ $bannerAdTitle }}" src="{{ $bannerAdImage }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ $defaultImage }}';"/>
 <div class="ad-banner-overlay"></div>
 <div class="ad-banner-text">{{ $bannerAdTitle }}</div>
 </div>
@@ -788,7 +762,7 @@
 </div>
 <div class="systems-unified-shell">
 <div class="systems-primary-group"><h3 class="systems-subtitle">سامانه‌های اصلی</h3><div class="commission-grid compact-grid systems-primary-grid">
-@foreach($systemItems as $item)
+@forelse($systemItems as $item)
 <a class="commission-item system-home-card {{ filled($item['image'] ?? null) ? 'has-image' : '' }}" href="{{ $item['url'] }}" target="{{ $item['target'] ?? '_self' }}" @if(($item['target'] ?? '_self') === '_blank') rel="noopener noreferrer" @endif>
 @if(filled($item['image'] ?? null))
 <span class="system-card-icon system-card-image" aria-hidden="true"><img src="{{ $item['image'] }}" alt="" loading="lazy" decoding="async"></span>
@@ -799,7 +773,9 @@
 <span class="system-card-description">{{ $item['description'] }}</span>
 <span class="system-card-cta">{{ $item['label'] ?? 'مشاهده' }} <span aria-hidden="true">←</span></span>
 </a>
-@endforeach
+@empty
+<div class="home-content-empty">سامانه فعالی برای نمایش در صفحه نخست ثبت نشده است.</div>
+@endforelse
 </div></div>
 <div class="systems-links-group" id="fractions"><h3 class="systems-subtitle">پیوندها و اطلاعیه‌های کاربردی</h3><div class="systems-links-grid">
 @forelse($followTopics as $topic)
@@ -819,7 +795,7 @@
 </div><a class="home-corporate-action" href="{{ $commissionsUrl }}">مشاهده همه کمیسیون‌ها</a>
 </div>
 <div class="comreal-grid">
-@foreach($commissionItems as $item)
+@forelse($commissionItems as $item)
 <a href="{{ $item['url'] ?? $commissionsUrl }}" class="comreal-card">
 <div class="comreal-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M6 6h12M5 6l-3 7h6L5 6Zm14 0-3 7h6l-3-7ZM8 21h8"/></svg></div>
 <h3>{{ $item['title'] }}</h3>
@@ -830,7 +806,9 @@
 <ul class="commission-task-mini"><li>اطلاعات تکمیلی این کمیسیون به‌زودی منتشر می‌شود.</li></ul>
 @endif
 </a>
-@endforeach
+@empty
+<div class="home-content-empty">کمیسیون فعالی برای نمایش در صفحه نخست ثبت نشده است.</div>
+@endforelse
 </div>
 </div>
 </section>
@@ -869,8 +847,15 @@
 @endphp
 <div class="tourism-card">
 <a href="{{ route('tourism.show', $place->slug) }}">
-<div class="tourism-img-wrap">
-<img alt="{{ $place->title }}" src="{{ $place->home_image_url }}" loading="lazy" decoding="async"/>
+<div class="tourism-img-wrap {{ $place->directory_image_url ? 'has-image' : 'is-missing-image' }}">
+@if($place->directory_image_url)
+<img alt="{{ $place->title }}" src="{{ $place->directory_image_url }}" loading="lazy" decoding="async"/>
+@else
+<div class="tourism-image-placeholder" aria-label="تصویر این جاذبه ثبت نشده است">
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19 9 13l3 3 3-4 5 7M7 8h.01"/><rect x="3" y="4" width="18" height="16" rx="2"/></svg>
+<span>تصویر ثبت نشده</span>
+</div>
+@endif
 <div class="tourism-badge">{{ $place->home_badge }}</div>
 </div>
 <div class="tourism-card-body">
@@ -911,16 +896,7 @@
         </div>
       </a>
 @empty
-@foreach($videoFallbacks as $title)
-      <a href="{{ $videosUrl }}" class="media-card {{ $loop->first ? 'media-card-lg' : '' }}">
-        <img alt="{{ $title }}" src="{{ $defaultImage }}" loading="lazy" decoding="async"/>
-        <div class="media-card-overlay"></div>
-        <span class="media-play-btn"></span>
-        <div class="media-card-footer">
-          <h3>{{ $title }}</h3>
-        </div>
-      </a>
-@endforeach
+<div class="home-media-empty">ویدیوی منتشرشده‌ای برای نمایش وجود ندارد.</div>
 @endforelse
       </div>
       <a class="media-view-all" href="{{ $videosUrl }}">مشاهده همه ویدیوها</a>
@@ -936,15 +912,7 @@
 </div>
 </a>
 @empty
-@foreach($galleryFallbacks as $title)
-<a href="{{ $galleriesUrl }}" class="media-card">
-<img alt="{{ $title }}" src="{{ $defaultImage }}" loading="lazy" decoding="async"/>
-<div class="media-card-overlay"></div>
-<div class="media-card-footer">
-<h3>{{ $title }}</h3>
-</div>
-</a>
-@endforeach
+<div class="home-media-empty">گالری منتشرشده‌ای برای نمایش وجود ندارد.</div>
 @endforelse
 </div>
 <a class="media-view-all" href="{{ $galleriesUrl }}">مشاهده همه تصاویر</a>
