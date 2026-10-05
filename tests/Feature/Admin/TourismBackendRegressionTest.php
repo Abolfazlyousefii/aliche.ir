@@ -105,7 +105,8 @@ class TourismBackendRegressionTest extends TestCase
         $this->assertSame($featured->path, $place->featured_image);
         $this->assertSame('https://maps.google.com/?q=36.84,54.44', $place->map_url);
         $this->assertSame($gallery->path, $place->gallery[0]['path'] ?? null);
-        $this->assertSame($featured->path, $place->featured_image_url);
+        $this->assertStringContainsString('tourism-featured.jpg', $place->featured_image_url);
+        $this->assertStringNotContainsString('tourism-card.jpg', $place->featured_image_url);
     }
 
     private function image(string $path): Media
