@@ -219,7 +219,10 @@ class HomeController extends Controller
         $galleries = Gallery::query()
             ->published()
             ->forHome()
-            ->with('union')
+            ->with([
+                'union',
+                'images:id,gallery_id,image,sort_order',
+            ])
             ->withCount('images')
             ->orderBy('sort_order')
             ->latest('published_at')
