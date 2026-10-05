@@ -881,7 +881,7 @@
       <div class="media-grid">
 @forelse(($latestVideos ?? collect())->take(5) as $video)
       <a href="{{ route('videos.show', $video->slug) }}" class="media-card {{ $loop->first ? 'media-card-lg' : '' }}">
-        <img alt="{{ $video->title }}" src="{{ $assetImage($video->cover_image) }}" loading="lazy" decoding="async"/>
+        <img alt="{{ $video->title }}" src="{{ $video->cover_image_url }}" loading="lazy" decoding="async"/>
         <div class="media-card-overlay"></div>
         <span class="media-play-btn"></span>
         <div class="media-card-footer">
