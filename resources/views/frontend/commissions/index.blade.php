@@ -33,7 +33,11 @@
     <div class="commissions-list-grid">
         @forelse($commissions as $index => $commission)
             <a class="commission-list-card" href="{{ route('commissions.show', $commission->slug) }}">
-                <span class="commission-list-number">{{ str_pad((string) ($commissions->firstItem() + $index), 2, '0', STR_PAD_LEFT) }}</span>
+                @if($commission->image)
+                    <span class="commission-list-media"><img src="{{ $commission->image_url }}" alt="" loading="lazy" decoding="async"></span>
+                @else
+                    <span class="commission-list-number" aria-hidden="true">{{ str_pad((string) ($commissions->firstItem() + $index), 2, '0', STR_PAD_LEFT) }}</span>
+                @endif
                 <div class="commission-list-content">
                     <h3>{{ $commission->title }}</h3>
                     <p>{{ plain_text($commission->description, 150) ?: 'اطلاعات این کمیسیون به‌زودی تکمیل می‌شود.' }}</p>
