@@ -15,7 +15,6 @@ use App\Services\MediaLibraryService;
 use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -115,10 +114,6 @@ class GalleryController extends Controller
         $data = $this->galleryData($validated, $gallery);
 
         if ($coverImage = $this->storeImage($request, 'cover_image', 'galleries/covers')) {
-            if ($gallery->cover_image && ! $gallery->images()->where('image', $gallery->cover_image)->exists()) {
-                Storage::disk('public')->delete($gallery->cover_image);
-            }
-
             $data['cover_image'] = $coverImage;
         }
 
@@ -137,16 +132,6 @@ class GalleryController extends Controller
 
     public function destroy(Gallery $gallery): RedirectResponse
     {
-        $gallery->load('images');
-
-        if ($gallery->cover_image) {
-            Storage::disk('public')->delete($gallery->cover_image);
-        }
-
-        foreach ($gallery->images as $image) {
-            Storage::disk('public')->delete($image->image);
-        }
-
         $gallery->delete();
 
         return redirect()->route('admin.galleries.index')->with('success', 'گالری تصاویر با موفقیت حذف شد.');
@@ -291,8 +276,6 @@ class GalleryController extends Controller
             $payload = $existingImages[$image->id] ?? [];
 
             if (($payload['delete'] ?? null) === '1') {
-                Storage::disk('public')->delete($image->image);
-
                 if ($gallery->cover_image === $image->image) {
                     $gallery->update(['cover_image' => null]);
                 }
