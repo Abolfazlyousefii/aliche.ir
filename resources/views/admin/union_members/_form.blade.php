@@ -21,11 +21,18 @@
         </div>
         <div class="col-md-4">
             <label class="form-label" for="image">تصویر عضو هیئت‌مدیره</label>
-            <input class="form-control" id="image" name="image" type="file" accept="image/*">
-            <small class="text-muted d-block mt-1">می‌توانید عکس جدید آپلود کنید یا از کتابخانه رسانه انتخاب کنید. حداکثر حجم مطابق تنظیمات رسانه سایت است.</small>
+            <input class="form-control" id="image" name="image" type="file" accept="image/*" data-skip-media-picker>
+            <button class="admin-secondary-btn mt-2" type="button" data-media-select-target="image_media_id">انتخاب یا آپلود از کتابخانه</button>
+            <select class="d-none" id="image_media_id" name="image_media_id" aria-hidden="true" tabindex="-1">
+                <option value="">بدون تغییر / انتخاب تصویر</option>
+                @foreach(($mediaItems ?? collect()) as $media)
+                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('image_media_id', $currentImageMediaId ?? null) === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
+                @endforeach
+            </select>
+            <small class="text-muted d-block mt-1">ترجیحاً تصویر پرتره یا مربعی. Upload جدید بر انتخاب کتابخانه اولویت دارد.</small>
             <div class="mt-2" data-union-member-image-preview>
                 @if ($member?->image)
-                    <img src="{{ $member->image_url }}" alt="تصویر فعلی {{ $member->full_name }}" class="img-fluid rounded" style="width:120px;height:120px;object-fit:cover">
+                    <img src="{{ $member->image_url }}" alt="تصویر فعلی {{ $member->full_name }}" class="img-fluid rounded" style="width:120px;height:120px;object-fit:cover;object-position:center 20%">
                 @endif
             </div>
             @if ($member?->image)
@@ -117,15 +124,24 @@
 
 @push('scripts')
 <script>
+const memberPreview = document.querySelector('[data-union-member-image-preview]');
+
 document.getElementById('image')?.addEventListener('change', (event) => {
     const input = event.currentTarget;
     const file = input.files && input.files[0];
-    const preview = document.querySelector('[data-union-member-image-preview]');
-    if (!file || !preview) return;
+    if (!file || !memberPreview) return;
 
     const url = URL.createObjectURL(file);
-    preview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر عضو" class="img-fluid rounded" style="width:120px;height:120px;object-fit:cover">`;
-    preview.querySelector('img')?.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+    memberPreview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر عضو" class="img-fluid rounded" style="width:120px;height:120px;object-fit:cover;object-position:center 20%">`;
+    memberPreview.querySelector('img')?.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+});
+
+document.getElementById('image_media_id')?.addEventListener('change', (event) => {
+    const option = event.currentTarget.selectedOptions?.[0];
+    const url = option?.dataset?.url;
+    if (!url || !memberPreview) return;
+
+    memberPreview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر عضو" class="img-fluid rounded" style="width:120px;height:120px;object-fit:cover;object-position:center 20%">`;
 });
 </script>
 @endpush
