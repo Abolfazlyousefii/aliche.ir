@@ -39,17 +39,29 @@
         </div>
         <div class="col-md-6">
             <label class="form-label" for="cover_image">تصویر اصلی اتحادیه</label>
-            <input class="form-control" id="cover_image" name="cover_image" type="file" accept="image/*">
-            <small class="text-muted d-block mt-1">حداکثر حجم فایل: ۵ مگابایت</small>
-            <small class="text-muted d-block mt-1">این تصویر در کارت اتحادیه و کاور صفحه اختصاصی اتحادیه استفاده می‌شود.</small>
-            <div class="mt-2" data-image-preview="cover_image">@if ($union?->cover_image)<img src="{{ $union->cover_image_url }}" alt="تصویر اصلی فعلی اتحادیه" class="img-fluid rounded" style="max-height:140px;object-fit:cover">@endif</div>
+            <input class="form-control" id="cover_image" name="cover_image" type="file" accept="image/*" data-skip-media-picker>
+            <button class="admin-secondary-btn mt-2" type="button" data-media-select-target="cover_image_media_id">انتخاب یا آپلود از کتابخانه</button>
+            <select class="d-none" id="cover_image_media_id" name="cover_image_media_id" data-union-media-select data-preview-target="cover_image" aria-hidden="true" tabindex="-1">
+                <option value="">بدون تغییر / انتخاب تصویر</option>
+                @foreach(($mediaItems ?? collect()) as $media)
+                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('cover_image_media_id', $currentMediaIds['cover_image'] ?? null) === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
+                @endforeach
+            </select>
+            <small class="text-muted d-block mt-1">برای کارت اتحادیه و کاور صفحه اختصاصی. Upload جدید بر انتخاب کتابخانه اولویت دارد.</small>
+            <div class="mt-2" data-image-preview="cover_image">@if ($union?->cover_image)<img src="{{ $union->cover_image_url }}" alt="تصویر اصلی فعلی اتحادیه" class="img-fluid rounded" style="width:100%;max-width:360px;height:180px;object-fit:cover">@endif</div>
         </div>
         <div class="col-md-6">
             <label class="form-label" for="logo">لوگوی اتحادیه (اختیاری)</label>
-            <input class="form-control" id="logo" name="logo" type="file" accept="image/*">
-            <small class="text-muted d-block mt-1">حداکثر حجم فایل: ۵ مگابایت</small>
-            <small class="text-muted d-block mt-1">لوگوی کوچک هویتی اتحادیه در صفحه اختصاصی.</small>
-            <div class="mt-2" data-image-preview="logo">@if ($union?->logo)<img src="{{ $union->logo_url }}" alt="لوگوی فعلی اتحادیه" class="img-fluid rounded" style="max-height:120px;object-fit:contain">@endif</div>
+            <input class="form-control" id="logo" name="logo" type="file" accept="image/*" data-skip-media-picker>
+            <button class="admin-secondary-btn mt-2" type="button" data-media-select-target="logo_media_id">انتخاب یا آپلود از کتابخانه</button>
+            <select class="d-none" id="logo_media_id" name="logo_media_id" data-union-media-select data-preview-target="logo" aria-hidden="true" tabindex="-1">
+                <option value="">بدون تغییر / انتخاب لوگو</option>
+                @foreach(($mediaItems ?? collect()) as $media)
+                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('logo_media_id', $currentMediaIds['logo'] ?? null) === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
+                @endforeach
+            </select>
+            <small class="text-muted d-block mt-1">برای نشان هویتی اتحادیه؛ تصویر اصلی جداگانه در Cover استفاده می‌شود.</small>
+            <div class="mt-2" data-image-preview="logo">@if ($union?->logo)<img src="{{ $union->logo_url }}" alt="لوگوی فعلی اتحادیه" class="img-fluid rounded" style="width:120px;height:120px;object-fit:contain">@endif</div>
         </div>
         <div class="col-12">
             <label class="form-label" for="short_description">توضیح کوتاه</label>
@@ -71,9 +83,16 @@
         </div>
         <div class="col-md-4">
             <label class="form-label" for="manager_image">تصویر رئیس</label>
-            <input class="form-control" id="manager_image" name="manager_image" type="file" accept="image/*">
-            <small class="text-muted d-block mt-1">حداکثر حجم فایل: ۵ مگابایت</small>
-            <div class="mt-2" data-image-preview="manager_image">@if ($union?->manager_image)<img src="{{ $union->manager_image_url }}" alt="تصویر فعلی رئیس" class="img-fluid rounded" style="max-height:120px;object-fit:cover">@endif</div>
+            <input class="form-control" id="manager_image" name="manager_image" type="file" accept="image/*" data-skip-media-picker>
+            <button class="admin-secondary-btn mt-2" type="button" data-media-select-target="manager_image_media_id">انتخاب یا آپلود از کتابخانه</button>
+            <select class="d-none" id="manager_image_media_id" name="manager_image_media_id" data-union-media-select data-preview-target="manager_image" aria-hidden="true" tabindex="-1">
+                <option value="">بدون تغییر / انتخاب تصویر رئیس</option>
+                @foreach(($mediaItems ?? collect()) as $media)
+                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('manager_image_media_id', $currentMediaIds['manager_image'] ?? null) === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
+                @endforeach
+            </select>
+            <small class="text-muted d-block mt-1">ترجیحاً تصویر پرتره با نسبت نزدیک ۱:۱؛ نمایش سایت به‌صورت crop کنترل‌شده است.</small>
+            <div class="mt-2" data-image-preview="manager_image">@if ($union?->manager_image)<img src="{{ $union->manager_image_url }}" alt="تصویر فعلی رئیس" class="img-fluid rounded" style="width:120px;height:120px;object-fit:cover;object-position:center 20%">@endif</div>
         </div>
         <div class="col-12">
             <label class="form-label" for="manager_description">معرفی کوتاه رئیس</label>
@@ -156,9 +175,16 @@
         </div>
         <div class="col-md-8">
             <label class="form-label" for="price_list_image">عکس نرخنامه</label>
-            <input class="form-control" id="price_list_image" name="price_list_image" type="file" accept="image/*">
-            <small class="text-muted d-block mt-1">حداکثر حجم فایل: ۵ مگابایت</small>
-            <div class="mt-2" data-image-preview="price_list_image">@if ($union?->price_list_image)<img src="{{ $union->price_list_image_url }}" alt="عکس نرخنامه فعلی" class="img-fluid rounded" style="max-height:140px;object-fit:cover">@endif</div>
+            <input class="form-control" id="price_list_image" name="price_list_image" type="file" accept="image/*" data-skip-media-picker>
+            <button class="admin-secondary-btn mt-2" type="button" data-media-select-target="price_list_image_media_id">انتخاب یا آپلود از کتابخانه</button>
+            <select class="d-none" id="price_list_image_media_id" name="price_list_image_media_id" data-union-media-select data-preview-target="price_list_image" aria-hidden="true" tabindex="-1">
+                <option value="">بدون تغییر / انتخاب نرخنامه</option>
+                @foreach(($mediaItems ?? collect()) as $media)
+                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('price_list_image_media_id', $currentMediaIds['price_list_image'] ?? null) === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
+                @endforeach
+            </select>
+            <small class="text-muted d-block mt-1">در حالت «عکس نرخنامه» نمایش داده می‌شود.</small>
+            <div class="mt-2" data-image-preview="price_list_image">@if ($union?->price_list_image)<img src="{{ $union->price_list_image_url }}" alt="عکس نرخنامه فعلی" class="img-fluid rounded" style="width:100%;max-width:360px;height:180px;object-fit:contain">@endif</div>
         </div>
         <div class="col-12"><h3 class="h6 mt-2">تنظیمات صفحه اتحادیه</h3></div>
         @foreach (\App\Models\GuildUnion::sectionLabels() as $key => $label)
@@ -203,9 +229,29 @@ document.querySelectorAll('input[type="file"][accept^="image/"]').forEach((input
         if (!file) return;
 
         const url = URL.createObjectURL(file);
-        preview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر انتخاب‌شده" class="img-fluid rounded" style="max-height:140px;object-fit:contain">`;
+        const fit = input.id === 'logo' || input.id === 'price_list_image' ? 'contain' : 'cover';
+        const position = input.id === 'manager_image' ? 'center 20%' : 'center';
+        preview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر انتخاب‌شده" class="img-fluid rounded" style="width:100%;max-width:360px;height:180px;object-fit:${fit};object-position:${position}">`;
         preview.querySelector('img')?.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
     });
+});
+
+document.querySelectorAll('[data-union-media-select]').forEach((select) => {
+    const previewKey = select.dataset.previewTarget;
+    const preview = document.querySelector(`[data-image-preview="${previewKey}"]`);
+    if (!preview) return;
+
+    const renderSelectedMedia = () => {
+        const option = select.selectedOptions?.[0];
+        const url = option?.dataset?.url;
+        if (!url) return;
+
+        const fit = previewKey === 'logo' || previewKey === 'price_list_image' ? 'contain' : 'cover';
+        const position = previewKey === 'manager_image' ? 'center 20%' : 'center';
+        preview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر انتخاب‌شده" class="img-fluid rounded" style="width:100%;max-width:360px;height:180px;object-fit:${fit};object-position:${position}">`;
+    };
+
+    select.addEventListener('change', renderSelectedMedia);
 });
 </script>
 @endpush
