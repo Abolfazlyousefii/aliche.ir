@@ -336,6 +336,9 @@ class UnionController extends Controller
             if ($field === 'is_active') {
                 $value = (bool) ($value ?? false);
             }
+            if ($field === 'icon') {
+                $value = UnionIcon::resolve(is_string($value) ? $value : null);
+            }
             if (in_array($field, ['meeting_date', 'updated_on'], true) && filled($value)) {
                 $value = jalali_to_gregorian_datetime($value);
             }
