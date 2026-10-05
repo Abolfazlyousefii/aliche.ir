@@ -5841,10 +5841,10 @@ img { display: block; max-width: 100%; }
   height: 100%;
   object-fit: cover;
 }
-.service-card-modern:has(.portal-card-media) {
+.service-card-modern.has-media {
   padding-top: 16px;
 }
-.service-card-modern:has(.portal-card-media) .portal-card-body {
+.service-card-modern.has-media .portal-card-body {
   min-width: 0;
 }
 .portal-card-category {
