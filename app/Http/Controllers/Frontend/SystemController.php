@@ -136,6 +136,10 @@ class SystemController extends Controller
         $host = strtolower((string) parse_url($url, PHP_URL_HOST));
         $external = $host !== '' && ! hash_equals(strtolower($request->getHost()), $host);
 
-        return ['url' => $url, 'external' => $external];
+        return [
+            'url' => $url,
+            'external' => $external,
+            'target' => in_array($system->target, System::TARGETS, true) ? $system->target : '_self',
+        ];
     }
 }
