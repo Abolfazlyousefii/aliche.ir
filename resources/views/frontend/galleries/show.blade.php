@@ -23,13 +23,13 @@
 
       <div class="gallery-thumbs" data-gallery-group="gallery-{{ $gallery->id }}">
         @forelse ($gallery->images as $image)
-          <div class="gallery-thumb" data-gallery-item="{{ $image->image_url }}">
+          <button class="gallery-thumb" type="button" data-gallery-item="{{ $image->image_url }}" aria-label="مشاهده تصویر {{ $loop->iteration }} از گالری {{ $gallery->title }}">
             <img src="{{ $image->image_url }}" alt="{{ $image->caption ?? $gallery->title }}" loading="lazy" decoding="async" @if(image_srcset($image->image)) srcset="{{ image_srcset($image->image) }}" sizes="(max-width: 768px) 100vw, 50vw" @endif/>
-          </div>
+          </button>
         @empty
-          <div class="gallery-thumb" data-gallery-item="{{ $gallery->cover_image_url }}">
-            <img src="{{ $gallery->cover_image_url }}" alt="{{ $gallery->title }}" loading="lazy" decoding="async" @if(image_srcset($gallery->cover_image)) srcset="{{ image_srcset($gallery->cover_image) }}" sizes="100vw" @endif/>
-          </div>
+          <button class="gallery-thumb" type="button" data-gallery-item="{{ $gallery->cover_image_url }}" aria-label="مشاهده تصویر گالری {{ $gallery->title }}">
+            <img src="{{ $gallery->cover_image_url }}" alt="{{ $gallery->title }}" loading="lazy" decoding="async" @if(image_srcset($gallery->display_cover_path)) srcset="{{ image_srcset($gallery->display_cover_path) }}" sizes="100vw" @endif/>
+          </button>
         @endforelse
       </div>
     </div>
@@ -60,10 +60,10 @@
 @endsection
 
 @section('after_footer')
-<div class="lightbox">
-  <button class="lightbox-close" aria-label="بستن">✕</button>
-  <button class="lightbox-nav lightbox-prev" aria-label="قبلی">‹</button>
-  <button class="lightbox-nav lightbox-next" aria-label="بعدی">›</button>
+<div class="lightbox" role="dialog" aria-modal="true" aria-label="نمایش تصویر گالری" aria-hidden="true" tabindex="-1">
+  <button class="lightbox-close" type="button" aria-label="بستن نمایش تصویر">✕</button>
+  <button class="lightbox-nav lightbox-prev" type="button" aria-label="تصویر قبلی">‹</button>
+  <button class="lightbox-nav lightbox-next" type="button" aria-label="تصویر بعدی">›</button>
   <img class="lightbox-img" src="" alt="تصویر بزرگ"/>
   <div class="lightbox-counter"></div>
 </div>
