@@ -28,7 +28,7 @@
             <small class="text-muted d-block mt-1">تصویر اختیاری است؛ در نبود تصویر، آیکن سامانه نمایش داده می‌شود.</small>
             <div id="system_image_preview" class="mt-2"></div>
         </div>
-        <div class="col-md-8"><label class="form-label" for="link">لینک ورود</label><input class="form-control" id="link" name="link" value="{{ old('link') }}" dir="ltr" placeholder="https://..."></div>
+        <div class="col-md-8"><label class="form-label" for="link">لینک ورود</label><input class="form-control" id="link" name="link" value="{{ old('link') }}" dir="ltr" placeholder="https://... یا /path"><small class="text-muted d-block mt-1">فقط لینک‌های http/https یا مسیر داخلی سایت پذیرفته می‌شوند. اگر لینک رسمی مشخص نیست، فیلد را خالی بگذارید.</small></div>
         <div class="col-md-4"><label class="form-label" for="target">نحوه باز شدن</label><select class="form-control" id="target" name="target" required>@foreach ($targetLabels as $value => $label)<option value="{{ $value }}" @selected(old('target', '_blank') === $value)>{{ $label }}</option>@endforeach</select></div>
         <div class="col-md-4"><label class="form-label" for="status">وضعیت</label><select class="form-control" id="status" name="status" required>@foreach ($statusLabels as $value => $label)<option value="{{ $value }}" @selected(old('status', 'draft') === $value)>{{ $label }}</option>@endforeach</select></div>
         <div class="col-md-4"><label class="form-label" for="published_at">تاریخ انتشار</label><input class="form-control" id="published_at" name="published_at" type="text" data-jalali-datepicker value="{{ jalali_input_datetime(old('published_at')) }}"></div>
