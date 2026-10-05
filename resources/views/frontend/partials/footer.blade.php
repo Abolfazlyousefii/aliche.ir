@@ -115,7 +115,7 @@
 @endif
 <div class="footer-copy">
     <span>{{ fa_number($copyright) }}</span>
-    <span class="footer-development-credit">طراحی و توسعه با تیم جهش</span>
+    <span class="footer-development-credit">طراحی و توسعه با <a class="footer-development-link" href="https://jaheshweb.com/" target="_blank" rel="noopener noreferrer">تیم جهش</a></span>
 </div>
 </div>
 </div>
