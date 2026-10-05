@@ -15,17 +15,19 @@ use Throwable;
 class RichTextUploadController extends Controller
 {
     private const FILE_MIME_EXTENSIONS = [
-        'image/jpeg' => 'jpg',
-        'image/png' => 'png',
-        'image/webp' => 'webp',
-        'image/gif' => 'gif',
-        'application/pdf' => 'pdf',
-        'application/msword' => 'doc',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
-        'application/vnd.ms-excel' => 'xls',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx',
-        'application/zip' => 'zip',
-        'text/plain' => 'txt',
+        'image/jpeg' => ['jpg', 'jpeg'],
+        'image/png' => ['png'],
+        'image/webp' => ['webp'],
+        'image/gif' => ['gif'],
+        'application/pdf' => ['pdf'],
+        'application/msword' => ['doc'],
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => ['docx'],
+        'application/vnd.ms-excel' => ['xls'],
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['xlsx'],
+        // Some fileinfo builds report OOXML documents as application/zip.
+        // Preserve only compatible, non-executable client extensions.
+        'application/zip' => ['zip', 'docx', 'xlsx'],
+        'text/plain' => ['txt'],
     ];
 
     public function store(Request $request): JsonResponse
@@ -59,10 +61,15 @@ class RichTextUploadController extends Controller
             ]);
         }
 
-        $extension = self::FILE_MIME_EXTENSIONS[$mime] ?? null;
-        if (! $extension) {
+        $allowedExtensions = self::FILE_MIME_EXTENSIONS[$mime] ?? [];
+        if ($allowedExtensions === []) {
             return response()->json(['message' => 'نوع واقعی فایل برای بارگذاری پشتیبانی نمی‌شود.'], 422);
         }
+
+        $clientExtension = strtolower((string) $file->getClientOriginalExtension());
+        $extension = in_array($clientExtension, $allowedExtensions, true)
+            ? $clientExtension
+            : $allowedExtensions[0];
 
         $contents = file_get_contents($file->getRealPath());
         if (! is_string($contents) || $contents === '') {
