@@ -201,6 +201,11 @@ class TourismPlace extends Model
         return self::typeLabels()[$this->tourism_type] ?? $this->tourism_type;
     }
 
+    public function getMapUrlAttribute(?string $value): ?string
+    {
+        return self::normalizeMapUrl($value);
+    }
+
     public static function normalizeMapUrl(?string $value): ?string
     {
         $value = trim((string) $value);
