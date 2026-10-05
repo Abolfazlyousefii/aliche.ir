@@ -8,7 +8,6 @@ use App\Rules\SafeImageUpload;
 use App\Services\SettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class FooterSettingController extends Controller
@@ -38,9 +37,6 @@ class FooterSettingController extends Controller
         $validated = $this->sanitizeRichTextFields($validated, ['footer_description']);
 
         if ($footerLogo = $this->uploadedOrSelectedImage($request, 'footer_logo', 'settings/footer')) {
-            if ($old = $settings->get('footer.footer_logo')) {
-                Storage::disk('public')->delete($old);
-            }
             $validated['footer_logo'] = $footerLogo;
         } else {
             unset($validated['footer_logo']);
