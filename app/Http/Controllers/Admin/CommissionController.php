@@ -85,9 +85,6 @@ class CommissionController extends Controller
         $data = $this->commissionData($validated, $commission);
 
         if ($image = $this->uploadedOrSelectedImage($request, 'image', 'commissions/images')) {
-            if ($commission->image) {
-                Storage::disk('public')->delete($commission->image);
-            }
             $data['image'] = $image;
         }
 
@@ -100,9 +97,6 @@ class CommissionController extends Controller
 
     public function destroy(Commission $commission): RedirectResponse
     {
-        if ($commission->image) {
-            Storage::disk('public')->delete($commission->image);
-        }
         foreach ($commission->attachments ?? [] as $file) {
             Storage::disk('public')->delete($file['path'] ?? '');
         }
