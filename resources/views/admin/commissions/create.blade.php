@@ -23,7 +23,7 @@
 </select>
 <div id="image_media_preview" class="mt-2"></div>
 </div>
-<div class="col-md-6"><label class="form-label">پیوست‌ها</label><input class="form-control" type="file" name="attachments[]" multiple></div>
+<div class="col-md-6"><label class="form-label">پیوست‌ها</label><input class="form-control" type="file" name="attachments[]" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple><small class="text-muted">فرمت‌های مجاز: PDF و فایل‌های متداول Office، حداکثر ۱۰ مگابایت برای هر فایل.</small></div>
 <div class="col-12"><label class="form-label">اعضا (هر عضو در یک خط)</label><textarea class="form-control" name="members" rows="4">{{ old('members') }}</textarea></div>
 <div class="col-12"><label class="form-label">توضیحات</label><textarea class="form-control js-rich-editor" name="description" rows="6">{{ old('description') }}</textarea></div>
 <div class="col-12"><h3 class="h6 mt-2">وظایف کمیسیون</h3><p class="text-muted small">برای نمایش در صفحه اول و صفحه جزئیات کمیسیون، عنوان و توضیح هر وظیفه را وارد کنید.</p></div>
