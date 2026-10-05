@@ -55,10 +55,10 @@ class TourismPlaceController extends Controller
     public function create(): View
     {
         return view('admin.tourism.create', [
+            ...$this->formData(),
             'place' => null,
-            'categories' => $this->categories(),
-            'statusLabels' => TourismPlace::statusLabels(),
-            'typeLabels' => TourismPlace::typeLabels(),
+            'currentCardMediaId' => null,
+            'currentFeaturedMediaId' => null,
         ]);
     }
 
@@ -89,10 +89,10 @@ class TourismPlaceController extends Controller
     public function edit(TourismPlace $tourism): View
     {
         return view('admin.tourism.edit', [
+            ...$this->formData(),
             'place' => $tourism,
-            'categories' => $this->categories(),
-            'statusLabels' => TourismPlace::statusLabels(),
-            'typeLabels' => TourismPlace::typeLabels(),
+            'currentCardMediaId' => Media::query()->where('path', $tourism->image)->value('id'),
+            'currentFeaturedMediaId' => Media::query()->where('path', $tourism->featured_image)->value('id'),
         ]);
     }
 
@@ -337,6 +337,16 @@ class TourismPlaceController extends Controller
         }
 
         return $slug;
+    }
+
+    private function formData(): array
+    {
+        return [
+            'categories' => $this->categories(),
+            'statusLabels' => TourismPlace::statusLabels(),
+            'typeLabels' => TourismPlace::typeLabels(),
+            'mediaItems' => Media::query()->images()->latest()->take(200)->get(),
+        ];
     }
 
     private function categories()
