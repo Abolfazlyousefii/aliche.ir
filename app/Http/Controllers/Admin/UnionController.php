@@ -16,6 +16,7 @@ use App\Models\UnionMinute;
 use App\Models\UnionPrice;
 use App\Models\UnionRule;
 use App\Services\SlugService;
+use App\Support\UnionIcon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -165,15 +166,16 @@ class UnionController extends Controller
         $presidentButtons = collect($validated['president_buttons'] ?? [])->map(function ($button) {
             return [
                 'title' => trim((string) ($button['title'] ?? '')),
-                'url' => trim((string) ($button['url'] ?? '')),
-                'icon' => trim((string) ($button['icon'] ?? '')),
+                'url' => GuildUnion::safeActionUrl($button['url'] ?? null),
+                'icon' => UnionIcon::normalize($button['icon'] ?? null),
                 'target' => in_array(($button['target'] ?? '_self'), ['_self', '_blank'], true) ? $button['target'] : '_self',
                 'is_active' => ! empty($button['is_active']),
             ];
         })->filter(fn ($button) => filled($button['title']) && filled($button['url']))->values()->all();
 
         $socialLinks = collect($validated['social_links'] ?? [])
-            ->map(fn ($url) => is_string($url) ? trim($url) : $url)
+            ->only(array_keys(GuildUnion::socialLinkLabels()))
+            ->map(fn ($url) => GuildUnion::safeActionUrl(is_string($url) ? $url : null))
             ->filter(fn ($url) => filled($url))
             ->all();
 
