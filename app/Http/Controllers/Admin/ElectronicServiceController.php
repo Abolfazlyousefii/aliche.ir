@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Concerns\SelectsMedia;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\ElectronicService;
+use App\Models\Media;
 use App\Rules\SafeImageUpload;
 use App\Services\ContentApprovalService;
 use App\Services\SlugService;
@@ -79,6 +80,7 @@ class ElectronicServiceController extends Controller
         return view('admin.electronic_services.edit', [
             ...$this->formData(),
             'service' => $electronicService,
+            'currentMediaId' => Media::query()->where('path', $electronicService->image)->value('id'),
         ]);
     }
 
@@ -112,6 +114,7 @@ class ElectronicServiceController extends Controller
             'body' => ['nullable', 'string'],
             'icon' => ['nullable', 'string', 'max:255'],
             'image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
+            'image_media_id' => ['nullable', 'integer', 'exists:media,id'],
             'link_type' => ['required', Rule::in(ElectronicService::LINK_TYPES)],
             'link' => ['nullable', 'required_unless:link_type,none', 'string', 'max:500'],
             'target' => ['required', Rule::in(ElectronicService::TARGETS)],
@@ -192,6 +195,8 @@ class ElectronicServiceController extends Controller
             'statusLabels' => ElectronicService::statusLabels(),
             'linkTypeLabels' => ElectronicService::linkTypeLabels(),
             'targetLabels' => ElectronicService::targetLabels(),
+            'mediaItems' => Media::query()->images()->latest()->take(200)->get(),
+            'currentMediaId' => null,
         ];
     }
 }
