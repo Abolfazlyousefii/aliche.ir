@@ -12519,6 +12519,9 @@ a.guild-profile-contact-card:active {
 .system-detail-v2__visual figure {
   margin: 0;
   overflow: hidden;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
   border: 1px solid var(--sd-line);
   border-radius: 16px;
   background: #eef3f6;
@@ -12527,9 +12530,10 @@ a.guild-profile-contact-card:active {
 
 .system-detail-v2__visual img {
   width: 100%;
-  height: 220px;
+  height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
 }
 
 .system-detail-v2__visual-fallback {
@@ -12972,7 +12976,6 @@ a.guild-profile-contact-card:active {
     gap: 24px;
   }
 
-  .system-detail-v2__visual img,
   .system-detail-v2__visual-fallback {
     height: 185px;
   }
@@ -13029,7 +13032,6 @@ a.guild-profile-contact-card:active {
     border-radius: 12px;
   }
 
-  .system-detail-v2__visual img,
   .system-detail-v2__visual-fallback {
     height: 190px;
   }
