@@ -41,20 +41,27 @@ class Gallery extends Model
     }
 
 
+    public function getDisplayCoverPathAttribute(): ?string
+    {
+        if (filled($this->cover_image)) {
+            return $this->cover_image;
+        }
+
+        if ($this->relationLoaded('images')) {
+            return $this->images->first()?->image;
+        }
+
+        return null;
+    }
+
     public function getFeaturedImageAttribute(): ?string
     {
-        return $this->cover_image;
+        return $this->display_cover_path;
     }
 
     public function getCoverImageUrlAttribute(): string
     {
-        $image = $this->cover_image;
-
-        if (! $image) {
-            return asset('assets/img/asnaf-gorgan-default.jpg');
-        }
-
-        return PublicFileUrl::make($image);
+        return PublicFileUrl::make($this->display_cover_path);
     }
 
     public function category(): BelongsTo
