@@ -15,7 +15,6 @@ use App\Services\SlugService;
 use App\Services\Sms\SmsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -103,10 +102,6 @@ class CongratulationMessageController extends Controller
         $data = $this->messageData($validated, $congratulationMessage);
 
         if ($managerImage = $this->uploadedOrSelectedImage($request, 'manager_image', 'congratulation-messages/managers')) {
-            if ($congratulationMessage->manager_image) {
-                Storage::disk('public')->delete($congratulationMessage->manager_image);
-            }
-
             $data['manager_image'] = $managerImage;
         }
 
@@ -117,10 +112,6 @@ class CongratulationMessageController extends Controller
 
     public function destroy(CongratulationMessage $congratulationMessage): RedirectResponse
     {
-        if ($congratulationMessage->manager_image) {
-            Storage::disk('public')->delete($congratulationMessage->manager_image);
-        }
-
         $congratulationMessage->delete();
 
         return redirect()->route('admin.congratulation_messages.index')->with('success', 'پیام تبریک با موفقیت حذف شد.');
