@@ -76,7 +76,7 @@ class Media extends Model
             [Gallery::class, 'cover_image'], [GalleryImage::class, 'image'],
             [GuildUnion::class, 'logo'], [GuildUnion::class, 'cover_image'],
             [GuildUnion::class, 'manager_image'], [GuildUnion::class, 'price_list_image'],
-            [UnionMember::class, 'image'],
+            [UnionMember::class, 'image'], [UnionType::class, 'image'],
             [Page::class, 'featured_image'], [Announcement::class, 'featured_image'],
             [Video::class, 'cover_image'], [TourismPlace::class, 'featured_image'],
             [TourismPlace::class, 'image'], [System::class, 'image'],
