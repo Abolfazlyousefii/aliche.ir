@@ -639,9 +639,9 @@
     $sidebarAdImage = $ad->image_url ?? data_get($ad, 'image');
 @endphp
 @if($sidebarAdUrl !== '')
-<a class="latest-news-ad" href="{{ $sidebarAdUrl }}" target="{{ $sidebarAdTarget }}" @if($sidebarAdTarget === '_blank') rel="noopener noreferrer" @endif><img loading="lazy" decoding="async" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}" onerror="this.onerror=null;this.src='{{ $defaultImage }}';"><span>{{ $sidebarAdTitle }}</span></a>
+<a class="latest-news-ad" href="{{ $sidebarAdUrl }}" target="{{ $sidebarAdTarget }}" @if($sidebarAdTarget === '_blank') rel="noopener noreferrer" @endif><img loading="lazy" decoding="async" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}" onerror="this.onerror=null;this.src='{{ $defaultImage }}';"></a>
 @else
-<div class="latest-news-ad latest-news-ad-placeholder"><img loading="lazy" decoding="async" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}" onerror="this.onerror=null;this.src='{{ $defaultImage }}';"><span>{{ $sidebarAdTitle }}</span></div>
+<div class="latest-news-ad latest-news-ad-placeholder"><img loading="lazy" decoding="async" alt="{{ $sidebarAdTitle }}" src="{{ $sidebarAdImage }}" onerror="this.onerror=null;this.src='{{ $defaultImage }}';"></div>
 @endif
 @endforeach
 </aside>
@@ -665,14 +665,10 @@
 @if($bannerAdUrl !== '')
 <a class="ad-banner" href="{{ $bannerAdUrl }}" target="{{ $bannerAdTarget }}" @if($bannerAdTarget === '_blank') rel="noopener noreferrer" @endif>
 <img alt="{{ $bannerAdTitle }}" src="{{ $bannerAdImage }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ $defaultImage }}';"/>
-<div class="ad-banner-overlay"></div>
-<div class="ad-banner-text">{{ $bannerAdTitle }}</div>
 </a>
 @else
 <div class="ad-banner ad-banner-placeholder">
 <img alt="{{ $bannerAdTitle }}" src="{{ $bannerAdImage }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ $defaultImage }}';"/>
-<div class="ad-banner-overlay"></div>
-<div class="ad-banner-text">{{ $bannerAdTitle }}</div>
 </div>
 @endif
 @endforeach
