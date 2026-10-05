@@ -41,7 +41,12 @@
         @endif
         <div class="portal-rich-text">{!! rich_text($system->description, '<p>توضیحات این سامانه هنوز تکمیل نشده است.</p>') !!}</div>
         @if ($system->public_link)
-          <a class="portal-primary-action portal-main-link" href="{{ $system->public_link }}" target="{{ $system->target }}" @if($system->target === '_blank') rel="noopener noreferrer" @endif>ورود به سامانه</a>
+          <a class="portal-primary-action portal-main-link" href="{{ $system->public_link }}" target="{{ $system->target }}" @if($system->target === '_blank') rel="noopener noreferrer" @endif>
+            <span>ورود به سامانه</span>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 5H5v10h10v-3M11 4h5v5M16 4l-7 7"/></svg>
+          </a>
+        @else
+          <p class="portal-link-note">لینک ورود معتبر برای این سامانه ثبت نشده است؛ اطلاعات و راهنمای سامانه از همین صفحه قابل مشاهده است.</p>
         @endif
       </div>
     </article>
