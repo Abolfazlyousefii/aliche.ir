@@ -30,7 +30,19 @@
                 <div class="col-md-6"><strong>فعال:</strong><p>{{ $system->is_active ? 'بله' : 'خیر' }}</p></div>
                 <div class="col-md-6"><strong>Target:</strong><p dir="ltr">{{ $system->target }} ({{ $system->target_label }})</p></div>
                 <div class="col-md-6"><strong>ترتیب:</strong><p>{{ $system->sort_order }}</p></div>
-                <div class="col-12"><strong>لینک:</strong><p dir="ltr">@if ($system->link)<a href="{{ $system->link }}" target="_blank">{{ $system->link }}</a>@else — @endif</p></div>
+                <div class="col-12">
+                    <strong>لینک:</strong>
+                    <p dir="ltr">
+                        @if ($system->public_link)
+                            <a href="{{ $system->public_link }}" target="_blank" rel="noopener noreferrer">{{ $system->link }}</a>
+                        @elseif($system->link)
+                            <span class="text-danger">{{ $system->link }}</span>
+                            <small class="d-block text-danger" dir="rtl">این لینک معتبر نیست و در سایت عمومی قابل اجرا نخواهد بود.</small>
+                        @else
+                            —
+                        @endif
+                    </p>
+                </div>
             </div>
         </div>
     </div>

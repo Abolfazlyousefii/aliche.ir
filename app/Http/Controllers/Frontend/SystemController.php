@@ -127,33 +127,19 @@ class SystemController extends Controller
 
     private function entryLink(System $system, Request $request): ?array
     {
-        $link = trim((string) $system->link);
-        if ($link === '' || $link === '#') {
+        $url = $system->public_link;
+
+        if ($url === null || rtrim($url, '/') === rtrim(route('systems.show', $system), '/')) {
             return null;
         }
 
-        if (str_starts_with($link, '/')) {
-            $url = url($link);
-            $external = false;
-        } else {
-            if (! filter_var($link, FILTER_VALIDATE_URL)) {
-                return null;
-            }
+        $host = strtolower((string) parse_url($url, PHP_URL_HOST));
+        $external = $host !== '' && ! hash_equals(strtolower($request->getHost()), $host);
 
-            $scheme = strtolower((string) parse_url($link, PHP_URL_SCHEME));
-            $host = strtolower((string) parse_url($link, PHP_URL_HOST));
-            if (! in_array($scheme, ['http', 'https'], true) || $host === '' || in_array($host, ['example.com', 'www.example.com'], true)) {
-                return null;
-            }
-
-            $url = $link;
-            $external = ! hash_equals(strtolower($request->getHost()), $host);
-        }
-
-        if (rtrim($url, '/') === rtrim(route('systems.show', $system), '/')) {
-            return null;
-        }
-
-        return ['url' => $url, 'external' => $external];
+        return [
+            'url' => $url,
+            'external' => $external,
+            'target' => in_array($system->target, System::TARGETS, true) ? $system->target : '_self',
+        ];
     }
 }

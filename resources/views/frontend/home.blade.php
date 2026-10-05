@@ -152,11 +152,12 @@
 
         return [
             'icon' => $system->icon ?: '💻',
+            'image' => $system->image ? $system->image_url : null,
             'title' => $system->title,
             'description' => $plain($system->short_description ?: $system->description, 120),
             'url' => $publicLink ?: route('systems.show', $system->slug),
-            'target' => $publicLink ? ($system->target ?: '_blank') : '_self',
-            'label' => $publicLink ? 'ورود به سامانه ←' : 'مشاهده جزئیات ←',
+            'target' => $publicLink && in_array($system->target, \App\Models\System::TARGETS, true) ? $system->target : '_self',
+            'label' => $publicLink ? 'ورود به سامانه' : 'مشاهده جزئیات',
         ];
     })->take(6)->values();
     $systemItems = $systemItems->isNotEmpty() ? $systemItems : $systemFallbacks;
@@ -182,9 +183,21 @@
     $videoFallbacks = collect(['گزارش تصویری از خدمات اتاق اصناف مرکز استان گلستان به کسبه شهرستان', 'راهنمای مراحل صدور و تمدید پروانه کسب', 'آموزش احکام تجارت برای متقاضیان', 'بازدید میدانی بازرسان از واحدهای صنفی گرگان', 'نشست هماهنگی اتحادیه‌های صنفی استان گلستان']);
     $galleryFallbacks = collect(['نمایی از ساختمان و مراجعه حضوری فعالان صنفی', 'جلسه هم‌اندیشی اتحادیه‌های صنفی استان گلستان', 'ارائه خدمات مشاوره‌ای به متقاضیان پروانه کسب', 'برگزاری دوره آموزشی احکام تجارت و کسب‌وکار', 'پیگیری طرح‌های نظارتی بازار در استان گلستان', 'بخشنامه‌ها و دستورالعمل‌های جدید صنفی', 'بازار سنتی گرگان و اصناف قدیمی شهر', 'نمایشگاه صنایع دستی و سوغات استان گلستان']);
     $followTopicSettings = collect($sectionSetting('systems', 'topics', []));
+    $safeHomeLink = function ($value, string $fallback): string {
+        $safe = \App\Models\System::normalizePublicLink(is_string($value) ? $value : null);
+
+        if ($safe === null) {
+            return $fallback;
+        }
+
+        return str_starts_with($safe, '/') ? url($safe) : $safe;
+    };
     $followTopics = $followTopicSettings->map(fn ($topic) => is_array($topic) ? $topic : ['title' => $topic, 'url' => $servicesUrl])
         ->filter(fn ($topic) => filled($topic['title'] ?? null))
-        ->map(fn ($topic) => ['title' => $topic['title'], 'url' => $topic['url'] ?? $servicesUrl])
+        ->map(fn ($topic) => [
+            'title' => $topic['title'],
+            'url' => $safeHomeLink($topic['url'] ?? null, $servicesUrl),
+        ])
         ->values();
     if ($followTopics->isEmpty()) {
         $followTopics = collect($serviceItems)->concat($systems ?? collect())->concat($announcements ?? collect())
@@ -776,7 +789,16 @@
 <div class="systems-unified-shell">
 <div class="systems-primary-group"><h3 class="systems-subtitle">سامانه‌های اصلی</h3><div class="commission-grid compact-grid systems-primary-grid">
 @foreach($systemItems as $item)
-<a class="commission-item" href="{{ $item['url'] }}" target="{{ $item['target'] ?? '_self' }}"><span class="system-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3M7 9h10M7 13h6"/></svg></span><strong>{{ $item['title'] }}</strong><span class="system-card-description">{{ $item['description'] }}</span></a>
+<a class="commission-item system-home-card {{ filled($item['image'] ?? null) ? 'has-image' : '' }}" href="{{ $item['url'] }}" target="{{ $item['target'] ?? '_self' }}" @if(($item['target'] ?? '_self') === '_blank') rel="noopener noreferrer" @endif>
+@if(filled($item['image'] ?? null))
+<span class="system-card-icon system-card-image" aria-hidden="true"><img src="{{ $item['image'] }}" alt="" loading="lazy" decoding="async"></span>
+@else
+<span class="system-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3M7 9h10M7 13h6"/></svg></span>
+@endif
+<strong>{{ $item['title'] }}</strong>
+<span class="system-card-description">{{ $item['description'] }}</span>
+<span class="system-card-cta">{{ $item['label'] ?? 'مشاهده' }} <span aria-hidden="true">←</span></span>
+</a>
 @endforeach
 </div></div>
 <div class="systems-links-group" id="fractions"><h3 class="systems-subtitle">پیوندها و اطلاعیه‌های کاربردی</h3><div class="systems-links-grid">

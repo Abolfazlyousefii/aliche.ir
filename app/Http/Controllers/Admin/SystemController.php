@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Media;
 use App\Models\System;
 use App\Rules\SafeImageUpload;
 use App\Services\ContentApprovalService;
@@ -57,6 +58,8 @@ class SystemController extends Controller
             'targetLabels' => System::targetLabels(),
             'statusLabels' => System::statusLabels(),
             'iconPresets' => System::iconPresets(),
+            'mediaItems' => $this->mediaItems(),
+            'currentMediaId' => null,
         ]);
     }
 
@@ -88,6 +91,8 @@ class SystemController extends Controller
             'targetLabels' => System::targetLabels(),
             'statusLabels' => System::statusLabels(),
             'iconPresets' => System::iconPresets(),
+            'mediaItems' => $this->mediaItems(),
+            'currentMediaId' => Media::query()->where('path', $system->image)->value('id'),
         ]);
     }
 
@@ -121,7 +126,17 @@ class SystemController extends Controller
             'short_description' => ['nullable', 'string', 'max:1000'],
             'icon' => ['nullable', 'string', 'max:255'],
             'image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
-            'link' => ['nullable', 'url', 'max:500'],
+            'image_media_id' => ['nullable', 'integer', 'exists:media,id'],
+            'link' => [
+                'nullable',
+                'string',
+                'max:500',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (filled($value) && System::normalizePublicLink((string) $value) === null) {
+                        $fail('لینک سامانه باید آدرس معتبر http/https یا مسیر داخلی سایت باشد.');
+                    }
+                },
+            ],
             'category_id' => ['nullable', 'exists:categories,id'],
             'target' => ['required', Rule::in(System::TARGETS)],
             'status' => ['required', Rule::in(app(ContentApprovalService::class)->allowedStatusesFor($request->user(), ['systems.approve', 'systems.publish']))],
@@ -157,7 +172,7 @@ class SystemController extends Controller
             'description' => $validated['description'] ?? null,
             'short_description' => $validated['short_description'] ?? null,
             'icon' => $validated['icon'] ?? null,
-            'link' => $validated['link'] ?? null,
+            'link' => System::normalizePublicLink($validated['link'] ?? null),
             'category_id' => $validated['category_id'] ?? null,
             'target' => $validated['target'],
             'status' => $validated['status'],
@@ -185,6 +200,11 @@ class SystemController extends Controller
         }
 
         return $slug;
+    }
+
+    private function mediaItems()
+    {
+        return Media::query()->images()->latest()->take(200)->get();
     }
 
     private function categories()

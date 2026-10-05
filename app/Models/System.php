@@ -107,16 +107,16 @@ class System extends Model
         return PublicFileUrl::make($this->image);
     }
 
-    public function getPublicLinkAttribute(): ?string
+    public static function normalizePublicLink(?string $value): ?string
     {
-        $link = trim((string) $this->link);
+        $link = trim((string) $value);
 
         if ($link === '' || $link === '#') {
             return null;
         }
 
-        if (str_starts_with($link, '/')) {
-            return url($link);
+        if (str_starts_with($link, '/') && ! str_starts_with($link, '//')) {
+            return $link;
         }
 
         if (! filter_var($link, FILTER_VALIDATE_URL)) {
@@ -133,6 +133,17 @@ class System extends Model
         }
 
         return $link;
+    }
+
+    public function getPublicLinkAttribute(): ?string
+    {
+        $link = self::normalizePublicLink($this->link);
+
+        if ($link === null) {
+            return null;
+        }
+
+        return str_starts_with($link, '/') ? url($link) : $link;
     }
 
     public static function iconPresets(): array
