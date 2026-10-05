@@ -53,7 +53,7 @@
 
   <div class="portal-card-grid">
     @forelse ($services as $service)
-      <article class="portal-card service-card-modern">
+      <article class="portal-card service-card-modern {{ $service->image ? 'has-media' : '' }}">
         @if ($service->image)
           <div class="portal-card-media">
             <img src="{{ $service->image_url }}" alt="{{ $service->title }}" loading="lazy" decoding="async">
