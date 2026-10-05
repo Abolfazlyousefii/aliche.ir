@@ -4,6 +4,9 @@ namespace Tests\Feature\Unions;
 
 use App\Models\Category;
 use App\Models\GuildUnion;
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsAdminPayloads;
 use Tests\TestCase;
@@ -63,6 +66,41 @@ class UnionAdminRegressionTest extends TestCase
         ]))->assertSessionHasNoErrors();
 
         $this->assertSame($category->id, $union->refresh()->category_id);
+    }
+
+    public function test_non_super_admin_is_scoped_to_assigned_union(): void
+    {
+        $ownUnion = $this->union(['slug' => 'assigned-union']);
+        $otherUnion = $this->union(['slug' => 'other-union']);
+
+        $role = Role::query()->create([
+            'name' => 'union-manager-test',
+            'label' => 'مدیر اتحادیه تست',
+        ]);
+
+        $permissions = collect(['unions.view', 'unions.edit', 'unions.create'])
+            ->map(fn (string $name) => Permission::query()->firstOrCreate(
+                ['name' => $name],
+                ['label' => $name, 'group' => 'unions']
+            ));
+
+        $role->permissions()->sync($permissions->pluck('id'));
+
+        $user = User::factory()->create([
+            'is_active' => true,
+            'union_id' => $ownUnion->id,
+        ]);
+        $user->roles()->sync([$role->id]);
+        $this->actingAs($user);
+
+        $this->get(route('admin.unions.index'))
+            ->assertOk()
+            ->assertSee($ownUnion->title)
+            ->assertDontSee($otherUnion->title);
+
+        $this->get(route('admin.unions.edit', $ownUnion))->assertOk();
+        $this->get(route('admin.unions.edit', $otherUnion))->assertForbidden();
+        $this->get(route('admin.unions.create'))->assertForbidden();
     }
 
     public function test_manager_fields_are_persisted_on_store_and_update(): void
