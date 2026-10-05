@@ -11,7 +11,6 @@ use App\Services\ContentApprovalService;
 use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -98,10 +97,6 @@ class SystemController extends Controller
         $data = $this->systemData($validated, $system);
 
         if ($image = $this->uploadedOrSelectedImage($request, 'image', 'systems')) {
-            if ($system->image) {
-                Storage::disk('public')->delete($system->image);
-            }
-
             $data['image'] = $image;
         }
 
@@ -112,10 +107,6 @@ class SystemController extends Controller
 
     public function destroy(System $system): RedirectResponse
     {
-        if ($system->image) {
-            Storage::disk('public')->delete($system->image);
-        }
-
         $system->delete();
 
         return redirect()->route('admin.systems.index')->with('success', 'سامانه با موفقیت حذف شد.');

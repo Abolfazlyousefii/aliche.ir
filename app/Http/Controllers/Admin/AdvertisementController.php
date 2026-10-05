@@ -9,7 +9,6 @@ use App\Models\AdvertisementPosition;
 use App\Rules\SafeImageUpload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -90,7 +89,6 @@ class AdvertisementController extends Controller
         $data = $this->advertisementData($validated);
 
         if ($image = $this->uploadedOrSelectedImage($request, 'image', 'advertisements')) {
-            Storage::disk('public')->delete($advertisement->image);
             $data['image'] = $image;
         }
 
@@ -101,7 +99,6 @@ class AdvertisementController extends Controller
 
     public function destroy(Advertisement $advertisement): RedirectResponse
     {
-        Storage::disk('public')->delete($advertisement->image);
         $advertisement->delete();
 
         return redirect()->route('admin.advertisements.index')->with('success', 'تبلیغ با موفقیت حذف شد.');

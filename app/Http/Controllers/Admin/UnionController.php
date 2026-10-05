@@ -18,7 +18,6 @@ use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class UnionController extends Controller
@@ -94,10 +93,6 @@ class UnionController extends Controller
 
         foreach (['logo' => 'unions/logos', 'cover_image' => 'unions/covers', 'manager_image' => 'unions/managers', 'price_list_image' => 'unions/price-lists'] as $field => $directory) {
             if ($path = $this->storeImage($request, $field, $directory)) {
-                if ($union->{$field}) {
-                    Storage::disk('public')->delete($union->{$field});
-                }
-
                 $data[$field] = $path;
             }
         }
@@ -112,12 +107,6 @@ class UnionController extends Controller
 
     public function destroy(GuildUnion $union): RedirectResponse
     {
-        foreach (['logo', 'cover_image', 'manager_image'] as $field) {
-            if ($union->{$field}) {
-                Storage::disk('public')->delete($union->{$field});
-            }
-        }
-
         $union->delete();
         $this->flushFrontendCache();
 

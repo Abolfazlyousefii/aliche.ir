@@ -109,10 +109,6 @@ class VideoController extends Controller
         $data = $this->videoData($validated, $video);
 
         if ($coverImage = $this->storeFile($request, 'cover_image', 'videos/covers', 'public')) {
-            if ($video->cover_image) {
-                Storage::disk('public')->delete($video->cover_image);
-            }
-
             $data['cover_image'] = $coverImage;
         }
 
@@ -145,10 +141,6 @@ class VideoController extends Controller
 
     public function destroy(Video $video): RedirectResponse
     {
-        if ($video->cover_image) {
-            Storage::disk('public')->delete($video->cover_image);
-        }
-
         if ($video->video_file) {
             Storage::disk('public')->delete($video->video_file);
         }

@@ -8,7 +8,6 @@ use App\Rules\SafeImageUpload;
 use App\Services\SettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class SiteSettingController extends Controller
@@ -45,9 +44,6 @@ class SiteSettingController extends Controller
 
         foreach (['site_logo', 'site_favicon'] as $field) {
             if ($path = $this->uploadedOrSelectedImage($request, $field, 'settings/site')) {
-                if ($old = $settings->get('site.'.$field)) {
-                    Storage::disk('public')->delete($old);
-                }
                 $validated[$field] = $path;
             } else {
                 unset($validated[$field]);

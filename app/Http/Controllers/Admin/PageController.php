@@ -11,7 +11,6 @@ use App\Models\Page;
 use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class PageController extends Controller
@@ -69,10 +68,6 @@ class PageController extends Controller
         $data = $this->pageData($request->validated(), $page);
 
         if ($path = $this->storeFeaturedImage($request)) {
-            if ($page->featured_image) {
-                Storage::disk('public')->delete($page->featured_image);
-            }
-
             $data['featured_image'] = $path;
         }
 
@@ -83,10 +78,6 @@ class PageController extends Controller
 
     public function destroy(Page $page): RedirectResponse
     {
-        if ($page->featured_image) {
-            Storage::disk('public')->delete($page->featured_image);
-        }
-
         $page->delete();
 
         return redirect()->route('admin.pages.index')->with('success', 'صفحه با موفقیت حذف شد.');

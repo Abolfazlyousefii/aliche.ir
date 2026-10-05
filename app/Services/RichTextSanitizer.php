@@ -80,6 +80,10 @@ class RichTextSanitizer
                     if (in_array($tag, $this->discardWithContentTags, true)) {
                         $child->parentNode?->removeChild($child);
                     } else {
+                        // Sanitize descendants before moving them into the parent.
+                        // Otherwise an unknown wrapper can smuggle unsafe nested
+                        // elements/attributes past the traversal when it is unwrapped.
+                        $this->sanitizeNode($child);
                         $this->unwrapNode($child);
                     }
                     continue;

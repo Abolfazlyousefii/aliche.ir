@@ -76,24 +76,48 @@ class Media extends Model
             [Gallery::class, 'cover_image'], [GalleryImage::class, 'image'],
             [GuildUnion::class, 'logo'], [GuildUnion::class, 'cover_image'],
             [GuildUnion::class, 'manager_image'], [GuildUnion::class, 'price_list_image'],
-            [UnionMember::class, 'image'],
+            [UnionMember::class, 'image'], [UnionType::class, 'image'],
             [Page::class, 'featured_image'], [Announcement::class, 'featured_image'],
             [Video::class, 'cover_image'], [TourismPlace::class, 'featured_image'],
-            [System::class, 'image'], [Advertisement::class, 'image'],
-            [ChamberMember::class, 'photo'], [CongratulationMessage::class, 'manager_image'],
+            [TourismPlace::class, 'image'], [System::class, 'image'],
+            [Advertisement::class, 'image'], [ChamberMember::class, 'photo'],
+            [CongratulationMessage::class, 'manager_image'],
             [ElectronicService::class, 'image'], [Commission::class, 'image'],
         ];
 
+        // A conservative substring check intentionally accepts false positives:
+        // preventing an unsafe deletion is preferable to deleting a shared
+        // legacy URL whose stored representation differs by prefix/host.
         foreach ($references as [$model, $column]) {
-            if ($model::query()->whereIn($column, [$this->path, $path, '/storage/'.$path, '/media-files/'.$path, '/uploaded-media/'.$path])->exists()) {
+            if ($model::query()->where($column, 'like', '%'.$path.'%')->exists()) {
                 return true;
             }
         }
 
-        if (SiteSetting::query()->where('value', 'like', '%'.$path.'%')->exists()) {
-            return true;
+        $embeddedReferences = [
+            [Post::class, ['body']],
+            [Page::class, ['body']],
+            [Announcement::class, ['body']],
+            [ElectronicService::class, ['body']],
+            [Commission::class, ['description', 'attachments']],
+            [System::class, ['description']],
+            [TourismPlace::class, ['description', 'gallery']],
+            [GuildUnion::class, ['description', 'settings', 'president_buttons']],
+            [HomeSection::class, ['content', 'settings']],
+        ];
+
+        foreach ($embeddedReferences as [$model, $columns]) {
+            $used = $model::query()->where(function (Builder $query) use ($columns, $path) {
+                foreach ($columns as $column) {
+                    $query->orWhere($column, 'like', '%'.$path.'%');
+                }
+            })->exists();
+
+            if ($used) {
+                return true;
+            }
         }
 
-        return false;
+        return SiteSetting::query()->where('value', 'like', '%'.$path.'%')->exists();
     }
 }

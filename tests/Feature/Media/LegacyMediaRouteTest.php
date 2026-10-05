@@ -15,11 +15,14 @@ class LegacyMediaRouteTest extends TestCase
             ->assertRedirect('/storage/posts/featured/example.jpg');
     }
 
-    public function test_missing_image_route_returns_the_central_placeholder_instead_of_404(): void
+    public function test_missing_image_route_returns_uncached_placeholder_instead_of_404(): void
     {
-        $this->get('/storage/missing/old-photo.jpg')
+        $response = $this->get('/storage/missing/old-photo.jpg')
             ->assertOk()
-            ->assertHeader('X-Content-Type-Options', 'nosniff');
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertHeader('X-Media-Fallback', '1');
+
+        $this->assertStringContainsString('no-store', (string) $response->headers->get('Cache-Control'));
     }
 
     public function test_legacy_prefix_serves_a_file_from_the_canonical_disk_with_long_cache_headers(): void

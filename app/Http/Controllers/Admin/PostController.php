@@ -16,7 +16,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Throwable;
 
@@ -177,10 +176,6 @@ class PostController extends Controller
         $data = $this->postData($request->validated(), $post);
 
         if ($path = $this->storeFeaturedImage($request)) {
-            if ($post->featured_image) {
-                Storage::disk('public')->delete($post->featured_image);
-            }
-
             $data['featured_image'] = $path;
         }
 
@@ -195,14 +190,6 @@ class PostController extends Controller
 
     public function destroy(Post $post): RedirectResponse
     {
-        if ($post->featured_image) {
-            Storage::disk('public')->delete($post->featured_image);
-        }
-
-        foreach ($post->galleries as $gallery) {
-            Storage::disk('public')->delete($gallery->image);
-        }
-
         $post->delete();
         $this->flushFrontendCache();
 
@@ -385,10 +372,7 @@ class PostController extends Controller
             return;
         }
 
-        $post->galleries()->whereIn('id', $ids)->get()->each(function ($gallery) {
-            Storage::disk('public')->delete($gallery->image);
-            $gallery->delete();
-        });
+        $post->galleries()->whereIn('id', $ids)->delete();
     }
 
     private function flushFrontendCache(): void

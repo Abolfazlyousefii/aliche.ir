@@ -11,7 +11,6 @@ use App\Services\ContentApprovalService;
 use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -89,10 +88,6 @@ class ElectronicServiceController extends Controller
         $data = $this->serviceData($validated, $electronicService);
 
         if ($image = $this->uploadedOrSelectedImage($request, 'image', 'electronic-services')) {
-            if ($electronicService->image) {
-                Storage::disk('public')->delete($electronicService->image);
-            }
-
             $data['image'] = $image;
         }
 
@@ -103,10 +98,6 @@ class ElectronicServiceController extends Controller
 
     public function destroy(ElectronicService $electronicService): RedirectResponse
     {
-        if ($electronicService->image) {
-            Storage::disk('public')->delete($electronicService->image);
-        }
-
         $electronicService->delete();
 
         return redirect()->route('admin.electronic_services.index')->with('success', 'خدمت الکترونیک با موفقیت حذف شد.');

@@ -54,8 +54,12 @@ class MediaControllersCrudRegressionTest extends TestCase
         $this->assertSame($this->media->path, $item->image);
         $this->put(route('admin.advertisements.update', $item), [...$payload, 'title' => 'تبلیغ ویرایش‌شده'])->assertRedirect();
         $this->assertSame('تبلیغ ویرایش‌شده', $item->fresh()->title);
+        Storage::disk('public')->assertExists($this->media->path);
+
         $this->delete(route('admin.advertisements.destroy', $item))->assertRedirect();
         $this->assertDatabaseMissing('advertisements', ['id' => $item->id]);
+        $this->assertDatabaseHas('media', ['id' => $this->media->id]);
+        Storage::disk('public')->assertExists($this->media->path);
     }
 
     public function test_chamber_member_and_union_type_crud(): void
@@ -74,7 +78,10 @@ class MediaControllersCrudRegressionTest extends TestCase
         $this->assertSame($this->media->path, $type->image);
         $this->patch(route('admin.union-types.update', $type), [...$typePayload, 'title' => 'خدمات'])->assertRedirect();
         $this->assertSame('خدمات', $type->fresh()->title);
+        Storage::disk('public')->assertExists($this->media->path);
+
         $this->delete(route('admin.union-types.destroy', $type))->assertRedirect();
+        Storage::disk('public')->assertExists($this->media->path);
     }
 
     public function test_commission_gallery_system_and_tourism_crud(): void
@@ -108,6 +115,9 @@ class MediaControllersCrudRegressionTest extends TestCase
         $this->assertSame($this->media->path, $tourism->gallery[0]['path']);
         $this->put(route('admin.tourism.update', $tourism), [...$tourismPayload, 'title' => 'گردشگری جدید'])->assertRedirect();
         $this->delete(route('admin.tourism.destroy', $tourism))->assertRedirect();
+
+        Storage::disk('public')->assertExists($this->media->path);
+        $this->assertDatabaseHas('media', ['id' => $this->media->id]);
     }
 
     public function test_video_and_electronic_service_crud_accept_selected_media(): void
@@ -125,6 +135,9 @@ class MediaControllersCrudRegressionTest extends TestCase
         $this->assertSame($this->media->path, $service->image);
         $this->put(route('admin.electronic_services.update', $service), [...$servicePayload, 'title' => 'خدمت جدید'])->assertRedirect();
         $this->delete(route('admin.electronic_services.destroy', $service))->assertRedirect();
+
+        Storage::disk('public')->assertExists($this->media->path);
+        $this->assertDatabaseHas('media', ['id' => $this->media->id]);
     }
 
     public function test_header_footer_site_settings_and_rich_text_upload(): void
@@ -137,5 +150,7 @@ class MediaControllersCrudRegressionTest extends TestCase
             'file' => UploadedFile::fake()->image('editor.jpg', 320, 180),
             'type' => 'image',
         ])->assertOk()->assertJsonStructure(['location', 'path', 'name']);
+
+        Storage::disk('public')->assertExists($this->media->path);
     }
 }

@@ -9,7 +9,6 @@ use App\Models\Media;
 use App\Rules\SafeImageUpload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ChamberMemberController extends Controller
@@ -55,9 +54,6 @@ class ChamberMemberController extends Controller
         }
 
         if ($photo = $this->uploadedOrSelectedImage($request, 'photo', 'chamber-members')) {
-            if ($chamberMember->photo && str_starts_with($chamberMember->photo, 'chamber-members/')) {
-                Storage::disk('public')->delete($chamberMember->photo);
-            }
             $data['photo'] = $photo;
         }
 
@@ -68,10 +64,6 @@ class ChamberMemberController extends Controller
 
     public function destroy(ChamberMember $chamberMember): RedirectResponse
     {
-        if ($chamberMember->photo && str_starts_with($chamberMember->photo, 'chamber-members/')) {
-            Storage::disk('public')->delete($chamberMember->photo);
-        }
-
         $chamberMember->delete();
 
         return redirect()->route('admin.chamber_members.index')->with('success', 'عضو اتاق اصناف حذف شد.');

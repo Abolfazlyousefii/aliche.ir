@@ -9,7 +9,6 @@ use App\Rules\SafeImageUpload;
 use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -48,10 +47,6 @@ class UnionTypeController extends Controller
         $data = $this->validatedData($request, $unionType);
 
         if ($image = $this->storeImage($request, 'image', 'union-types/images')) {
-            if ($unionType->image) {
-                Storage::disk('public')->delete($unionType->image);
-            }
-
             $data['image'] = $image;
         }
 
@@ -62,10 +57,6 @@ class UnionTypeController extends Controller
 
     public function destroy(UnionType $unionType): RedirectResponse
     {
-        if ($unionType->image) {
-            Storage::disk('public')->delete($unionType->image);
-        }
-
         $unionType->delete();
 
         return redirect()->route('admin.union-types.index')->with('success', 'نوع اتحادیه حذف شد.');

@@ -55,8 +55,6 @@ use App\Http\Controllers\Frontend\UnionController as FrontendUnionController;
 use App\Http\Controllers\Frontend\UnionPresidentController;
 use App\Http\Controllers\Frontend\VideoController as FrontendVideoController;
 use App\Support\PublicFileUrl;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
@@ -87,8 +85,12 @@ $servePublicMedia = function (string $path) {
 
     if (in_array($extension, ['avif', 'gif', 'jpeg', 'jpg', 'png', 'webp'], true) && is_file($fallback)) {
         return response()->file($fallback, [
-            'Cache-Control' => 'public, max-age=86400',
+            // Do not cache a placeholder under the missing media URL. If the
+            // original file is restored later, clients must be able to see it.
+            'Cache-Control' => 'no-store, max-age=0',
+            'Pragma' => 'no-cache',
             'X-Content-Type-Options' => 'nosniff',
+            'X-Media-Fallback' => '1',
         ]);
     }
 
@@ -405,40 +407,3 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::put('permissions/{permission}', [PermissionController::class, 'update'])->middleware('permission:permissions.edit')->name('permissions.update');
     Route::delete('permissions/{permission}', [PermissionController::class, 'destroy'])->middleware('permission:permissions.delete')->name('permissions.destroy');
 });
-Route::get('/system/clear-cache-7f3a9d', function (Request $request) {
-    $secretKey = 'Aliche-2026-Clear-Cache-X9p4K7';
-
-    abort_unless(
-        hash_equals($secretKey, (string) $request->query('key')),
-        403,
-        'Access denied.'
-    );
-
-    try {
-        $results = [];
-
-        Artisan::call('optimize:clear');
-        $results['optimize:clear'] = trim(
-            Artisan::output()
-        );
-
-        Artisan::call('view:clear');
-        $results['view:clear'] = trim(
-            Artisan::output()
-        );
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Laravel caches cleared successfully.',
-            'results' => $results,
-        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-    } catch (Throwable $exception) {
-        report($exception);
-
-        return response()->json([
-            'success' => false,
-            'message' => $exception->getMessage(),
-        ], 500, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    }
-})->middleware('throttle:2,1');

@@ -81,10 +81,6 @@ class AnnouncementController extends Controller
         $data = $this->announcementData($request->validated(), $announcement);
 
         if ($path = $this->storeFeaturedImage($request)) {
-            if ($announcement->featured_image) {
-                Storage::disk('public')->delete($announcement->featured_image);
-            }
-
             $data['featured_image'] = $path;
         }
 
@@ -108,10 +104,6 @@ class AnnouncementController extends Controller
 
     public function destroy(Announcement $announcement): RedirectResponse
     {
-        if ($announcement->featured_image) {
-            Storage::disk('public')->delete($announcement->featured_image);
-        }
-
         if ($announcement->attachment) {
             Storage::disk('public')->delete($announcement->attachment);
         }

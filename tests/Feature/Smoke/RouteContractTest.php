@@ -52,4 +52,9 @@ class RouteContractTest extends TestCase
         $this->assertTrue(Route::has('complaints.lookup'));
         $this->get('/complaints/track')->assertOk();
     }
+
+    public function test_legacy_public_cache_clear_endpoint_is_not_registered(): void
+    {
+        $this->get('/system/clear-cache-7f3a9d')->assertNotFound();
+    }
 }

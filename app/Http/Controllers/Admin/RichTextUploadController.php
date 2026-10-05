@@ -14,6 +14,22 @@ use Throwable;
 
 class RichTextUploadController extends Controller
 {
+    private const FILE_MIME_EXTENSIONS = [
+        'image/jpeg' => ['jpg', 'jpeg'],
+        'image/png' => ['png'],
+        'image/webp' => ['webp'],
+        'image/gif' => ['gif'],
+        'application/pdf' => ['pdf'],
+        'application/msword' => ['doc'],
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => ['docx'],
+        'application/vnd.ms-excel' => ['xls'],
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['xlsx'],
+        // Some fileinfo builds report OOXML documents as application/zip.
+        // Preserve only compatible, non-executable client extensions.
+        'application/zip' => ['zip', 'docx', 'xlsx'],
+        'text/plain' => ['txt'],
+    ];
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -22,7 +38,8 @@ class RichTextUploadController extends Controller
         ]);
 
         $file = $validated['file'];
-        $type = $validated['type'] ?? (str_starts_with((string) $file->getMimeType(), 'image/') ? 'image' : 'file');
+        $mime = (string) $file->getMimeType();
+        $type = $validated['type'] ?? (str_starts_with($mime, 'image/') ? 'image' : 'file');
         $directory = $type === 'image' ? 'rich-text/images/'.now()->format('Y/m') : 'rich-text/files/'.now()->format('Y/m');
 
         if ($type === 'image') {
@@ -44,13 +61,31 @@ class RichTextUploadController extends Controller
             ]);
         }
 
-        $extension = $file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'bin';
+        $allowedExtensions = self::FILE_MIME_EXTENSIONS[$mime] ?? [];
+        if ($allowedExtensions === []) {
+            return response()->json(['message' => 'نوع واقعی فایل برای بارگذاری پشتیبانی نمی‌شود.'], 422);
+        }
+
+        $clientExtension = strtolower((string) $file->getClientOriginalExtension());
+        $extension = in_array($clientExtension, $allowedExtensions, true)
+            ? $clientExtension
+            : $allowedExtensions[0];
+
+        $contents = file_get_contents($file->getRealPath());
+        if (! is_string($contents) || $contents === '') {
+            return response()->json(['message' => 'خواندن فایل بارگذاری‌شده ناموفق بود.'], 422);
+        }
+
         $name = Str::uuid().'.'.$extension;
         $path = $directory.'/'.$name;
-        Storage::disk('public')->put($path, file_get_contents($file->getRealPath()));
+        $storage = Storage::disk('public');
+
+        if (! $storage->put($path, $contents)) {
+            return response()->json(['message' => 'ذخیره فایل روی سرور ناموفق بود؛ لطفاً دوباره تلاش کنید.'], 422);
+        }
 
         return response()->json([
-            'location' => Storage::disk('public')->url($path),
+            'location' => $storage->url($path),
             'path' => $path,
             'name' => $file->getClientOriginalName(),
         ]);
