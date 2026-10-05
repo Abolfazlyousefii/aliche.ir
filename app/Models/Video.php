@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\PublicFileUrl;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -97,6 +99,16 @@ class Video extends Model
     public function getStatusLabelAttribute(): string
     {
         return self::statusLabels()[$this->status] ?? $this->status;
+    }
+
+    public function getCoverImageUrlAttribute(): string
+    {
+        return PublicFileUrl::make($this->cover_image);
+    }
+
+    public function getVideoFileUrlAttribute(): string
+    {
+        return PublicFileUrl::make($this->video_file, '');
     }
 
     public function getVideoMimeTypeAttribute(): string
