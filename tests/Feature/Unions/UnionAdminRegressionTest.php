@@ -26,6 +26,23 @@ class UnionAdminRegressionTest extends TestCase
         }
     }
 
+    public function test_union_and_member_forms_expose_media_library_controls(): void
+    {
+        $this->signInAsSuperAdmin();
+        $union = $this->union(['slug' => 'union-media-controls']);
+
+        $this->get(route('admin.unions.edit', $union))
+            ->assertOk()
+            ->assertSee('data-media-select-target="cover_image_media_id"', false)
+            ->assertSee('data-media-select-target="logo_media_id"', false)
+            ->assertSee('data-media-select-target="manager_image_media_id"', false)
+            ->assertSee('data-media-select-target="price_list_image_media_id"', false);
+
+        $this->get(route('admin.union_members.create'))
+            ->assertOk()
+            ->assertSee('data-media-select-target="image_media_id"', false);
+    }
+
     public function test_update_without_category_id_preserves_legacy_category_value(): void
     {
         $this->signInAsSuperAdmin();
