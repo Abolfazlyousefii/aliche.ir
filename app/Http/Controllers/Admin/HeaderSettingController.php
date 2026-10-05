@@ -8,7 +8,6 @@ use App\Rules\SafeImageUpload;
 use App\Services\SettingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class HeaderSettingController extends Controller
@@ -35,9 +34,6 @@ class HeaderSettingController extends Controller
 
         foreach (['desktop_logo', 'mobile_logo', 'header_logo'] as $field) {
             if ($path = $this->uploadedOrSelectedImage($request, $field, 'settings/header')) {
-                if ($old = $settings->get('header.'.$field)) {
-                    Storage::disk('public')->delete($old);
-                }
                 $validated[$field] = $path;
             } else {
                 unset($validated[$field]);
