@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Concerns\SelectsMedia;
 use App\Http\Controllers\Controller;
 use App\Models\Advertisement;
 use App\Models\AdvertisementPosition;
+use App\Models\Media;
 use App\Rules\SafeImageUpload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,6 +53,8 @@ class AdvertisementController extends Controller
         return view('admin.advertisements.create', [
             'positions' => $this->positions(),
             'targetLabels' => Advertisement::targetLabels(),
+            'mediaItems' => $this->mediaItems(),
+            'currentMediaId' => null,
         ]);
     }
 
@@ -80,6 +83,8 @@ class AdvertisementController extends Controller
             'advertisement' => $advertisement,
             'positions' => $this->positions(),
             'targetLabels' => Advertisement::targetLabels(),
+            'mediaItems' => $this->mediaItems(),
+            'currentMediaId' => Media::query()->where('path', $advertisement->image)->value('id'),
         ]);
     }
 
@@ -153,5 +158,10 @@ class AdvertisementController extends Controller
     private function positions()
     {
         return AdvertisementPosition::query()->orderBy('title')->get();
+    }
+
+    private function mediaItems()
+    {
+        return Media::query()->images()->latest()->take(200)->get();
     }
 }
