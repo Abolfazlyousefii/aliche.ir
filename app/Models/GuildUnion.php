@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\UnionIcon;
+
 use App\Support\PublicFileUrl;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -80,6 +82,40 @@ class GuildUnion extends Model
             'is_active' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    public static function socialLinkLabels(): array
+    {
+        return [
+            'instagram' => 'اینستاگرام',
+            'telegram' => 'تلگرام',
+            'whatsapp' => 'واتساپ',
+            'eitaa' => 'ایتا',
+            'bale' => 'بله',
+            'rubika' => 'روبیکا',
+            'website' => 'وب‌سایت',
+        ];
+    }
+
+    public static function safeActionUrl(?string $value): ?string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (str_starts_with($value, '/') && ! str_starts_with($value, '//')) {
+            return $value;
+        }
+
+        if (str_starts_with($value, '#')) {
+            return $value;
+        }
+
+        $scheme = strtolower((string) parse_url($value, PHP_URL_SCHEME));
+
+        return in_array($scheme, ['http', 'https', 'mailto', 'tel'], true) ? $value : null;
     }
 
     public static function priceListModeLabels(): array
@@ -376,9 +412,16 @@ class GuildUnion extends Model
 
     public function getSocialLinkItemsAttribute(): array
     {
+        $labels = self::socialLinkLabels();
+
         return collect($this->social_links ?? [])
-            ->filter(fn ($url) => filled($url))
-            ->map(fn ($url, $label) => ['label' => (string) $label, 'url' => (string) $url])
+            ->only(array_keys($labels))
+            ->map(fn ($url, $key) => [
+                'key' => (string) $key,
+                'label' => $labels[$key],
+                'url' => self::safeActionUrl(is_string($url) ? $url : null),
+            ])
+            ->filter(fn ($item) => filled($item['url']))
             ->values()
             ->all();
     }
@@ -405,7 +448,18 @@ class GuildUnion extends Model
     public function getActivePresidentButtonsAttribute(): array
     {
         return collect($this->president_buttons ?? [])
-            ->filter(fn ($button) => ! empty($button['is_active']) && filled($button['title'] ?? null) && filled($button['url'] ?? null))
+            ->map(function ($button) {
+                $url = self::safeActionUrl($button['url'] ?? null);
+
+                return [
+                    'title' => trim((string) ($button['title'] ?? '')),
+                    'url' => $url,
+                    'icon' => UnionIcon::normalize($button['icon'] ?? null),
+                    'target' => ($button['target'] ?? '_self') === '_blank' ? '_blank' : '_self',
+                    'is_active' => ! empty($button['is_active']),
+                ];
+            })
+            ->filter(fn ($button) => $button['is_active'] && filled($button['title']) && filled($button['url']))
             ->values()
             ->all();
     }
