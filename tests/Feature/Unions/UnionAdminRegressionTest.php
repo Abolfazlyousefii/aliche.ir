@@ -46,6 +46,28 @@ class UnionAdminRegressionTest extends TestCase
             ->assertSee('data-media-select-target="image_media_id"', false);
     }
 
+    public function test_union_edit_uses_controlled_icon_options_for_president_and_sections(): void
+    {
+        $this->signInAsSuperAdmin();
+        $union = $this->union([
+            'slug' => 'union-icon-controls',
+            'president_buttons' => [[
+                'title' => 'تماس',
+                'url' => 'tel:01712345678',
+                'icon' => 'phone',
+                'target' => '_self',
+                'is_active' => true,
+            ]],
+        ]);
+
+        $this->get(route('admin.unions.edit', $union))
+            ->assertOk()
+            ->assertSee('name="president_buttons[0][icon]"', false)
+            ->assertSee('data-section="commissions"', false)
+            ->assertSee('شماره ترتیبی')
+            ->assertSee('نرخ‌نامه');
+    }
+
     public function test_update_without_category_id_preserves_legacy_category_value(): void
     {
         $this->signInAsSuperAdmin();
