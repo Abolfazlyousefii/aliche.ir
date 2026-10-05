@@ -70,6 +70,57 @@ class TourismBackendRegressionTest extends TestCase
         $this->assertSame($gallery->path, $place->gallery[0]['path'] ?? null);
     }
 
+    public function test_admin_index_filters_by_tourism_type(): void
+    {
+        $this->signInAsSuperAdmin();
+
+        TourismPlace::query()->create([
+            'title' => 'جاذبه طبیعی',
+            'slug' => 'tourism-filter-nature',
+            'tourism_type' => 'nature',
+            'type' => 'nature',
+            'status' => 'draft',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+
+        TourismPlace::query()->create([
+            'title' => 'رستوران گردشگری',
+            'slug' => 'tourism-filter-restaurant',
+            'tourism_type' => 'restaurant',
+            'type' => 'restaurant',
+            'status' => 'draft',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+
+        $this->get(route('admin.tourism.index', ['tourism_type' => 'restaurant']))
+            ->assertOk()
+            ->assertSee('رستوران گردشگری')
+            ->assertDontSee('جاذبه طبیعی');
+    }
+
+    public function test_gallery_media_selection_preserves_order_and_removes_duplicates(): void
+    {
+        $this->signInAsSuperAdmin();
+
+        $first = $this->image('media/gallery-first.jpg');
+        $second = $this->image('media/gallery-second.jpg');
+        $third = $this->image('media/gallery-third.jpg');
+
+        $this->post(route('admin.tourism.store'), $this->payload([
+            'slug' => 'tourism-gallery-order',
+            'gallery_images_media_ids' => [$third->id, $first->id, $third->id, $second->id],
+        ]))->assertSessionHasNoErrors();
+
+        $place = TourismPlace::query()->where('slug', 'tourism-gallery-order')->firstOrFail();
+
+        $this->assertSame(
+            [$third->path, $first->path, $second->path],
+            collect($place->gallery)->pluck('path')->all()
+        );
+    }
+
     public function test_admin_rejects_non_tourism_category(): void
     {
         $this->signInAsSuperAdmin();
