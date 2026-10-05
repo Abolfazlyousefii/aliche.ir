@@ -85,8 +85,12 @@ $servePublicMedia = function (string $path) {
 
     if (in_array($extension, ['avif', 'gif', 'jpeg', 'jpg', 'png', 'webp'], true) && is_file($fallback)) {
         return response()->file($fallback, [
-            'Cache-Control' => 'public, max-age=86400',
+            // Do not cache a placeholder under the missing media URL. If the
+            // original file is restored later, clients must be able to see it.
+            'Cache-Control' => 'no-store, max-age=0',
+            'Pragma' => 'no-cache',
             'X-Content-Type-Options' => 'nosniff',
+            'X-Media-Fallback' => '1',
         ]);
     }
 
