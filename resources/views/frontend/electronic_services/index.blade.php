@@ -53,8 +53,14 @@
 
   <div class="portal-card-grid">
     @forelse ($services as $service)
-      <article class="portal-card service-card-modern">
-        <div class="portal-card-icon">{{ $service->icon ?: '⚡' }}</div>
+      <article class="portal-card service-card-modern {{ $service->image ? 'has-media' : '' }}">
+        @if ($service->image)
+          <div class="portal-card-media">
+            <img src="{{ $service->image_url }}" alt="{{ $service->title }}" loading="lazy" decoding="async">
+          </div>
+        @else
+          <div class="portal-card-icon" aria-hidden="true">{{ $service->icon ?: '⚡' }}</div>
+        @endif
         <div class="portal-card-body">
           <span class="portal-card-category">{{ $service->category?->title ?: 'خدمات الکترونیک' }}</span>
           <h3>{{ $service->title }}</h3>

@@ -5405,10 +5405,31 @@ img { display: block; max-width: 100%; }
   flex: 0 0 46px;
   display: grid;
   place-items: center;
-  border-radius: 16px;
-  background: rgba(12, 116, 185, .09);
-  color: var(--color-primary);
-  font-weight: 900;
+  border-radius: 12px;
+  border: 1px solid rgba(12, 116, 185, .16);
+  background: #eef7fb;
+  color: #0b679f;
+  font-weight: 800;
+}
+.commission-list-media {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 72px;
+  display: block;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 35, 52, .09);
+  background: #eef3f7;
+}
+.commission-list-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.commission-list-card:focus-visible {
+  outline: 3px solid rgba(12, 116, 185, .28);
+  outline-offset: 3px;
 }
 .commission-list-content h3 { margin: 2px 0 10px; font-size: 19px; color: var(--color-ink-850); }
 .commission-list-content p { margin: 0; color: var(--color-ink-600); line-height: 2; font-size: 13px; }
@@ -5521,7 +5542,10 @@ img { display: block; max-width: 100%; }
   .commissions-intro-card,
   .commission-session-card { flex-direction: column; }
   .commissions-list-grid { gap: 14px; }
-  .commission-list-card { min-height: auto; padding: 20px; }
+  .commission-list-card { min-height: auto; padding: 18px; gap: 12px; }
+  .commission-list-media { width: 58px; height: 58px; flex-basis: 58px; border-radius: 12px; }
+  .commission-list-number { width: 40px; height: 40px; flex-basis: 40px; }
+  .commission-list-meta { gap: 7px; }
   .commission-detail-cover img { height: 240px; }
 }
 
@@ -5804,6 +5828,25 @@ img { display: block; max-width: 100%; }
 }
 .service-card-modern .portal-card-icon,
 .service-detail-icon { background: rgba(103, 65, 217, .10); color: #6741d9; }
+.portal-card-media {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #eef3f7;
+}
+.portal-card-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.service-card-modern.has-media {
+  padding-top: 16px;
+}
+.service-card-modern.has-media .portal-card-body {
+  min-width: 0;
+}
 .portal-card-category {
   display: inline-flex;
   margin-bottom: 9px;
@@ -5891,7 +5934,8 @@ img { display: block; max-width: 100%; }
   .portal-intro-card,
   .portal-search-form,
   .portal-card-actions { flex-direction: column; align-items: stretch; }
-  .portal-card { min-height: auto; }
+  .portal-card { min-height: auto; padding: 18px; }
+  .portal-card-media { border-radius: 13px; }
   .portal-detail-cover img { height: 240px; }
   .portal-detail-heading { align-items: flex-start; }
 }

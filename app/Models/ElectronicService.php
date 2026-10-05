@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\PublicFileUrl;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -92,6 +94,11 @@ class ElectronicService extends Model
     public function getTargetLabelAttribute(): string
     {
         return self::targetLabels()[$this->target] ?? $this->target;
+    }
+
+    public function getImageUrlAttribute(): string
+    {
+        return PublicFileUrl::make($this->image);
     }
 
     public function getPublicLinkAttribute(): ?string
