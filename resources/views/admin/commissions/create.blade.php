@@ -11,8 +11,19 @@
 <div class="col-md-4"><label class="form-label">دلیل رد</label><input class="form-control" name="rejected_reason" value="{{ old('rejected_reason') }}"></div>
 <div class="col-md-4"><label class="form-label">ترتیب</label><input class="form-control" type="number" name="sort_order" value="{{ old('sort_order',0) }}" min="0"></div>
 <div class="col-md-4"><label class="form-label">فعال</label><select class="form-control" name="is_active"><option value="1" @selected(old('is_active','1')==='1')>فعال</option><option value="0" @selected(old('is_active')==='0')>غیرفعال</option></select></div>
-<div class="col-md-6"><label class="form-label">تصویر</label><input class="form-control" type="file" name="image" accept="image/*"></div>
-<div class="col-md-6"><label class="form-label">پیوست‌ها</label><input class="form-control" type="file" name="attachments[]" multiple></div>
+<div class="col-md-6">
+<label class="form-label" for="image">تصویر</label>
+<input class="form-control" id="image" type="file" name="image" accept="image/*" data-skip-media-picker>
+<button class="admin-secondary-btn mt-2" type="button" data-media-select-target="image_media_id">انتخاب یا آپلود از کتابخانه</button>
+<select class="d-none" name="image_media_id" id="image_media_id" aria-hidden="true" tabindex="-1">
+<option value="">انتخاب تصویر از کتابخانه</option>
+@foreach(($mediaItems ?? collect()) as $media)
+<option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('image_media_id') === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
+@endforeach
+</select>
+<div id="image_media_preview" class="mt-2"></div>
+</div>
+<div class="col-md-6"><label class="form-label">پیوست‌ها</label><input class="form-control" type="file" name="attachments[]" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple><small class="text-muted">فرمت‌های مجاز: PDF و فایل‌های متداول Office، حداکثر ۱۰ مگابایت برای هر فایل.</small></div>
 <div class="col-12"><label class="form-label">اعضا (هر عضو در یک خط)</label><textarea class="form-control" name="members" rows="4">{{ old('members') }}</textarea></div>
 <div class="col-12"><label class="form-label">توضیحات</label><textarea class="form-control js-rich-editor" name="description" rows="6">{{ old('description') }}</textarea></div>
 <div class="col-12"><h3 class="h6 mt-2">وظایف کمیسیون</h3><p class="text-muted small">برای نمایش در صفحه اول و صفحه جزئیات کمیسیون، عنوان و توضیح هر وظیفه را وارد کنید.</p></div>
@@ -25,3 +36,24 @@
 </div>
 <div class="mt-3 d-flex gap-2"><button class="admin-primary-btn">ذخیره</button><a class="admin-secondary-btn" href="{{ route('admin.commissions.index') }}">انصراف</a></div></form>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const select = document.getElementById('image_media_id');
+    const preview = document.getElementById('image_media_preview');
+
+    function renderPreview() {
+        const option = select && select.selectedOptions ? select.selectedOptions[0] : null;
+        const url = option ? option.dataset.url : '';
+        if (!preview) return;
+        preview.innerHTML = url
+            ? '<img class="rounded" src="' + url + '" alt="پیش‌نمایش تصویر کمیسیون" style="width:100%;max-width:260px;height:150px;object-fit:cover">'
+            : '';
+    }
+
+    if (select) select.addEventListener('change', renderPreview);
+    renderPreview();
+});
+</script>
+@endpush

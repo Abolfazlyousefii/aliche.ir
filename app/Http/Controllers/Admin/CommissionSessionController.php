@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Commission;
 use App\Models\CommissionSession;
+use App\Rules\SafeImageUpload;
 use App\Support\PublicStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -104,11 +105,11 @@ class CommissionSessionController extends Controller
             'description' => ['nullable', 'string'],
             'session_date_jalali' => ['nullable', 'regex:/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/'],
             'session_time' => ['nullable', 'date_format:H:i'],
-            'minutes_file' => ['nullable', 'file', 'max:10240'],
+            'minutes_file' => ['nullable', 'bail', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
             'attachments' => ['nullable', 'array'],
-            'attachments.*' => ['file', 'max:10240'],
+            'attachments.*' => ['bail', 'file', 'mimes:pdf,doc,docx,xls,xlsx,ppt,pptx', 'max:10240'],
             'images' => ['nullable', 'array'],
-            'images.*' => ['image', 'max:4096'],
+            'images.*' => ['bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'existing_attachments' => ['nullable', 'array'],
             'existing_images' => ['nullable', 'array'],
             'status' => ['required', Rule::in(app(\App\Services\ContentApprovalService::class)->allowedStatusesFor($request->user(), ['commissions.approve', 'commissions.publish']))],
