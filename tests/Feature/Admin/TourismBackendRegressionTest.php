@@ -12,6 +12,64 @@ class TourismBackendRegressionTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_admin_forms_expose_tourism_media_library_controls(): void
+    {
+        $this->signInAsSuperAdmin();
+
+        $place = TourismPlace::query()->create([
+            'title' => 'مکان برای فرم',
+            'slug' => 'tourism-media-form',
+            'tourism_type' => 'nature',
+            'type' => 'nature',
+            'status' => 'draft',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+
+        foreach ([route('admin.tourism.create'), route('admin.tourism.edit', $place)] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertSee('data-media-select-target="image_media_id"', false)
+                ->assertSee('data-media-select-target="featured_image_media_id"', false)
+                ->assertSee('data-media-select-target="gallery_images_media_ids"', false)
+                ->assertSee('data-media-select-multiple="true"', false);
+        }
+    }
+
+    public function test_admin_update_persists_selected_card_featured_and_gallery_media(): void
+    {
+        $this->signInAsSuperAdmin();
+
+        $place = TourismPlace::query()->create([
+            'title' => 'مکان قابل ویرایش',
+            'slug' => 'tourism-media-update',
+            'tourism_type' => 'nature',
+            'type' => 'nature',
+            'gallery' => [],
+            'status' => 'draft',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+
+        $card = $this->image('media/update-card.jpg');
+        $featured = $this->image('media/update-featured.jpg');
+        $gallery = $this->image('media/update-gallery.jpg');
+
+        $this->put(route('admin.tourism.update', $place), $this->payload([
+            'title' => $place->title,
+            'slug' => $place->slug,
+            'image_media_id' => $card->id,
+            'featured_image_media_id' => $featured->id,
+            'gallery_images_media_ids' => [$gallery->id],
+        ]))->assertSessionHasNoErrors();
+
+        $place->refresh();
+
+        $this->assertSame($card->path, $place->image);
+        $this->assertSame($featured->path, $place->featured_image);
+        $this->assertSame($gallery->path, $place->gallery[0]['path'] ?? null);
+    }
+
     public function test_admin_rejects_non_tourism_category(): void
     {
         $this->signInAsSuperAdmin();
