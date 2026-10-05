@@ -54,8 +54,6 @@ class VideoController extends Controller
             'categories' => Category::query()->active()->where('type', 'video')->orderBy('sort_order')->orderBy('title')->get(),
             'statusLabels' => Video::statusLabels(),
             'typeLabels' => Video::typeLabels(),
-            'mediaItems' => Media::query()->images()->latest()->take(200)->get(),
-            'currentCoverMediaId' => null,
         ]);
     }
 
@@ -67,6 +65,8 @@ class VideoController extends Controller
             'categories' => Category::query()->active()->where('type', 'video')->orderBy('sort_order')->orderBy('title')->get(),
             'statusLabels' => Video::statusLabels(),
             'typeLabels' => Video::typeLabels(),
+            'mediaItems' => Media::query()->images()->latest()->take(200)->get(),
+            'currentCoverMediaId' => null,
         ]);
     }
 
