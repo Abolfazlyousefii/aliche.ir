@@ -65,6 +65,14 @@ class TourismPlace extends Model
         return $this->resolveImageUrl($image);
     }
 
+    public function getFeaturedImageUrlAttribute(): string
+    {
+        $image = $this->featured_image ?: $this->image;
+
+        return $this->resolveImageUrl($image);
+    }
+
+
     public function getHomeDescriptionAttribute(): string
     {
         return plain_text($this->short_description ?: $this->description);
@@ -191,6 +199,28 @@ class TourismPlace extends Model
     public function getTourismTypeLabelAttribute(): string
     {
         return self::typeLabels()[$this->tourism_type] ?? $this->tourism_type;
+    }
+
+    public function getMapUrlAttribute(?string $value): ?string
+    {
+        return self::normalizeMapUrl($value);
+    }
+
+    public static function normalizeMapUrl(?string $value): ?string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL) === false) {
+            return null;
+        }
+
+        $scheme = strtolower((string) parse_url($value, PHP_URL_SCHEME));
+
+        return in_array($scheme, ['http', 'https'], true) ? $value : null;
     }
 
     public static function statusLabels(): array

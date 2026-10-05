@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\TourismPlace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -143,6 +144,43 @@ class TourismDirectoryTest extends TestCase
             ->assertOk()
             ->assertSee('مکان‌های مرتبط')
             ->assertSee($url, false);
+    }
+
+    public function test_related_places_fill_remaining_slots_from_other_categories(): void
+    {
+        $primaryCategory = Category::query()->create([
+            'title' => 'طبیعت',
+            'slug' => 'related-primary-tourism',
+            'type' => 'tourism',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+        $otherCategory = Category::query()->create([
+            'title' => 'سایر جاذبه‌ها',
+            'slug' => 'related-secondary-tourism',
+            'type' => 'tourism',
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+
+        $current = $this->place('مکان اصلی', 'related-fill-current', 'nature', ['category_id' => $primaryCategory->id]);
+        $sameCategory = $this->place('مرتبط اول', 'related-fill-one', 'nature', ['category_id' => $primaryCategory->id]);
+        $second = $this->place('مرتبط دوم', 'related-fill-two', 'historic', ['category_id' => $otherCategory->id]);
+        $third = $this->place('مرتبط سوم', 'related-fill-three', 'shopping', ['category_id' => $otherCategory->id]);
+        $fourth = $this->place('مرتبط چهارم', 'related-fill-four', 'restaurant', ['category_id' => $otherCategory->id]);
+
+        $this->get(route('tourism.show', $current->slug))
+            ->assertOk()
+            ->assertViewHas('relatedPlaces', function ($places) use ($sameCategory, $second, $third, $fourth) {
+                return $places->count() === 4
+                    && $places->first()->id === $sameCategory->id
+                    && $places->pluck('id')->sort()->values()->all() === collect([
+                        $sameCategory->id,
+                        $second->id,
+                        $third->id,
+                        $fourth->id,
+                    ])->sort()->values()->all();
+            });
     }
 
     private function place(string $title, string $slug, string $type, array $attributes = []): TourismPlace

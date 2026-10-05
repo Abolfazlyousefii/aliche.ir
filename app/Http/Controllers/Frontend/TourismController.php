@@ -83,15 +83,18 @@ class TourismController extends Controller
             ->take(4)
             ->get();
 
-        if ($relatedPlaces->isEmpty()) {
-            $relatedPlaces = TourismPlace::query()
+        if ($relatedPlaces->count() < 4) {
+            $fallbackPlaces = TourismPlace::query()
                 ->published()
                 ->with('category')
                 ->whereKeyNot($place->id)
+                ->whereNotIn('id', $relatedPlaces->pluck('id'))
                 ->orderBy('sort_order')
                 ->latest('published_at')
-                ->take(4)
+                ->take(4 - $relatedPlaces->count())
                 ->get();
+
+            $relatedPlaces = $relatedPlaces->concat($fallbackPlaces)->values();
         }
 
         return view('frontend.tourism.show', [
