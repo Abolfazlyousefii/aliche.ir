@@ -152,11 +152,12 @@
 
         return [
             'icon' => $system->icon ?: '💻',
+            'image' => $system->image ? $system->image_url : null,
             'title' => $system->title,
             'description' => $plain($system->short_description ?: $system->description, 120),
             'url' => $publicLink ?: route('systems.show', $system->slug),
             'target' => $publicLink ? ($system->target ?: '_blank') : '_self',
-            'label' => $publicLink ? 'ورود به سامانه ←' : 'مشاهده جزئیات ←',
+            'label' => $publicLink ? 'ورود به سامانه' : 'مشاهده جزئیات',
         ];
     })->take(6)->values();
     $systemItems = $systemItems->isNotEmpty() ? $systemItems : $systemFallbacks;
@@ -776,7 +777,16 @@
 <div class="systems-unified-shell">
 <div class="systems-primary-group"><h3 class="systems-subtitle">سامانه‌های اصلی</h3><div class="commission-grid compact-grid systems-primary-grid">
 @foreach($systemItems as $item)
-<a class="commission-item" href="{{ $item['url'] }}" target="{{ $item['target'] ?? '_self' }}"><span class="system-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3M7 9h10M7 13h6"/></svg></span><strong>{{ $item['title'] }}</strong><span class="system-card-description">{{ $item['description'] }}</span></a>
+<a class="commission-item system-home-card {{ filled($item['image'] ?? null) ? 'has-image' : '' }}" href="{{ $item['url'] }}" target="{{ $item['target'] ?? '_self' }}" @if(($item['target'] ?? '_self') === '_blank') rel="noopener noreferrer" @endif>
+@if(filled($item['image'] ?? null))
+<span class="system-card-icon system-card-image" aria-hidden="true"><img src="{{ $item['image'] }}" alt="" loading="lazy" decoding="async"></span>
+@else
+<span class="system-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3M7 9h10M7 13h6"/></svg></span>
+@endif
+<strong>{{ $item['title'] }}</strong>
+<span class="system-card-description">{{ $item['description'] }}</span>
+<span class="system-card-cta">{{ $item['label'] ?? 'مشاهده' }} <span aria-hidden="true">←</span></span>
+</a>
 @endforeach
 </div></div>
 <div class="systems-links-group" id="fractions"><h3 class="systems-subtitle">پیوندها و اطلاعیه‌های کاربردی</h3><div class="systems-links-grid">
