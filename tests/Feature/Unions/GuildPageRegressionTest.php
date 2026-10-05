@@ -3,6 +3,7 @@
 namespace Tests\Feature\Unions;
 
 use App\Models\GuildUnion;
+use App\Models\UnionMember;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsAdminPayloads;
 use Tests\TestCase;
@@ -31,6 +32,43 @@ class GuildPageRegressionTest extends TestCase
             ->assertSee('id="guild-news"', false)
             ->assertSee('guild-profile-news-list', false)
             ->assertSee($post->title);
+    }
+
+    public function test_seed_placeholder_members_are_hidden_but_real_board_members_remain_visible(): void
+    {
+        $union = $this->union([
+            'slug' => 'guild-board-filter',
+            'members_enabled' => true,
+            'settings' => ['show_board_members' => true],
+        ]);
+
+        UnionMember::query()->create([
+            'union_id' => $union->id,
+            'full_name' => 'عضو صنفی 1 '.$union->name,
+            'membership_code' => 'G'.$union->id.'-1',
+            'business_name' => 'واحد صنفی 1 '.$union->name,
+            'description' => 'عضو فعال برای نمایش در صفحه اتحادیه',
+            'position' => null,
+            'image' => null,
+            'status' => 'active',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+
+        UnionMember::query()->create([
+            'union_id' => $union->id,
+            'full_name' => 'عضو واقعی هیئت‌مدیره',
+            'position' => 'نایب رئیس',
+            'status' => 'active',
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+
+        $this->get(route('guilds.show', $union->slug))
+            ->assertOk()
+            ->assertDontSee('عضو صنفی 1 '.$union->name)
+            ->assertSee('عضو واقعی هیئت‌مدیره')
+            ->assertSee('نایب رئیس');
     }
 
     public function test_services_section_respects_services_enabled_and_requires_displayable_content(): void
