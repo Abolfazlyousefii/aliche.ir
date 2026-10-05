@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Concerns\SelectsMedia;
 use App\Http\Requests\Admin\StoreUnionRequest;
 use App\Http\Requests\Admin\UpdateUnionRequest;
 use App\Models\GuildUnion;
+use App\Models\Media;
 use App\Models\Post;
 use App\Models\UnionType;
 use App\Models\UnionCommission;
@@ -51,6 +52,8 @@ class UnionController extends Controller
             'union' => null,
             'unionTypes' => $this->unionTypes(),
             'selectablePosts' => $this->selectablePosts(),
+            'mediaItems' => $this->mediaItems(),
+            'currentMediaIds' => [],
         ]);
     }
 
@@ -84,6 +87,13 @@ class UnionController extends Controller
             'union' => $union->load(['commissions.tasks', 'rules', 'minutes', 'educations', 'prices', 'selectedPosts']),
             'unionTypes' => $this->unionTypes(),
             'selectablePosts' => $this->selectablePosts(),
+            'mediaItems' => $this->mediaItems(),
+            'currentMediaIds' => [
+                'cover_image' => Media::query()->where('path', $union->cover_image)->value('id'),
+                'logo' => Media::query()->where('path', $union->logo)->value('id'),
+                'manager_image' => Media::query()->where('path', $union->manager_image)->value('id'),
+                'price_list_image' => Media::query()->where('path', $union->price_list_image)->value('id'),
+            ],
         ]);
     }
 
@@ -333,6 +343,11 @@ class UnionController extends Controller
     private function selectablePosts()
     {
         return Post::query()->published()->editorial()->orderByDesc('published_at')->orderBy('title')->take(200)->get(['id', 'title', 'published_at']);
+    }
+
+    private function mediaItems()
+    {
+        return Media::query()->images()->latest()->take(200)->get();
     }
 
     private function storeImage(Request $request, string $field, string $directory): ?string
