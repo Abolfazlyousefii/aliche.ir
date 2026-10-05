@@ -127,6 +127,24 @@ class TourismDirectoryTest extends TestCase
             ->assertDontSee('pagination', false);
     }
 
+    public function test_related_places_use_the_same_valid_image_contract_as_the_directory(): void
+    {
+        Storage::disk('public')->put('tourism/cards/related.jpg', 'image');
+
+        $current = $this->place('مکان اصلی', 'current-place', 'nature');
+        $this->place('مکان مرتبط', 'related-place', 'nature', [
+            'image' => 'tourism/cards/related.jpg',
+            'featured_image' => 'assets/img/asnaf-gorgan-default.jpg',
+        ]);
+
+        $url = route('media.public.legacy', ['path' => 'tourism/cards/related.jpg']);
+
+        $this->get(route('tourism.show', $current->slug))
+            ->assertOk()
+            ->assertSee('مکان‌های مرتبط')
+            ->assertSee($url, false);
+    }
+
     private function place(string $title, string $slug, string $type, array $attributes = []): TourismPlace
     {
         return TourismPlace::query()->create(array_merge([

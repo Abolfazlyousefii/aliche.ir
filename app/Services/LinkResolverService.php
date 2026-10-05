@@ -16,7 +16,7 @@ class LinkResolverService
         $type = (string) $type;
 
         if ($type === 'custom') {
-            return filled($url) ? (string) $url : '#';
+            return $this->normalizeCustomUrl($url);
         }
 
         $archiveRoutes = [
@@ -64,7 +64,46 @@ class LinkResolverService
             return $this->safeRoute($detailRoutes[$type], $model->getRouteKey());
         }
 
-        return filled($url) ? (string) $url : '#';
+        return $this->normalizeCustomUrl($url);
+    }
+
+    private function normalizeCustomUrl(?string $url): string
+    {
+        $url = trim((string) $url);
+
+        if ($url === '') {
+            return '#';
+        }
+
+        $parts = parse_url($url);
+        if ($parts === false) {
+            return '#';
+        }
+
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+        $host = strtolower((string) ($parts['host'] ?? ''));
+
+        if (in_array($scheme, ['http', 'https'], true) && in_array($host, [
+            'aliche.ir',
+            'www.aliche.ir',
+            'localhost',
+            '127.0.0.1',
+        ], true)) {
+            $path = '/'.ltrim((string) ($parts['path'] ?? '/'), '/');
+            $resolved = url($path);
+
+            if (filled($parts['query'] ?? null)) {
+                $resolved .= '?'.$parts['query'];
+            }
+
+            if (filled($parts['fragment'] ?? null)) {
+                $resolved .= '#'.$parts['fragment'];
+            }
+
+            return $resolved;
+        }
+
+        return $url;
     }
 
     public function safeRoute(string $name, mixed $parameters = []): string
