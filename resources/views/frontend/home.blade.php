@@ -156,7 +156,7 @@
             'title' => $system->title,
             'description' => $plain($system->short_description ?: $system->description, 120),
             'url' => $publicLink ?: route('systems.show', $system->slug),
-            'target' => $publicLink ? ($system->target ?: '_blank') : '_self',
+            'target' => $publicLink && in_array($system->target, \App\Models\System::TARGETS, true) ? $system->target : '_self',
             'label' => $publicLink ? 'ورود به سامانه' : 'مشاهده جزئیات',
         ];
     })->take(6)->values();
@@ -183,9 +183,21 @@
     $videoFallbacks = collect(['گزارش تصویری از خدمات اتاق اصناف مرکز استان گلستان به کسبه شهرستان', 'راهنمای مراحل صدور و تمدید پروانه کسب', 'آموزش احکام تجارت برای متقاضیان', 'بازدید میدانی بازرسان از واحدهای صنفی گرگان', 'نشست هماهنگی اتحادیه‌های صنفی استان گلستان']);
     $galleryFallbacks = collect(['نمایی از ساختمان و مراجعه حضوری فعالان صنفی', 'جلسه هم‌اندیشی اتحادیه‌های صنفی استان گلستان', 'ارائه خدمات مشاوره‌ای به متقاضیان پروانه کسب', 'برگزاری دوره آموزشی احکام تجارت و کسب‌وکار', 'پیگیری طرح‌های نظارتی بازار در استان گلستان', 'بخشنامه‌ها و دستورالعمل‌های جدید صنفی', 'بازار سنتی گرگان و اصناف قدیمی شهر', 'نمایشگاه صنایع دستی و سوغات استان گلستان']);
     $followTopicSettings = collect($sectionSetting('systems', 'topics', []));
+    $safeHomeLink = function ($value, string $fallback): string {
+        $safe = \App\Models\System::normalizePublicLink(is_string($value) ? $value : null);
+
+        if ($safe === null) {
+            return $fallback;
+        }
+
+        return str_starts_with($safe, '/') ? url($safe) : $safe;
+    };
     $followTopics = $followTopicSettings->map(fn ($topic) => is_array($topic) ? $topic : ['title' => $topic, 'url' => $servicesUrl])
         ->filter(fn ($topic) => filled($topic['title'] ?? null))
-        ->map(fn ($topic) => ['title' => $topic['title'], 'url' => $topic['url'] ?? $servicesUrl])
+        ->map(fn ($topic) => [
+            'title' => $topic['title'],
+            'url' => $safeHomeLink($topic['url'] ?? null, $servicesUrl),
+        ])
         ->values();
     if ($followTopics->isEmpty()) {
         $followTopics = collect($serviceItems)->concat($systems ?? collect())->concat($announcements ?? collect())
