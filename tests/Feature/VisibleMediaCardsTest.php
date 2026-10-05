@@ -55,7 +55,7 @@ class VisibleMediaCardsTest extends TestCase
 
         $this->get(route('commissions.index'))
             ->assertOk()
-            ->assertSee('commission-list-media', false)
+            ->assertSee('commission-directory-card__media has-image', false)
             ->assertSee($commission->image_url, false)
             ->assertSee('کمیسیون آزمون');
     }
