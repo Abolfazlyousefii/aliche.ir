@@ -76,7 +76,10 @@ class Gallery extends Model
             return true;
         }
 
-        return PublicFileUrl::exists(PublicFileUrl::normalizeStoragePath($path));
+        $normalized = PublicFileUrl::normalizeStoragePath($path);
+        $publicFile = public_path(str_replace('/', DIRECTORY_SEPARATOR, $normalized));
+
+        return is_file($publicFile) || PublicFileUrl::exists($normalized);
     }
 
     public function getFeaturedImageAttribute(): ?string
