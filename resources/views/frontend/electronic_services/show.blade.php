@@ -24,7 +24,7 @@
     <article class="portal-detail-main">
       @if ($service->image)
         <figure class="portal-detail-cover">
-          <img src="{{ image_url($service->image) }}" alt="{{ $service->title }}" loading="eager" fetchpriority="high" decoding="async">
+          <img src="{{ $service->image_url }}" alt="{{ $service->title }}" loading="eager" fetchpriority="high" decoding="async">
         </figure>
       @endif
 
