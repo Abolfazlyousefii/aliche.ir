@@ -126,7 +126,15 @@ class SystemController extends Controller
             'short_description' => ['nullable', 'string', 'max:1000'],
             'icon' => ['nullable', 'string', 'max:255'],
             'image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
-            'image_media_id' => ['nullable', 'integer', 'exists:media,id'],
+            'image_media_id' => [
+                'nullable',
+                'integer',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (filled($value) && ! Media::query()->images()->whereKey($value)->exists()) {
+                        $fail('تصویر انتخاب‌شده از کتابخانه معتبر نیست.');
+                    }
+                },
+            ],
             'link' => [
                 'nullable',
                 'string',
@@ -137,7 +145,12 @@ class SystemController extends Controller
                     }
                 },
             ],
-            'category_id' => ['nullable', 'exists:categories,id'],
+            'category_id' => [
+                'nullable',
+                Rule::exists('categories', 'id')->where(fn ($query) => $query
+                    ->where('type', 'system')
+                    ->where('is_active', true)),
+            ],
             'target' => ['required', Rule::in(System::TARGETS)],
             'status' => ['required', Rule::in(app(ContentApprovalService::class)->allowedStatusesFor($request->user(), ['systems.approve', 'systems.publish']))],
             'published_at' => ['nullable', 'date'],
