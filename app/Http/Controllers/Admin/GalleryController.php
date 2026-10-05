@@ -105,6 +105,7 @@ class GalleryController extends Controller
             'statusLabels' => Gallery::statusLabels(),
             'displayLocationLabels' => Gallery::displayLocationLabels(),
             'mediaItems' => Media::query()->images()->latest()->take(200)->get(),
+            'currentCoverMediaId' => Media::query()->where('path', $gallery->cover_image)->value('id'),
         ]);
     }
 
@@ -158,6 +159,7 @@ class GalleryController extends Controller
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('galleries', 'slug')->ignore($gallery?->id)],
             'description' => ['nullable', 'string'],
             'cover_image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
+            'cover_image_media_id' => ['nullable', 'integer', 'exists:media,id'],
             'category_id' => ['nullable', 'exists:categories,id'],
             'union_id' => ['nullable', 'exists:unions,id'],
             'display_location' => ['required', Rule::in(['home', 'union', 'both'])],
