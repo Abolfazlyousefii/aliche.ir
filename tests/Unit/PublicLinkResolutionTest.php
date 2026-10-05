@@ -53,4 +53,18 @@ class PublicLinkResolutionTest extends TestCase
         $this->assertNull($placeholder->public_link);
         $this->assertNull($example->public_link);
     }
+
+    public function test_system_link_normalization_allows_http_https_and_internal_paths_only(): void
+    {
+        config(['app.url' => 'https://gorganasnaf.ir']);
+
+        $this->assertSame('https://service.test/login', System::normalizePublicLink('https://service.test/login'));
+        $this->assertSame('/internal/system', System::normalizePublicLink('/internal/system'));
+        $this->assertSame('https://gorganasnaf.ir/internal/system', (new System(['link' => '/internal/system']))->public_link);
+
+        $this->assertNull(System::normalizePublicLink('javascript:alert(1)'));
+        $this->assertNull(System::normalizePublicLink('ftp://service.test/file'));
+        $this->assertNull(System::normalizePublicLink('//evil.test/path'));
+        $this->assertNull(System::normalizePublicLink('https://example.com/system'));
+    }
 }
