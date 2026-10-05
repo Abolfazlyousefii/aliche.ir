@@ -73,6 +73,23 @@ class TourismBackendRegressionTest extends TestCase
         $this->assertDatabaseMissing('tourism_places', ['slug' => 'tourism-unsafe-map']);
     }
 
+    public function test_legacy_unsafe_map_url_is_not_exposed_by_model(): void
+    {
+        $place = TourismPlace::query()->create([
+            'title' => 'مکان قدیمی',
+            'slug' => 'legacy-unsafe-tourism-map',
+            'tourism_type' => 'nature',
+            'type' => 'nature',
+            'map_url' => 'javascript:alert(1)',
+            'status' => 'draft',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+
+        $this->assertNull($place->map_url);
+        $this->assertSame('javascript:alert(1)', $place->getRawOriginal('map_url'));
+    }
+
     public function test_valid_category_media_gallery_and_map_are_persisted(): void
     {
         $this->signInAsSuperAdmin();
