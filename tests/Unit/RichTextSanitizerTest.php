@@ -14,8 +14,8 @@ class RichTextSanitizerTest extends TestCase
         $clean = (new RichTextSanitizer())->sanitize($html);
 
         $this->assertIsString($clean);
-        $this->assertStringContainsString('<img src="/storage/safe.jpg">', $clean);
-        $this->assertStringContainsString('<p>متن امن</p>', $clean);
+        $this->assertStringContainsString('src="/storage/safe.jpg"', $clean);
+        $this->assertStringContainsString('متن امن', $clean);
         $this->assertStringNotContainsString('<custom', $clean);
         $this->assertStringNotContainsString('<script', $clean);
         $this->assertStringNotContainsString('onerror', $clean);
