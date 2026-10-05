@@ -102,7 +102,7 @@ class Media extends Model
             [Commission::class, ['description', 'attachments']],
             [System::class, ['description']],
             [TourismPlace::class, ['description', 'gallery']],
-            [GuildUnion::class, ['description', 'manager_description', 'settings', 'president_buttons']],
+            [GuildUnion::class, ['description', 'settings', 'president_buttons']],
             [HomeSection::class, ['content', 'settings']],
         ];
 
