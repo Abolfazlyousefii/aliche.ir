@@ -135,15 +135,56 @@ class TourismPlaceController extends Controller
             'description' => ['nullable', 'string'],
             'short_description' => ['nullable', 'string', 'max:1000'],
             'featured_image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
+            'featured_image_media_id' => [
+                'nullable',
+                'integer',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (filled($value) && ! Media::query()->images()->whereKey($value)->exists()) {
+                        $fail('تصویر شاخص انتخاب‌شده از کتابخانه معتبر نیست.');
+                    }
+                },
+            ],
             'gallery_images' => ['nullable', 'array'],
             'gallery_images.*' => ['bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
-            'category_id' => ['nullable', 'exists:categories,id'],
+            'gallery_images_media_ids' => ['nullable', 'array'],
+            'gallery_images_media_ids.*' => [
+                'integer',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! Media::query()->images()->whereKey($value)->exists()) {
+                        $fail('یکی از تصاویر انتخاب‌شده برای گالری معتبر نیست.');
+                    }
+                },
+            ],
+            'category_id' => [
+                'nullable',
+                Rule::exists('categories', 'id')->where(fn ($query) => $query
+                    ->where('type', 'tourism')
+                    ->where('is_active', true)),
+            ],
             'badge' => ['nullable', 'string', 'max:255'],
             'image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
+            'image_media_id' => [
+                'nullable',
+                'integer',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (filled($value) && ! Media::query()->images()->whereKey($value)->exists()) {
+                        $fail('تصویر کارت انتخاب‌شده از کتابخانه معتبر نیست.');
+                    }
+                },
+            ],
             'location' => ['nullable', 'string', 'max:255'],
             'tourism_type' => ['required', Rule::in(TourismPlace::TYPES)],
             'address' => ['nullable', 'string'],
-            'map_url' => ['nullable', 'url', 'max:500'],
+            'map_url' => [
+                'nullable',
+                'string',
+                'max:500',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (filled($value) && TourismPlace::normalizeMapUrl((string) $value) === null) {
+                        $fail('لینک نقشه باید یک آدرس معتبر http یا https باشد.');
+                    }
+                },
+            ],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'phone' => ['nullable', 'string', 'max:255'],
@@ -161,10 +202,13 @@ class TourismPlaceController extends Controller
             'description' => 'توضیحات',
             'short_description' => 'توضیح کوتاه',
             'featured_image' => 'تصویر شاخص',
+            'featured_image_media_id' => 'تصویر شاخص از کتابخانه',
             'gallery_images' => 'گالری تصاویر',
+            'gallery_images_media_ids' => 'تصاویر گالری از کتابخانه',
             'category_id' => 'دسته‌بندی',
             'badge' => 'برچسب',
             'image' => 'تصویر',
+            'image_media_id' => 'تصویر کارت از کتابخانه',
             'location' => 'موقعیت',
             'tourism_type' => 'نوع گردشگری',
             'address' => 'آدرس',
@@ -205,7 +249,7 @@ class TourismPlaceController extends Controller
             'tourism_type' => $validated['tourism_type'] ?? 'nature',
             'type' => $validated['tourism_type'] ?? 'nature',
             'address' => $validated['address'] ?? null,
-            'map_url' => $validated['map_url'] ?? null,
+            'map_url' => TourismPlace::normalizeMapUrl($validated['map_url'] ?? null),
             'latitude' => $validated['latitude'] ?? null,
             'longitude' => $validated['longitude'] ?? null,
             'phone' => $validated['phone'] ?? null,
