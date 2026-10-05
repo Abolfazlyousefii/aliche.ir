@@ -26,7 +26,7 @@
         <div class="system-directory-actions">
             <a class="system-directory-details" href="{{ route('systems.show', $system) }}">جزئیات</a>
             @if($entryLink)
-                <a class="system-directory-entry" href="{{ $entryLink['url'] }}" @if($entryLink['external']) target="_blank" rel="noopener noreferrer" @endif>
+                <a class="system-directory-entry" href="{{ $entryLink['url'] }}" target="{{ $entryLink['target'] }}" @if($entryLink['target'] === '_blank') rel="noopener noreferrer" @endif>
                     <span>ورود به سامانه</span>
                     @if($entryLink['external'])<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 5H5v10h10v-3M11 4h5v5M16 4l-7 7"/></svg>@endif
                 </a>
