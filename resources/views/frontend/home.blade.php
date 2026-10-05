@@ -1034,4 +1034,59 @@
 </section>
 
 </main>
+
+@push('scripts')
+<script>
+(function () {
+    const section = document.querySelector('[data-home-unions-section]');
+    if (!section) return;
+
+    const input = section.querySelector('[data-home-union-search]');
+    const items = Array.from(section.querySelectorAll('[data-home-union-item]'));
+    const emptyState = section.querySelector('[data-home-union-empty]');
+    const scrollArea = section.querySelector('[data-home-union-scroll]');
+
+    const normalizeUnionSearchText = (value) => String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[ي]/g, 'ی')
+        .replace(/[ك]/g, 'ک')
+        .replace(/\s+/g, ' ');
+
+    const applyUnionSearch = () => {
+        const query = normalizeUnionSearchText(input ? input.value : '');
+        let visibleCount = 0;
+
+        items.forEach((item, index) => {
+            const name = normalizeUnionSearchText(
+                item.getAttribute('data-home-union-name') || item.textContent
+            );
+            const visible = query !== '' ? name.includes(query) : index < 10;
+
+            item.hidden = !visible;
+            item.style.display = visible ? '' : 'none';
+
+            if (visible) {
+                visibleCount += 1;
+            }
+        });
+
+        if (emptyState) {
+            emptyState.hidden = visibleCount > 0;
+            emptyState.style.display = visibleCount > 0 ? 'none' : '';
+        }
+
+        if (scrollArea) {
+            scrollArea.scrollTop = 0;
+        }
+    };
+
+    input?.addEventListener('input', applyUnionSearch);
+    input?.addEventListener('search', applyUnionSearch);
+
+    applyUnionSearch();
+})();
+</script>
+@endpush
+
 @endsection
