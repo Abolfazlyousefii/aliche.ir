@@ -209,6 +209,10 @@ class TourismPlace extends Model
             return null;
         }
 
+        if (filter_var($value, FILTER_VALIDATE_URL) === false) {
+            return null;
+        }
+
         $scheme = strtolower((string) parse_url($value, PHP_URL_SCHEME));
 
         return in_array($scheme, ['http', 'https'], true) ? $value : null;
