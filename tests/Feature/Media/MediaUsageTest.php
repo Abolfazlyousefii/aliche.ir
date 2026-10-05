@@ -4,6 +4,7 @@ namespace Tests\Feature\Media;
 
 use App\Models\Post;
 use App\Models\TourismPlace;
+use App\Models\UnionType;
 use App\Services\MediaLibraryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -60,6 +61,24 @@ class MediaUsageTest extends TestCase
             'body' => '<p><img src="/storage/'.$media->path.'" alt=""></p>',
             'type' => 'news',
             'status' => 'draft',
+            'is_active' => true,
+        ]);
+
+        $this->assertTrue($media->fresh()->inUse());
+    }
+
+    public function test_union_type_image_reference_protects_media_from_deletion(): void
+    {
+        $media = app(MediaLibraryService::class)->storeImage(
+            UploadedFile::fake()->image('union-type.jpg', 640, 360),
+            'union-types/images'
+        );
+
+        UnionType::query()->create([
+            'title' => 'نوع اتحادیه آزمون',
+            'slug' => 'media-usage-union-type',
+            'image' => $media->path,
+            'sort_order' => 0,
             'is_active' => true,
         ]);
 
