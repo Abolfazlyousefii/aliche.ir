@@ -172,9 +172,9 @@ class HomeController extends Controller
             $importantAnnouncements = $announcements;
         }
 
-        // One bounded query powers the complete homepage union-news section.
-        // Selecting only rendered columns avoids loading large post bodies on every homepage request.
-        $unionNewsPosts = Post::query()
+        // The homepage union section needs one latest union-related story plus
+        // the active union directory. Keep both queries bounded to rendered fields.
+        $featuredUnionNews = Post::query()
             ->published()
             ->editorial()
             ->whereNotNull('union_id')
@@ -194,11 +194,20 @@ class HomeController extends Controller
             ])
             ->latest('published_at')
             ->latest('id')
-            ->take(9)
-            ->get();
+            ->first();
 
-        $featuredUnionNews = $unionNewsPosts->first();
-        $unionNewsList = $unionNewsPosts->skip(1)->take(8)->values();
+        $homeUnions = GuildUnion::query()
+            ->active()
+            ->select([
+                'id',
+                'title',
+                'name',
+                'slug',
+                'logo',
+            ])
+            ->orderBy('title')
+            ->orderBy('id')
+            ->get();
 
         $electronicServices = ElectronicService::query()
             ->published()
@@ -320,9 +329,8 @@ class HomeController extends Controller
             'sidePosts',
             'importantAnnouncements',
             'announcements',
-            'unionNewsPosts',
             'featuredUnionNews',
-            'unionNewsList',
+            'homeUnions',
             'electronicServices',
             'galleries',
             'latestGalleries',
