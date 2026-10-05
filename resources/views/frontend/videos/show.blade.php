@@ -21,19 +21,19 @@
       <div class="video-player-wrap">
         <div class="video-player">
           @if($video->video_type === 'upload' && $video->video_file)
-            <video class="video-player" controls poster="{{ image_url($video->cover_image) }}">
-              <source src="{{ image_url($video->video_file, '') }}" type="{{ $video->video_mime_type }}">
+            <video class="video-player" controls poster="{{ $video->cover_image_url }}">
+              <source src="{{ $video->video_file_url }}" type="{{ $video->video_mime_type }}">
             </video>
           @elseif($video->video_type === 'aparat' && $video->aparat_embed_url)
             <iframe class="video-player" src="{{ $video->aparat_embed_url }}" title="{{ $video->title }}" allowfullscreen loading="lazy"></iframe>
           @elseif($video->aparat_url)
             <a href="{{ $video->aparat_url }}" target="_blank" rel="noopener">
-              <img src="{{ image_url($video->cover_image) }}" alt="{{ $video->title }}" loading="eager" fetchpriority="high" decoding="async"/>
+              <img src="{{ $video->cover_image_url }}" alt="{{ $video->title }}" loading="eager" fetchpriority="high" decoding="async"/>
               <div class="video-player-overlay"></div>
               <button class="video-big-play" type="button" aria-label="مشاهده ویدیو"></button>
             </a>
           @else
-            <img src="{{ image_url($video->cover_image) }}" alt="{{ $video->title }}" loading="eager" fetchpriority="high" decoding="async"/>
+            <img src="{{ $video->cover_image_url }}" alt="{{ $video->title }}" loading="eager" fetchpriority="high" decoding="async"/>
             <div class="video-player-overlay"></div>
             <button class="video-big-play" type="button" aria-label="ویدیویی ثبت نشده است"></button>
           @endif
@@ -60,7 +60,7 @@
         <div class="video-related-list">
           @forelse($relatedVideos as $relatedVideo)
             <a href="{{ route('videos.show', $relatedVideo->slug) }}" class="video-related-item">
-              <div class="vri-thumb"><img src="{{ image_url($relatedVideo->cover_image) }}" alt="{{ $relatedVideo->title }}" loading="lazy" decoding="async"/><span class="vri-play-icon"></span></div>
+              <div class="vri-thumb"><img src="{{ $relatedVideo->cover_image_url }}" alt="{{ $relatedVideo->title }}" loading="lazy" decoding="async"/><span class="vri-play-icon"></span></div>
               <div class="vri-body">
                 <strong>{{ $relatedVideo->title }}</strong>
                 <span>{{ $relatedVideo->type_label }}</span>
