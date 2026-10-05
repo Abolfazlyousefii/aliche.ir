@@ -6,11 +6,18 @@
 @endphp
 <article class="system-directory-card">
     <header class="system-directory-card-header">
-        <span class="system-directory-icon">
-            @include('frontend.systems.partials.icon', ['system' => $system])
+        <span class="system-directory-icon {{ $system->image ? 'has-image' : '' }}">
+            @if($system->image)
+                <img src="{{ $system->image_url }}" alt="" loading="lazy" decoding="async">
+            @else
+                @include('frontend.systems.partials.icon', ['system' => $system])
+            @endif
         </span>
         <div class="system-directory-identity">
-            <span class="system-directory-category">{{ $validCategory?->title ?: 'سامانه صنفی' }}</span>
+            <div class="system-directory-meta">
+                <span class="system-directory-category">{{ $validCategory?->title ?: 'سامانه صنفی' }}</span>
+                <span class="system-directory-access {{ $entryLink ? 'is-direct' : 'is-info' }}">{{ $entryLink ? 'ورود مستقیم' : 'اطلاعات' }}</span>
+            </div>
             <h3 class="system-directory-title">{{ $system->title }}</h3>
         </div>
     </header>
