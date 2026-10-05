@@ -14,7 +14,10 @@ class CommissionController extends Controller
     {
         $commissions = Commission::query()
             ->published()
-            ->withCount(['publishedSessions as sessions_count'])
+            ->withCount([
+                'publishedSessions as sessions_count',
+                'activeTasks as tasks_count',
+            ])
             ->orderBy('sort_order')
             ->latest()
             ->paginate(12)
