@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Admin\Concerns\SelectsMedia;
 use App\Http\Controllers\Controller;
 use App\Models\Commission;
+use App\Models\Media;
 use App\Rules\SafeImageUpload;
 use App\Services\ContentApprovalService;
 use App\Services\SlugService;
@@ -42,7 +43,7 @@ class CommissionController extends Controller
 
     public function create(): View
     {
-        return view('admin.commissions.create', ['statusLabels' => Commission::statusLabels()]);
+        return view('admin.commissions.create', $this->formData());
     }
 
     public function store(Request $request): RedirectResponse
@@ -74,7 +75,11 @@ class CommissionController extends Controller
     {
         $commission->load('tasks');
 
-        return view('admin.commissions.edit', ['commission' => $commission, 'statusLabels' => Commission::statusLabels()]);
+        return view('admin.commissions.edit', [
+            ...$this->formData(),
+            'commission' => $commission,
+            'currentMediaId' => Media::query()->where('path', $commission->image)->value('id'),
+        ]);
     }
 
     public function update(Request $request, Commission $commission): RedirectResponse
@@ -120,9 +125,10 @@ class CommissionController extends Controller
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('commissions', 'slug')->ignore($commission?->id)],
             'description' => ['nullable', 'string'],
             'image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
+            'image_media_id' => ['nullable', 'integer', 'exists:media,id'],
             'members' => ['nullable', 'string'],
             'attachments' => ['nullable', 'array'],
-            'attachments.*' => ['file', 'max:10240'],
+            'attachments.*' => ['bail', 'file', 'mimes:pdf,doc,docx,xls,xlsx,ppt,pptx', 'max:10240'],
             'existing_attachments' => ['nullable', 'array'],
             'status' => ['required', Rule::in(app(ContentApprovalService::class)->allowedStatusesFor($request->user(), ['commissions.approve', 'commissions.publish']))],
             'published_at' => ['nullable', 'date'],
@@ -225,6 +231,15 @@ class CommissionController extends Controller
         }
 
         $commission->tasks()->whereNotIn('id', $keptIds)->delete();
+    }
+
+    private function formData(): array
+    {
+        return [
+            'statusLabels' => Commission::statusLabels(),
+            'mediaItems' => Media::query()->images()->latest()->take(200)->get(),
+            'currentMediaId' => null,
+        ];
     }
 
     private function uniqueSlug(string $value, ?Commission $commission = null): string
