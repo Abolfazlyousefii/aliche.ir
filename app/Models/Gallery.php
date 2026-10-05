@@ -43,15 +43,40 @@ class Gallery extends Model
 
     public function getDisplayCoverPathAttribute(): ?string
     {
-        if (filled($this->cover_image)) {
-            return $this->cover_image;
-        }
+        $candidates = collect([$this->cover_image]);
 
         if ($this->relationLoaded('images')) {
-            return $this->images->first()?->image;
+            $candidates = $candidates->concat($this->images->pluck('image'));
         }
 
-        return null;
+        return $candidates
+            ->filter(fn ($path) => filled($path))
+            ->first(fn ($path) => $this->isUsablePublicImagePath((string) $path));
+    }
+
+    private function isUsablePublicImagePath(string $path): bool
+    {
+        $path = trim($path);
+
+        if ($path === '') {
+            return false;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            $localPath = PublicFileUrl::sameApplicationStoragePath($path);
+
+            return $localPath === null || PublicFileUrl::exists($localPath);
+        }
+
+        if (str_starts_with($path, '/')
+            && ! str_starts_with($path, '/storage/')
+            && ! str_starts_with($path, '/media/')
+            && ! str_starts_with($path, '/media-files/')
+            && ! str_starts_with($path, '/uploaded-media/')) {
+            return true;
+        }
+
+        return PublicFileUrl::exists(PublicFileUrl::normalizeStoragePath($path));
     }
 
     public function getFeaturedImageAttribute(): ?string
