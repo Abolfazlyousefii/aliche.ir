@@ -482,9 +482,24 @@
         white-space: nowrap;
     }
     .home-union-news .home-union-directory__arrow {
+        width: 18px;
+        height: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         color: #9aa7af;
-        font-size: 15px;
         line-height: 1;
+    }
+    .home-union-news .home-union-directory__arrow svg {
+        width: 14px;
+        height: 14px;
+        display: block;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        direction: ltr;
     }
     .home-union-news .home-union-directory__empty {
         padding: 22px 12px;
@@ -761,9 +776,8 @@
 <span>{{ fa_number(($homeUnions ?? collect())->count()) }} اتحادیه فعال</span>
 </div>
 <label class="home-union-directory__search">
-<span class="sr-only">جستجوی اتحادیه</span>
 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
-<input type="search" autocomplete="off" placeholder="جستجوی نام اتحادیه..." data-home-union-search>
+<input type="search" autocomplete="off" aria-label="جستجوی اتحادیه" placeholder="جستجوی نام اتحادیه..." data-home-union-search>
 </label>
 </div>
 <div class="home-union-directory__scroll" data-home-union-scroll>
@@ -789,7 +803,7 @@
 @endif
 </span>
 <strong>{{ $homeUnionTitle }}</strong>
-<span class="home-union-directory__arrow" aria-hidden="true">‹</span>
+<span class="home-union-directory__arrow" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M13 4.5 7.5 10 13 15.5"/></svg></span>
 </a>
 </li>
 @empty

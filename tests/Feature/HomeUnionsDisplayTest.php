@@ -28,6 +28,9 @@ class HomeUnionsDisplayTest extends TestCase
             ->assertOk()
             ->assertSee('اتحادیه‌های صنفی گلستان')
             ->assertSee('data-home-union-search', false)
+            ->assertSee('aria-label="جستجوی اتحادیه"', false)
+            ->assertSee('M13 4.5 7.5 10 13 15.5', false)
+            ->assertDontSee('<span class="sr-only">جستجوی اتحادیه</span>', false)
             ->assertSee('مشاهده همه اتحادیه‌ها');
 
         $response->assertSeeInOrder([
