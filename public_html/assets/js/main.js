@@ -1547,6 +1547,32 @@
     updateUnionPreviewFromItem(preferred);
   }
 
+  const homeUnionsSection = qs('[data-home-unions-section]');
+  if (homeUnionsSection) {
+    const input = qs('[data-home-union-search]', homeUnionsSection);
+    const items = qsa('[data-home-union-item]', homeUnionsSection);
+    const emptyState = qs('[data-home-union-empty]', homeUnionsSection);
+    const scrollArea = qs('[data-home-union-scroll]', homeUnionsSection);
+
+    const applyHomeUnionFilter = () => {
+      const query = normalize(input?.value || '');
+      let visibleCount = 0;
+
+      items.forEach((item, index) => {
+        const name = normalize(item.getAttribute('data-home-union-name') || item.textContent);
+        const visible = query ? name.includes(query) : index < 10;
+        item.hidden = !visible;
+        if (visible) visibleCount += 1;
+      });
+
+      if (emptyState) emptyState.hidden = visibleCount > 0;
+      if (scrollArea) scrollArea.scrollTop = 0;
+    };
+
+    input?.addEventListener('input', applyHomeUnionFilter);
+    applyHomeUnionFilter();
+  }
+
   const representativesSection = qs('#representatives');
   if (representativesSection) {
     const selectPreviewItem = (event) => {
