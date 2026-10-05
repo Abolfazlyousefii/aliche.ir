@@ -42,6 +42,11 @@ class HomeUnionsDisplayTest extends TestCase
         $response
             ->assertSee('data-home-union-index="10"', false)
             ->assertSee('data-home-union-index="11"', false);
+
+        $this->assertMatchesRegularExpression(
+            '/data-home-union-index="10"[^>]*hidden/s',
+            $response->getContent()
+        );
     }
 
     public function test_home_union_feature_keeps_the_latest_published_union_news(): void
