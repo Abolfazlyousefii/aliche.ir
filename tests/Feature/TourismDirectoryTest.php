@@ -145,6 +145,27 @@ class TourismDirectoryTest extends TestCase
             ->assertSee($url, false);
     }
 
+    public function test_related_places_fill_remaining_slots_from_other_categories(): void
+    {
+        $current = $this->place('مکان اصلی', 'related-fill-current', 'nature', ['category_id' => null]);
+        $sameCategory = $this->place('مرتبط اول', 'related-fill-one', 'nature');
+        $second = $this->place('مرتبط دوم', 'related-fill-two', 'historic');
+        $third = $this->place('مرتبط سوم', 'related-fill-three', 'shopping');
+        $fourth = $this->place('مرتبط چهارم', 'related-fill-four', 'restaurant');
+
+        $this->get(route('tourism.show', $current->slug))
+            ->assertOk()
+            ->assertViewHas('relatedPlaces', function ($places) use ($sameCategory, $second, $third, $fourth) {
+                return $places->count() === 4
+                    && $places->pluck('id')->sort()->values()->all() === collect([
+                        $sameCategory->id,
+                        $second->id,
+                        $third->id,
+                        $fourth->id,
+                    ])->sort()->values()->all();
+            });
+    }
+
     private function place(string $title, string $slug, string $type, array $attributes = []): TourismPlace
     {
         return TourismPlace::query()->create(array_merge([
