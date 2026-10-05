@@ -80,6 +80,7 @@ class ChamberMemberController extends Controller
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
             'position' => ['required', 'string', 'max:150'],
+            'bio' => ['nullable', 'string', 'max:2000'],
             'photo' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'photo_media_id' => ['nullable', 'integer', 'exists:media,id'],
             'sort_order' => ['nullable', 'integer', 'min:0'],

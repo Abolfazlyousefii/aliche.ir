@@ -64,10 +64,11 @@ class MediaControllersCrudRegressionTest extends TestCase
 
     public function test_chamber_member_and_union_type_crud(): void
     {
-        $memberPayload = ['first_name' => 'علی', 'last_name' => 'آزمون', 'position' => 'عضو', 'photo_media_id' => $this->media->id, 'sort_order' => 1, 'is_active' => '1'];
+        $memberPayload = ['first_name' => 'علی', 'last_name' => 'آزمون', 'position' => 'عضو', 'bio' => 'معرفی کوتاه عضو برای آزمون', 'photo_media_id' => $this->media->id, 'sort_order' => 1, 'is_active' => '1'];
         $this->post(route('admin.chamber_members.store'), $memberPayload)->assertRedirect();
         $member = ChamberMember::query()->sole();
         $this->assertSame($this->media->path, $member->photo);
+        $this->assertSame('معرفی کوتاه عضو برای آزمون', $member->bio);
         $this->patch(route('admin.chamber_members.update', $member), [...$memberPayload, 'position' => 'رئیس'])->assertRedirect();
         $this->assertSame('رئیس', $member->fresh()->position);
         $this->delete(route('admin.chamber_members.destroy', $member))->assertRedirect();
@@ -138,6 +139,45 @@ class MediaControllersCrudRegressionTest extends TestCase
 
         Storage::disk('public')->assertExists($this->media->path);
         $this->assertDatabaseHas('media', ['id' => $this->media->id]);
+    }
+
+    public function test_media_driven_forms_expose_picker_controls(): void
+    {
+        $position = AdvertisementPosition::query()->create([
+            'title' => 'بنر',
+            'key' => 'home-test',
+            'is_active' => true,
+        ]);
+
+        $this->get(route('admin.advertisements.create'))
+            ->assertOk()
+            ->assertSee('data-media-select-target="image_media_id"', false);
+
+        $this->get(route('admin.electronic_services.create'))
+            ->assertOk()
+            ->assertSee('data-media-select-target="image_media_id"', false);
+
+        $this->get(route('admin.videos.create'))
+            ->assertOk()
+            ->assertSee('data-media-select-target="cover_image_media_id"', false);
+
+        $this->get(route('admin.galleries.create'))
+            ->assertOk()
+            ->assertSee('data-media-select-target="cover_image_media_id"', false);
+
+        $this->assertNotNull($position->id);
+    }
+
+    public function test_uploaded_video_mime_matches_file_extension(): void
+    {
+        $video = new Video(['video_file' => 'videos/files/sample.webm']);
+        $this->assertSame('video/webm', $video->video_mime_type);
+
+        $video->video_file = 'videos/files/sample.mov';
+        $this->assertSame('video/quicktime', $video->video_mime_type);
+
+        $video->video_file = 'videos/files/sample.mp4';
+        $this->assertSame('video/mp4', $video->video_mime_type);
     }
 
     public function test_header_footer_site_settings_and_rich_text_upload(): void

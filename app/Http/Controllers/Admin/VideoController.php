@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Concerns\SelectsMedia;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\GuildUnion;
+use App\Models\Media;
 use App\Models\Video;
 use App\Rules\SafeImageUpload;
 use App\Services\ContentApprovalService;
@@ -64,6 +65,8 @@ class VideoController extends Controller
             'categories' => Category::query()->active()->where('type', 'video')->orderBy('sort_order')->orderBy('title')->get(),
             'statusLabels' => Video::statusLabels(),
             'typeLabels' => Video::typeLabels(),
+            'mediaItems' => Media::query()->images()->latest()->take(200)->get(),
+            'currentCoverMediaId' => null,
         ]);
     }
 
@@ -99,6 +102,8 @@ class VideoController extends Controller
             'categories' => Category::query()->active()->where('type', 'video')->orderBy('sort_order')->orderBy('title')->get(),
             'statusLabels' => Video::statusLabels(),
             'typeLabels' => Video::typeLabels(),
+            'mediaItems' => Media::query()->images()->latest()->take(200)->get(),
+            'currentCoverMediaId' => Media::query()->where('path', $video->cover_image)->value('id'),
         ]);
     }
 
@@ -157,6 +162,7 @@ class VideoController extends Controller
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('videos', 'slug')->ignore($video?->id)],
             'description' => ['nullable', 'string'],
             'cover_image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
+            'cover_image_media_id' => ['nullable', 'integer', 'exists:media,id'],
             'video_type' => ['required', Rule::in(Video::VIDEO_TYPES)],
             'video_file' => ['nullable', 'file', 'mimes:mp4,mov,avi,wmv,webm,mkv', 'max:102400'],
             'aparat_url' => ['nullable', 'url', 'max:500'],

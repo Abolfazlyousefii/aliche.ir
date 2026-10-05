@@ -15,7 +15,18 @@
         <div class="col-md-6"><label class="form-label" for="slug">نامک</label><input class="form-control" id="slug" name="slug" value="{{ old('slug') }}" dir="ltr"><small class="text-muted">اگر خالی بماند از عنوان ساخته می‌شود.</small></div>
         <div class="col-md-4"><label class="form-label" for="category_id">دسته‌بندی</label><select class="form-control" id="category_id" name="category_id"><option value="">بدون دسته‌بندی</option>@foreach ($categories as $category)<option value="{{ $category->id }}" @selected((string) old('category_id') === (string) $category->id)>{{ $category->title }}</option>@endforeach</select></div>
         <div class="col-md-4"><label class="form-label" for="icon">آیکن</label><input class="form-control" id="icon" name="icon" value="{{ old('icon') }}" placeholder="⚡ یا نام کلاس آیکن"></div>
-        <div class="col-md-4"><label class="form-label" for="image">تصویر</label><input class="form-control" id="image" name="image" type="file" accept="image/*"></div>
+        <div class="col-md-4">
+            <label class="form-label" for="image">تصویر</label>
+            <input class="form-control" id="image" name="image" type="file" accept="image/*" data-skip-media-picker>
+            <button class="admin-secondary-btn mt-2" type="button" data-media-select-target="image_media_id">انتخاب یا آپلود از کتابخانه</button>
+            <select class="d-none" name="image_media_id" id="image_media_id" aria-hidden="true" tabindex="-1">
+                <option value="">انتخاب تصویر از کتابخانه</option>
+                @foreach(($mediaItems ?? collect()) as $media)
+                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('image_media_id') === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
+                @endforeach
+            </select>
+            <div id="image_media_preview" class="mt-2"></div>
+        </div>
         <div class="col-md-4"><label class="form-label" for="link_type">نوع لینک</label><select class="form-control" id="link_type" name="link_type" required>@foreach ($linkTypeLabels as $value => $label)<option value="{{ $value }}" @selected(old('link_type', 'none') === $value)>{{ $label }}</option>@endforeach</select></div>
         <div class="col-md-5"><label class="form-label" for="link">لینک خدمت</label><input class="form-control" id="link" name="link" value="{{ old('link') }}" dir="ltr" placeholder="/services/example یا https://..."></div>
         <div class="col-md-3"><label class="form-label" for="target">نحوه باز شدن</label><select class="form-control" id="target" name="target" required>@foreach ($targetLabels as $value => $label)<option value="{{ $value }}" @selected(old('target', '_self') === $value)>{{ $label }}</option>@endforeach</select></div>
@@ -34,4 +45,21 @@
 @push('scripts')
 <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
 <script>document.querySelectorAll('.js-rich-editor').forEach((el) => ClassicEditor.create(el, {language: 'fa'}).catch(console.error));</script>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const select = document.getElementById('image_media_id');
+    const preview = document.getElementById('image_media_preview');
+    function renderPreview() {
+        const option = select && select.selectedOptions ? select.selectedOptions[0] : null;
+        const url = option ? option.dataset.url : '';
+        if (!preview) return;
+        preview.innerHTML = url ? '<img class="rounded" src="' + url + '" alt="پیش‌نمایش تصویر خدمت" style="width:100%;max-width:260px;height:150px;object-fit:cover">' : '';
+    }
+    if (select) select.addEventListener('change', renderPreview);
+    renderPreview();
+});
+</script>
 @endpush

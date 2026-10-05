@@ -23,7 +23,20 @@
         <div class="col-md-4"><label class="form-label" for="is_active">فعال</label><select class="form-control" id="is_active" name="is_active"><option value="1" @selected((string) old('is_active', (int) $gallery->is_active) === '1')>فعال</option><option value="0" @selected((string) old('is_active', (int) $gallery->is_active) === '0')>غیرفعال</option></select></div>
         <div class="col-12"><label class="form-label" for="description">توضیحات</label><textarea class="form-control js-rich-editor" id="description" name="description" rows="4">{{ old('description', $gallery->description) }}</textarea></div>
         <div class="col-12"><label class="form-label" for="rejected_reason">دلیل رد</label><textarea class="form-control" id="rejected_reason" name="rejected_reason" rows="2">{{ old('rejected_reason', $gallery->rejected_reason) }}</textarea></div>
-        <div class="col-md-6"><label class="form-label" for="cover_image">تصویر کاور جدید</label><input class="form-control" id="cover_image" name="cover_image" type="file" accept="image/*" data-skip-media-picker>@if($gallery->cover_image)<a class="d-inline-block mt-2" href="{{ $gallery->cover_image_url }}" target="_blank">مشاهده کاور فعلی</a>@endif</div>
+        <div class="col-md-6">
+            <label class="form-label" for="cover_image">تصویر کاور</label>
+            <input class="form-control" id="cover_image" name="cover_image" type="file" accept="image/*" data-skip-media-picker>
+            <button class="admin-secondary-btn mt-2" type="button" data-media-select-target="cover_image_media_id">انتخاب کاور از کتابخانه</button>
+            <select class="d-none" name="cover_image_media_id" id="cover_image_media_id" aria-hidden="true" tabindex="-1">
+                <option value="">بدون تغییر / انتخاب کاور</option>
+                @foreach ($mediaItems as $media)
+                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('cover_image_media_id', $currentCoverMediaId) === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
+                @endforeach
+            </select>
+            <div id="coverMediaPreview" class="mt-2">
+                @if($gallery->cover_image)<img src="{{ $gallery->cover_image_url }}" alt="{{ $gallery->title }}" class="rounded" style="width:100%;max-width:320px;height:160px;object-fit:cover">@endif
+            </div>
+        </div>
         <div class="col-md-6"><label class="form-label" for="images">افزودن تصاویر جدید</label><input class="form-control" id="images" name="images[]" type="file" accept="image/*" multiple data-skip-media-picker></div>
     </div>
 
@@ -79,6 +92,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     gallerySelect.addEventListener('change', renderPreview);
     renderPreview();
+
+    const coverSelect = document.getElementById('cover_image_media_id');
+    const coverPreview = document.getElementById('coverMediaPreview');
+    const renderCover = () => {
+        const option = coverSelect?.selectedOptions?.[0];
+        const url = option?.dataset?.url;
+        if (!coverPreview) return;
+        if (url) {
+            coverPreview.innerHTML = '<img src="' + url + '" alt="پیش‌نمایش کاور" class="rounded" style="width:100%;max-width:320px;height:160px;object-fit:cover">';
+        }
+    };
+    coverSelect?.addEventListener('change', renderCover);
+    renderCover();
 });
 </script>
 @endpush

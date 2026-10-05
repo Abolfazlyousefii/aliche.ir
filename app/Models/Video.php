@@ -99,6 +99,18 @@ class Video extends Model
         return self::statusLabels()[$this->status] ?? $this->status;
     }
 
+    public function getVideoMimeTypeAttribute(): string
+    {
+        return match (strtolower((string) pathinfo((string) $this->video_file, PATHINFO_EXTENSION))) {
+            'webm' => 'video/webm',
+            'mov' => 'video/quicktime',
+            'avi' => 'video/x-msvideo',
+            'wmv' => 'video/x-ms-wmv',
+            'mkv' => 'video/x-matroska',
+            default => 'video/mp4',
+        };
+    }
+
     public function getAparatEmbedUrlAttribute(): ?string
     {
         if (! $this->aparat_url) {

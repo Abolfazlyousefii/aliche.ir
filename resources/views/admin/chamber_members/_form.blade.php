@@ -5,6 +5,7 @@
     <div class="col-md-6"><label class="form-label" for="position">سمت</label><input class="form-control" id="position" name="position" value="{{ old('position', $member->position) }}" required></div>
     <div class="col-md-3"><label class="form-label" for="sort_order">ترتیب نمایش</label><input class="form-control" id="sort_order" name="sort_order" type="number" min="0" value="{{ old('sort_order', $member->sort_order ?? 0) }}"></div>
     <div class="col-md-3"><label class="form-label" for="is_active">وضعیت</label><select class="form-control" id="is_active" name="is_active"><option value="1" @selected((string) old('is_active', (int) $member->is_active) === '1')>فعال</option><option value="0" @selected((string) old('is_active', (int) $member->is_active) === '0')>غیرفعال</option></select></div>
+    <div class="col-12"><label class="form-label" for="bio">معرفی کوتاه</label><textarea class="form-control" id="bio" name="bio" rows="4" maxlength="2000" placeholder="معرفی کوتاه عضو، سوابق یا حوزه مسئولیت">{{ old('bio', $member->bio) }}</textarea></div>
     <div class="col-md-6">
         <label class="form-label" for="photo">عکس</label>
         <input class="form-control" id="photo" name="photo" type="file" accept="image/*" data-skip-media-picker>

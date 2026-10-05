@@ -22,7 +22,7 @@
         <div class="video-player">
           @if($video->video_type === 'upload' && $video->video_file)
             <video class="video-player" controls poster="{{ image_url($video->cover_image) }}">
-              <source src="{{ image_url($video->video_file, '') }}" type="video/mp4">
+              <source src="{{ image_url($video->video_file, '') }}" type="{{ $video->video_mime_type }}">
             </video>
           @elseif($video->video_type === 'aparat' && $video->aparat_embed_url)
             <iframe class="video-player" src="{{ $video->aparat_embed_url }}" title="{{ $video->title }}" allowfullscreen loading="lazy"></iframe>
