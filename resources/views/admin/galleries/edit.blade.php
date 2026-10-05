@@ -92,6 +92,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     gallerySelect.addEventListener('change', renderPreview);
     renderPreview();
+
+    const coverSelect = document.getElementById('cover_image_media_id');
+    const coverPreview = document.getElementById('coverMediaPreview');
+    const renderCover = () => {
+        const option = coverSelect?.selectedOptions?.[0];
+        const url = option?.dataset?.url;
+        if (!coverPreview) return;
+        if (url) {
+            coverPreview.innerHTML = '<img src="' + url + '" alt="پیش‌نمایش کاور" class="rounded" style="width:100%;max-width:320px;height:160px;object-fit:cover">';
+        }
+    };
+    coverSelect?.addEventListener('change', renderCover);
+    renderCover();
 });
 </script>
 @endpush
