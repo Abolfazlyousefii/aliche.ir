@@ -52,6 +52,27 @@
         @case('briefcase')
             <rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4h8v3M3 12h18M10 12v2h4v-2"/>
             @break
+        @case('news')
+            <path d="M4 5h13v14H4zM17 8h3v9a2 2 0 0 1-2 2h-1"/><path d="M7 9h7M7 13h7M7 16h4"/>
+            @break
+        @case('announcement')
+            <path d="M4 12h3l9-5v10l-9-5H4zM7 15l2 5"/>
+            @break
+        @case('minutes')
+            <rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M8 14h3M8 17h6"/>
+            @break
+        @case('prices')
+            <path d="M5 4h14v16H5zM8 8h8M8 12h5"/><circle cx="15.5" cy="16" r="2.5"/>
+            @break
+        @case('gallery')
+            <rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m5 17 4-4 3 3 3-4 4 5"/>
+            @break
+        @case('shield')
+            <path d="M12 3 19 6v5c0 4.5-2.7 7.6-7 10-4.3-2.4-7-5.5-7-10V6l7-3Z"/><path d="m9 12 2 2 4-5"/>
+            @break
+        @case('link')
+            <path d="M8 12a4 4 0 0 0 4 4h4a4 4 0 0 0 0-8h-2M16 12a4 4 0 0 0-4-4H8a4 4 0 0 0 0 8h2"/>
+            @break
         @default
             <path d="M8 12a4 4 0 0 0 4 4h4a4 4 0 0 0 0-8h-2M16 12a4 4 0 0 0-4-4H8a4 4 0 0 0 0 8h2"/>
     @endswitch
