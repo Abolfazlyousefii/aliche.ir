@@ -1944,19 +1944,28 @@
     const lightboxCounter = qs('.lightbox-counter', lightboxEl);
     let currentIndex = 0;
     let imageSources = [];
+    let lightboxTrigger = null;
 
-    function openLightbox(index) {
+    function openLightbox(index, trigger = null) {
       currentIndex = index;
       if (!imageSources.length) return;
+      lightboxTrigger = trigger || document.activeElement;
       lightboxImg.src = imageSources[currentIndex];
       lightboxEl.classList.add('is-open');
+      lightboxEl.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
       updateCounter();
+      lightboxClose.focus();
     }
 
     function closeLightbox() {
       lightboxEl.classList.remove('is-open');
+      lightboxEl.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
+      if (lightboxTrigger && typeof lightboxTrigger.focus === 'function') {
+        lightboxTrigger.focus();
+      }
+      lightboxTrigger = null;
     }
 
     function updateCounter() {
@@ -1982,9 +1991,35 @@
 
     document.addEventListener('keydown', (e) => {
       if (!lightboxEl.classList.contains('is-open')) return;
-      if (e.key === 'Escape') closeLightbox();
-      if (e.key === 'ArrowLeft') lightboxNext.click();
-      if (e.key === 'ArrowRight') lightboxPrev.click();
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeLightbox();
+        return;
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        lightboxNext.click();
+        return;
+      }
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        lightboxPrev.click();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const controls = [lightboxClose, lightboxPrev, lightboxNext].filter(Boolean);
+        if (!controls.length) return;
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     });
 
     lightboxEl.addEventListener('click', (e) => {
@@ -1999,7 +2034,7 @@
       thumbs.forEach((thumb, idx) => {
         thumb.addEventListener('click', () => {
           imageSources = sources;
-          openLightbox(idx);
+          openLightbox(idx, thumb);
         });
       });
     });
