@@ -97,7 +97,7 @@ class SystemDirectoryTest extends TestCase
 
     public function test_entry_link_validation_and_icon_fallback_are_safe(): void
     {
-        $external = $this->system('سامانه خارجی', 'external-system', ['link' => 'https://service.test/path', 'icon' => '🌐']);
+        $external = $this->system('سامانه خارجی', 'external-system', ['link' => 'https://service.test/path', 'target' => '_blank', 'icon' => '🌐']);
         $internal = $this->system('سامانه داخلی', 'internal-system', ['link' => '/complaints', 'icon' => '📨']);
         $this->system('سامانه بدون لینک', 'no-link', ['link' => null, 'icon' => null, 'short_description' => null, 'description' => null]);
         $this->system('سامانه لینک نامعتبر', 'invalid-link', ['link' => 'javascript:alert(1)', 'icon' => '💻']);
@@ -117,6 +117,36 @@ class SystemDirectoryTest extends TestCase
             ->assertDontSee('📨')
             ->assertSee('system-directory-icon', false)
             ->assertDontSee('توضیحات این سامانه به‌زودی تکمیل می‌شود.');
+    }
+
+    public function test_directory_renders_system_image_access_state_and_configured_target(): void
+    {
+        $this->system('سامانه تصویری', 'image-system', [
+            'image' => 'systems/card.jpg',
+            'link' => 'https://service.test/image-system',
+            'target' => '_blank',
+        ]);
+        $this->system('سامانه اطلاعاتی', 'info-system', [
+            'link' => null,
+        ]);
+
+        $this->get(route('systems.index'))
+            ->assertOk()
+            ->assertSee('system-directory-icon has-image', false)
+            ->assertSee('systems/card.jpg', false)
+            ->assertSee('ورود مستقیم')
+            ->assertSee('اطلاعات')
+            ->assertSee('target="_blank" rel="noopener noreferrer"', false);
+    }
+
+    public function test_admin_system_form_exposes_media_picker_and_safe_link_guidance(): void
+    {
+        $this->signInAsSuperAdmin();
+
+        $this->get(route('admin.systems.create'))
+            ->assertOk()
+            ->assertSee('data-media-select-target="image_media_id"', false)
+            ->assertSee('فقط لینک‌های http/https یا مسیر داخلی سایت پذیرفته می‌شوند.');
     }
 
     public function test_ajax_pagination_returns_shared_results_and_preserves_filters(): void
