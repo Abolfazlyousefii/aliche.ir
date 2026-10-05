@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUnionMemberRequest;
 use App\Http\Requests\Admin\UpdateUnionMemberRequest;
 use App\Models\GuildUnion;
+use App\Models\Media;
 use App\Models\UnionMember;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,6 +53,8 @@ class UnionMemberController extends Controller
         return view('admin.union_members.create', [
             'member' => null,
             'unions' => $this->availableUnions($request),
+            'mediaItems' => $this->mediaItems(),
+            'currentImageMediaId' => null,
         ]);
     }
 
@@ -82,6 +85,8 @@ class UnionMemberController extends Controller
         return view('admin.union_members.edit', [
             'member' => $unionMember,
             'unions' => $this->availableUnions($request),
+            'mediaItems' => $this->mediaItems(),
+            'currentImageMediaId' => Media::query()->where('path', $unionMember->image)->value('id'),
         ]);
     }
 
@@ -173,6 +178,11 @@ class UnionMemberController extends Controller
     private function authorizeVisible(Request $request, UnionMember $member): void
     {
         abort_unless($request->user()->hasRole('super-admin') || (int) $member->union_id === (int) $request->user()->union_id, 403);
+    }
+
+    private function mediaItems()
+    {
+        return Media::query()->images()->latest()->take(200)->get();
     }
 
     private function availableUnions(Request $request)

@@ -51,6 +51,22 @@ class UnionMember extends Model
         return PublicFileUrl::make($this->image);
     }
 
+    public function isSeedPlaceholderProfile(): bool
+    {
+        $name = trim((string) $this->full_name);
+        $membershipCode = trim((string) $this->membership_code);
+        $businessName = trim((string) $this->business_name);
+        $description = trim((string) $this->description);
+
+        return blank($this->position)
+            && blank($this->image)
+            && preg_match('/^عضو صنفی\s+\d+\s+/u', $name) === 1
+            && $membershipCode !== ''
+            && str_starts_with($membershipCode, 'G'.(int) $this->union_id.'-')
+            && str_starts_with($businessName, 'واحد صنفی ')
+            && $description === 'عضو فعال برای نمایش در صفحه اتحادیه';
+    }
+
     public function scopeVisibleTo($query, User $user)
     {
         if ($user->hasRole('super-admin')) {

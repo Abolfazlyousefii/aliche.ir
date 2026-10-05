@@ -164,6 +164,13 @@ class UnionController extends Controller
             'videos' => fn ($q) => $q->published()->latest('published_at'),
         ]);
 
+        $union->setRelation(
+            'members',
+            $union->members
+                ->reject(fn ($member) => $member->isSeedPlaceholderProfile())
+                ->values()
+        );
+
         $connectedNews = $union->posts
             ->whereIn('type', Post::TYPES)
             ->values();

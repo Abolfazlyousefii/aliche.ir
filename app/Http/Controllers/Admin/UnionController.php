@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Concerns\SelectsMedia;
 use App\Http\Requests\Admin\StoreUnionRequest;
 use App\Http\Requests\Admin\UpdateUnionRequest;
 use App\Models\GuildUnion;
+use App\Models\Media;
 use App\Models\Post;
 use App\Models\UnionType;
 use App\Models\UnionCommission;
@@ -29,6 +30,7 @@ class UnionController extends Controller
         $status = (string) $request->query('status', '');
 
         $unions = GuildUnion::query()
+            ->when(! $request->user()->hasRole('super-admin'), fn ($query) => $query->whereKey($request->user()->union_id ?: 0))
             ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
                 ->where('title', 'like', "%{$search}%")
                 ->orWhere('name', 'like', "%{$search}%")
@@ -45,17 +47,23 @@ class UnionController extends Controller
         return view('admin.unions.index', compact('unions', 'search', 'status'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
+        $this->authorizeCreate($request);
+
         return view('admin.unions.create', [
             'union' => null,
             'unionTypes' => $this->unionTypes(),
             'selectablePosts' => $this->selectablePosts(),
+            'mediaItems' => $this->mediaItems(),
+            'currentMediaIds' => [],
         ]);
     }
 
     public function store(StoreUnionRequest $request): RedirectResponse
     {
+        $this->authorizeCreate($request);
+
         $data = $this->unionData($request->validated());
         $data['logo'] = $this->storeImage($request, 'logo', 'unions/logos');
         $data['cover_image'] = $this->storeImage($request, 'cover_image', 'unions/covers');
@@ -70,25 +78,38 @@ class UnionController extends Controller
         return redirect()->route('admin.unions.show', $union)->with('success', 'اتحادیه با موفقیت ایجاد شد.');
     }
 
-    public function show(GuildUnion $union): View
+    public function show(Request $request, GuildUnion $union): View
     {
+        $this->authorizeVisible($request, $union);
+
         $union->loadCount(['posts', 'announcements', 'users']);
         $union->load(['commissions.tasks', 'rules', 'minutes', 'educations', 'prices']);
 
         return view('admin.unions.show', compact('union'));
     }
 
-    public function edit(GuildUnion $union): View
+    public function edit(Request $request, GuildUnion $union): View
     {
+        $this->authorizeVisible($request, $union);
+
         return view('admin.unions.edit', [
             'union' => $union->load(['commissions.tasks', 'rules', 'minutes', 'educations', 'prices', 'selectedPosts']),
             'unionTypes' => $this->unionTypes(),
             'selectablePosts' => $this->selectablePosts(),
+            'mediaItems' => $this->mediaItems(),
+            'currentMediaIds' => [
+                'cover_image' => Media::query()->where('path', $union->cover_image)->value('id'),
+                'logo' => Media::query()->where('path', $union->logo)->value('id'),
+                'manager_image' => Media::query()->where('path', $union->manager_image)->value('id'),
+                'price_list_image' => Media::query()->where('path', $union->price_list_image)->value('id'),
+            ],
         ]);
     }
 
     public function update(UpdateUnionRequest $request, GuildUnion $union): RedirectResponse
     {
+        $this->authorizeVisible($request, $union);
+
         $data = $this->unionData($request->validated(), $union);
 
         foreach (['logo' => 'unions/logos', 'cover_image' => 'unions/covers', 'manager_image' => 'unions/managers', 'price_list_image' => 'unions/price-lists'] as $field => $directory) {
@@ -105,8 +126,10 @@ class UnionController extends Controller
         return redirect()->route('admin.unions.show', $union)->with('success', 'اتحادیه با موفقیت ویرایش شد.');
     }
 
-    public function destroy(GuildUnion $union): RedirectResponse
+    public function destroy(Request $request, GuildUnion $union): RedirectResponse
     {
+        $this->authorizeVisible($request, $union);
+
         $union->delete();
         $this->flushFrontendCache();
 
@@ -116,6 +139,20 @@ class UnionController extends Controller
     private function flushFrontendCache(): void
     {
         Cache::forget('settings.all');
+    }
+
+    private function authorizeCreate(Request $request): void
+    {
+        abort_unless($request->user()->hasRole('super-admin'), 403);
+    }
+
+    private function authorizeVisible(Request $request, GuildUnion $union): void
+    {
+        abort_unless(
+            $request->user()->hasRole('super-admin')
+            || (int) $request->user()->union_id === (int) $union->id,
+            403
+        );
     }
 
     /** @param array<string, mixed> $validated @return array<string, mixed> */
@@ -333,6 +370,11 @@ class UnionController extends Controller
     private function selectablePosts()
     {
         return Post::query()->published()->editorial()->orderByDesc('published_at')->orderBy('title')->take(200)->get(['id', 'title', 'published_at']);
+    }
+
+    private function mediaItems()
+    {
+        return Media::query()->images()->latest()->take(200)->get();
     }
 
     private function storeImage(Request $request, string $field, string $directory): ?string

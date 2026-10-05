@@ -36,7 +36,12 @@
             <tbody>
                 @forelse ($members as $member)
                     <tr>
-                        <td><strong>{{ $member->full_name }}</strong><br><small>{{ $member->membership_code ?: 'بدون کد عضویت' }}</small></td>
+                        <td>
+                            <strong>{{ $member->full_name }}</strong>
+                            @if($member->isSeedPlaceholderProfile()) <span class="badge bg-warning text-dark">داده نمونه</span> @endif
+                            <br>
+                            <small>{{ $member->position ?: 'بدون سمت' }} · {{ $member->image ? 'دارای تصویر' : 'بدون تصویر' }} · {{ $member->membership_code ?: 'بدون کد عضویت' }}</small>
+                        </td>
                         <td>{{ $member->national_code ?: '—' }}</td>
                         <td>{{ $member->mobile ?: '—' }}</td>
                         <td>{{ $member->business_name ?: '—' }}</td>
