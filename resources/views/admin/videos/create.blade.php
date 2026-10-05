@@ -20,8 +20,19 @@
         <div class="col-md-4"><label class="form-label" for="published_at">تاریخ انتشار</label><input class="form-control" id="published_at" name="published_at" type="text" data-jalali-datepicker value="{{ jalali_input_datetime(old('published_at')) }}"></div>
         <div class="col-md-4"><label class="form-label" for="sort_order">ترتیب نمایش</label><input class="form-control" id="sort_order" name="sort_order" type="number" min="0" value="{{ old('sort_order', 0) }}"></div>
         <div class="col-md-4"><label class="form-label" for="is_active">فعال</label><select class="form-control" id="is_active" name="is_active"><option value="1" @selected(old('is_active', '1') === '1')>فعال</option><option value="0" @selected(old('is_active') === '0')>غیرفعال</option></select></div>
-        <div class="col-md-4"><label class="form-label" for="cover_image">تصویر کاور</label><input class="form-control" id="cover_image" name="cover_image" type="file" accept="image/*"></div>
-        <div class="col-md-4 video-upload-field"><label class="form-label" for="video_file">فایل ویدیو</label><input class="form-control" id="video_file" name="video_file" type="file" accept="video/*"><small class="text-muted">حداکثر حجم ۱۰۰ مگابایت.</small></div>
+        <div class="col-md-4">
+            <label class="form-label" for="cover_image">تصویر کاور</label>
+            <input class="form-control" id="cover_image" name="cover_image" type="file" accept="image/*" data-skip-media-picker>
+            <button class="admin-secondary-btn mt-2" type="button" data-media-select-target="cover_image_media_id">انتخاب یا آپلود کاور از کتابخانه</button>
+            <select class="d-none" name="cover_image_media_id" id="cover_image_media_id" aria-hidden="true" tabindex="-1">
+                <option value="">انتخاب کاور از کتابخانه</option>
+                @foreach(($mediaItems ?? collect()) as $media)
+                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('cover_image_media_id') === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
+                @endforeach
+            </select>
+            <div id="cover_image_media_preview" class="mt-2"></div>
+        </div>
+        <div class="col-md-4 video-upload-field"><label class="form-label" for="video_file">فایل ویدیو</label><input class="form-control" id="video_file" name="video_file" type="file" accept="video/*"><small class="text-muted">حداکثر حجم ۱۰۰ مگابایت. برای پخش مستقیم در مرورگر، MP4 یا WebM پیشنهاد می‌شود.</small></div>
         <div class="col-md-4 video-aparat-field"><label class="form-label" for="aparat_url">لینک آپارات</label><input class="form-control" id="aparat_url" name="aparat_url" value="{{ old('aparat_url') }}" dir="ltr" placeholder="https://www.aparat.com/v/..."></div>
         <div class="col-12"><label class="form-label" for="description">توضیحات</label><textarea class="form-control js-rich-editor" id="description" name="description" rows="4">{{ old('description') }}</textarea></div>
         <div class="col-12"><label class="form-label" for="rejected_reason">دلیل رد</label><textarea class="form-control" id="rejected_reason" name="rejected_reason" rows="2">{{ old('rejected_reason') }}</textarea></div>
@@ -42,6 +53,17 @@
     };
     type.addEventListener('change', toggleFields);
     toggleFields();
+
+    const coverSelect = document.getElementById('cover_image_media_id');
+    const coverPreview = document.getElementById('cover_image_media_preview');
+    const renderCover = () => {
+        const option = coverSelect?.selectedOptions?.[0];
+        const url = option?.dataset?.url;
+        if (!coverPreview) return;
+        coverPreview.innerHTML = url ? '<img class="rounded" src="' + url + '" alt="پیش‌نمایش کاور" style="width:100%;max-width:260px;height:150px;object-fit:cover">' : '';
+    };
+    coverSelect?.addEventListener('change', renderCover);
+    renderCover();
 })();
 </script>
 @endpush
