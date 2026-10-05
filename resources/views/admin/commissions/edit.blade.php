@@ -26,7 +26,7 @@
 @if($commission->image)<img class="rounded" src="{{ $commission->image_url }}" alt="{{ $commission->title }}" style="width:100%;max-width:260px;height:150px;object-fit:cover">@endif
 </div>
 </div>
-<div class="col-md-6"><label class="form-label">افزودن پیوست</label><input class="form-control" type="file" name="attachments[]" multiple></div>
+<div class="col-md-6"><label class="form-label">افزودن پیوست</label><input class="form-control" type="file" name="attachments[]" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" multiple><small class="text-muted">فرمت‌های مجاز: PDF و فایل‌های متداول Office، حداکثر ۱۰ مگابایت برای هر فایل.</small></div>
 <div class="col-12"><label class="form-label">اعضا (هر عضو در یک خط)</label><textarea class="form-control" name="members" rows="4">{{ old('members', collect($commission->members ?? [])->pluck('name')->implode("\n")) }}</textarea></div>
 @if(!empty($commission->attachments))<div class="col-12"><h4>پیوست‌های فعلی</h4>@foreach($commission->attachments as $index=>$file)<label class="d-flex gap-2"><input type="checkbox" name="existing_attachments[{{ $index }}][delete]" value="1"> حذف {{ $file['name'] ?? 'فایل' }}</label>@endforeach</div>@endif
 <div class="col-12"><label class="form-label">توضیحات</label><textarea class="form-control js-rich-editor" name="description" rows="6">{{ old('description',$commission->description) }}</textarea></div>
