@@ -13,25 +13,36 @@ class GuildPageRegressionTest extends TestCase
     use BuildsAdminPayloads;
     use RefreshDatabase;
 
-    public function test_related_editorial_content_keeps_the_guild_news_row_contract(): void
+    public function test_related_editorial_content_uses_featured_news_and_scrollable_news_strip(): void
     {
         $union = $this->union([
             'slug' => 'guild-with-news',
             'news_enabled' => true,
             'settings' => ['show_news' => true],
         ]);
-        $post = $this->publishedPost([
-            'title' => 'گزارش مرتبط اتحادیه تست',
-            'slug' => 'guild-related-report',
+        $olderPost = $this->publishedPost([
+            'title' => 'گزارش دوم اتحادیه تست',
+            'slug' => 'guild-related-report-older',
             'type' => 'report',
             'union_id' => $union->id,
+            'published_at' => now()->subDay(),
+        ]);
+        $latestPost = $this->publishedPost([
+            'title' => 'گزارش اصلی اتحادیه تست',
+            'slug' => 'guild-related-report-latest',
+            'type' => 'report',
+            'union_id' => $union->id,
+            'published_at' => now(),
         ]);
 
         $this->get(route('guilds.show', $union->slug))
             ->assertOk()
             ->assertSee('id="guild-news"', false)
-            ->assertSee('guild-profile-news-list', false)
-            ->assertSee($post->title);
+            ->assertSee('guild-profile-news-feature', false)
+            ->assertSee('guild-profile-news-strip', false)
+            ->assertSee($latestPost->title)
+            ->assertSee($olderPost->title)
+            ->assertDontSee('guild-profile-hero-news', false);
     }
 
     public function test_seed_placeholder_members_are_hidden_but_real_board_members_remain_visible(): void
@@ -76,6 +87,7 @@ class GuildPageRegressionTest extends TestCase
         $union = $this->union([
             'slug' => 'safe-union-links',
             'manager_name' => 'مدیر تست',
+            'website' => 'javascript:alert(2)',
             'social_links' => [
                 'instagram' => 'https://instagram.com/example',
                 'unsupported' => 'https://example.com/unsupported',
@@ -108,6 +120,7 @@ class GuildPageRegressionTest extends TestCase
             ->assertSee('تماس امن')
             ->assertSee('https://instagram.com/example', false)
             ->assertDontSee('javascript:alert(1)', false)
+            ->assertDontSee('javascript:alert(2)', false)
             ->assertDontSee('لینک ناامن')
             ->assertDontSee('https://example.com/unsupported', false);
     }
@@ -133,7 +146,11 @@ class GuildPageRegressionTest extends TestCase
             'slug' => 'services-enabled-union',
             'news_enabled' => true,
             'services_enabled' => true,
-            'settings' => ['show_news' => true],
+            'manager_name' => 'رئیس اتحادیه تست',
+            'settings' => [
+                'show_manager' => true,
+                'show_news' => true,
+            ],
         ]);
         $this->publishedPost([
             'slug' => 'services-enabled-news',
@@ -142,7 +159,12 @@ class GuildPageRegressionTest extends TestCase
 
         $this->get(route('guilds.show', $enabled->slug))
             ->assertOk()
-            ->assertSee('id="guild-services"', false);
+            ->assertSee('id="guild-services"', false)
+            ->assertSeeInOrder([
+                'id="guild-manager"',
+                'id="guild-news"',
+                'id="guild-services"',
+            ], false);
     }
 
     private function union(array $overrides = []): GuildUnion

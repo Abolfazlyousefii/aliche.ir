@@ -44,7 +44,8 @@
     $showGalleries = $union->gallery_enabled && $union->isSectionEnabled('show_gallery', true) && $union->galleries->isNotEmpty();
     $showVideos = $union->videos_enabled && $union->isSectionEnabled('show_videos', true) && $union->videos->isNotEmpty();
     $showGallerySection = $showGalleries || $showVideos;
-    $hasContactData = filled($union->address) || filled($unionPhone) || filled($union->email) || filled($union->working_hours) || filled($union->website) || $socialLinks->isNotEmpty();
+    $unionWebsiteUrl = \App\Models\GuildUnion::safeActionUrl($union->website);
+    $hasContactData = filled($union->address) || filled($unionPhone) || filled($union->email) || filled($union->working_hours) || filled($unionWebsiteUrl) || $socialLinks->isNotEmpty();
     $showContact = $union->isSectionEnabled('show_contact', true) && $hasContactData;
 
     $heroStats = collect([
@@ -67,12 +68,12 @@
     $showServices = $union->services_enabled && $contentLinks->isNotEmpty();
 
     $navItems = collect([
-        ['visible' => $showServices, 'id' => 'guild-services', 'label' => 'خدمات و محتوا'],
         ['visible' => $showManager, 'id' => 'guild-manager', 'label' => 'رئیس اتحادیه'],
         ['visible' => $showMembers, 'id' => 'guild-board', 'label' => 'هیئت‌مدیره'],
-        ['visible' => $showCommissions, 'id' => 'guild-commissions', 'label' => 'کمیسیون‌ها'],
-        ['visible' => $showRules, 'id' => 'guild-rules', 'label' => 'قوانین'],
         ['visible' => $showNews, 'id' => 'guild-news', 'label' => 'اخبار'],
+        ['visible' => $showCommissions, 'id' => 'guild-commissions', 'label' => 'کمیسیون‌ها'],
+        ['visible' => $showServices, 'id' => 'guild-services', 'label' => 'خدمات و محتوا'],
+        ['visible' => $showRules, 'id' => 'guild-rules', 'label' => 'قوانین'],
         ['visible' => $showArticles, 'id' => 'guild-articles', 'label' => 'مقاله‌ها'],
         ['visible' => $showPrices, 'id' => 'guild-prices', 'label' => 'نرخ‌نامه'],
         ['visible' => $showComplaint, 'id' => 'guild-complaint', 'label' => 'ثبت شکایت'],
@@ -86,20 +87,21 @@
 
     $quickActions = collect([
         ['visible' => $showManager, 'id' => 'guild-manager', 'title' => 'رئیس اتحادیه', 'subtitle' => $union->manager_name, 'icon' => 'manager'],
-        ['visible' => $showComplaint, 'id' => 'guild-complaint', 'title' => 'ثبت شکایت', 'subtitle' => 'ثبت و پیگیری آنلاین', 'icon' => 'complaint'],
         ['visible' => $showContact, 'id' => 'guild-contact', 'title' => 'راه‌های ارتباطی', 'subtitle' => $hasContactData ? 'تماس و اطلاعات اتحادیه' : 'اطلاعات در حال تکمیل', 'icon' => 'contact'],
         ['visible' => $showServices, 'id' => 'guild-services', 'title' => 'خدمات اتحادیه', 'subtitle' => 'دسترسی سریع به بخش‌ها', 'icon' => 'services'],
-    ])->filter(fn ($item) => $item['visible'])->values();
+        ['visible' => $showComplaint, 'id' => 'guild-complaint', 'title' => 'ثبت شکایت', 'subtitle' => 'ثبت و پیگیری آنلاین', 'icon' => 'complaint'],
+    ])->filter(fn ($item) => $item['visible'])->take(3)->values();
 
     $settings = app(\App\Services\SettingService::class);
     $officePhone = $settings->get('site.phone', '01732152912');
     $officePhoneHref = $normalizePhone($officePhone);
     $officeEmail = $settings->get('site.email', 'info@asnaf-gorgan.ir');
-    $featuredHeroPost = $showNews ? $posts->first() : null;
+    $featuredGuildNews = $showNews ? $posts->first() : null;
+    $secondaryGuildNews = $showNews ? $posts->skip(1)->take(5)->values() : collect();
 @endphp
 
 @section('content')
-<main class="guild-profile-page" data-guild-profile>
+<main class="guild-profile-page guild-profile-page--redesigned" data-guild-profile>
     <section class="guild-profile-hero" @if($union->primary_image) style="--guild-profile-cover:url('{{ $assetImage($union->primary_image, '') }}')" @endif>
         <div class="site-container guild-profile-hero__inner">
             <div class="guild-profile-hero__content">
@@ -138,42 +140,22 @@
                 </div>
             </div>
 
-            @if($featuredHeroPost)
-                <article class="guild-profile-hero-news">
-                    <a href="{{ route('posts.show', $featuredHeroPost->slug) }}">
-                        <img
-                            src="{{ $featuredHeroPost->featured_image_url }}"
-                            alt="{{ $featuredHeroPost->featuredMedia?->alt_text ?: $featuredHeroPost->title }}"
-                            loading="eager"
-                            decoding="async"
-                            fetchpriority="high"
-                            @if($featuredHeroPost->featuredMedia?->srcset) srcset="{{ $featuredHeroPost->featuredMedia->srcset }}" sizes="(max-width: 992px) 100vw, 440px" @endif
-                        >
-                        <span class="guild-profile-hero-news__shade" aria-hidden="true"></span>
-                        <span class="guild-profile-hero-news__content">
-                            <small>آخرین خبر اتحادیه</small>
-                            <strong>{{ $featuredHeroPost->title }}</strong>
-                            <time datetime="{{ $featuredHeroPost->published_at?->toIso8601String() }}">{{ jalali_datetime($featuredHeroPost->published_at) ?: 'بدون تاریخ' }}</time>
-                        </span>
-                    </a>
-                </article>
-            @else
-                <div class="guild-profile-hero__identity {{ $union->logo ? '' : 'guild-profile-hero__identity--fallback' }}">
-                    <div class="guild-profile-emblem {{ $union->logo ? '' : 'guild-profile-emblem--fallback' }}" data-guild-profile-image-wrap>
-                        @if($union->logo)
-                            <img src="{{ $assetImage($union->logo, '') }}" alt="لوگوی {{ $union->display_title }}" loading="eager" decoding="async" data-guild-profile-optional-image>
-                        @endif
-                        <span @if($union->logo) hidden @endif data-guild-profile-image-fallback>{{ $initial($union->display_title) }}</span>
-                    </div>
-                    @if($heroStats->isNotEmpty())
-                        <div class="guild-profile-hero__stats" aria-label="آمار اتحادیه">
-                            @foreach($heroStats as $stat)
-                                <div><strong>{{ fa_number(number_format($stat['value'])) }}</strong><span>{{ $stat['label'] }}</span></div>
-                            @endforeach
-                        </div>
+            <div class="guild-profile-hero__profile">
+                <div class="guild-profile-emblem {{ $union->logo ? '' : 'guild-profile-emblem--fallback' }}" data-guild-profile-image-wrap>
+                    @if($union->logo)
+                        <img src="{{ $assetImage($union->logo, '') }}" alt="لوگوی {{ $union->display_title }}" loading="eager" decoding="async" data-guild-profile-optional-image>
                     @endif
+                    <span @if($union->logo) hidden @endif data-guild-profile-image-fallback>{{ $initial($union->display_title) }}</span>
                 </div>
-            @endif
+                <strong class="guild-profile-hero__profile-title">پروفایل رسمی اتحادیه</strong>
+                @if($heroStats->isNotEmpty())
+                    <div class="guild-profile-hero__stats" aria-label="آمار اتحادیه">
+                        @foreach($heroStats as $stat)
+                            <div><strong>{{ fa_number(number_format($stat['value'])) }}</strong><span>{{ $stat['label'] }}</span></div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
         </div>
     </section>
 
@@ -199,35 +181,6 @@
 
     <div class="site-container guild-profile-layout">
         <div class="guild-profile-content">
-            @if($showServices)
-                <section class="guild-profile-section" id="guild-services" data-guild-profile-section>
-                    <header class="guild-profile-section__head">
-                        <div><span>دسترسی سریع</span><h2>خدمات و محتوای اتحادیه</h2><p>بخش‌های دارای اطلاعات به‌صورت خودکار در این صفحه نمایش داده می‌شوند.</p></div>
-                    </header>
-                    <div class="guild-profile-services">
-                        @foreach($contentLinks as $item)
-                            <a href="#{{ $item['id'] }}" class="guild-profile-service">
-                                <span class="guild-profile-service__icon">
-                                    @switch($item['icon'])
-                                        @case('members')<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 20c0-4 2.7-7 6-7s6 3 6 7M14 15c3 0 5 2 5 5"/></svg>@break
-                                        @case('commission')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16v12H4zM8 7V4h8v3M9 12h6"/></svg>@break
-                                        @case('rules')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>@break
-                                        @case('news')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM7 9h4v4H7zM13 9h4M13 12h4M7 16h10"/></svg>@break
-                                        @case('education')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m3 9 9-5 9 5-9 5-9-5Z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/></svg>@break
-                                        @case('announcement')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h3l9-5v10l-9-5H4zM7 15l2 5"/></svg>@break
-                                        @case('minutes')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16v14H4zM8 3v6M16 3v6M4 10h16"/></svg>@break
-                                        @case('prices')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/><circle cx="16" cy="16" r="3"/></svg>@break
-                                        @default<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m4 18 4-5 4 3 4-6 4 8H4Z"/><circle cx="8" cy="8" r="2"/></svg>
-                                    @endswitch
-                                </span>
-                                <strong>{{ $item['title'] }}</strong>
-                                <small>{{ $item['description'] }}</small>
-                            </a>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
-
             @if($showManager)
                 <section class="guild-profile-section" id="guild-manager" data-guild-profile-section>
                     <header class="guild-profile-section__head">
@@ -281,6 +234,61 @@
                 </section>
             @endif
 
+            @if($showNews && $featuredGuildNews)
+                <section class="guild-profile-section guild-profile-news-section" id="guild-news" data-guild-profile-section>
+                    <header class="guild-profile-section__head guild-profile-news-head">
+                        <div>
+                            <span>رسانه اتحادیه</span>
+                            <h2>آخرین اخبار اتحادیه</h2>
+                            <p>خبرها و اطلاع‌رسانی‌های مرتبط با {{ $union->display_title }}</p>
+                        </div>
+                        <a href="{{ route('posts.index') }}">آرشیو اخبار</a>
+                    </header>
+
+                    @php($featuredNewsUrl = route('posts.show', $featuredGuildNews->slug))
+                    <article class="guild-profile-news-feature">
+                        <a class="guild-profile-news-feature__media" href="{{ $featuredNewsUrl }}">
+                            <img
+                                src="{{ $featuredGuildNews->featured_image_url }}"
+                                alt="{{ $featuredGuildNews->featuredMedia?->alt_text ?: $featuredGuildNews->title }}"
+                                loading="lazy"
+                                decoding="async"
+                                @if($featuredGuildNews->featuredMedia?->srcset) srcset="{{ $featuredGuildNews->featuredMedia->srcset }}" sizes="(max-width: 899px) 100vw, 720px" @endif
+                            >
+                        </a>
+                        <div class="guild-profile-news-feature__body">
+                            <div class="guild-profile-news-meta">
+                                @if(filled($featuredGuildNews->category_title))<span>{{ $featuredGuildNews->category_title }}</span>@endif
+                                <time datetime="{{ $featuredGuildNews->published_at?->toIso8601String() }}">{{ jalali_datetime($featuredGuildNews->published_at) ?: 'بدون تاریخ' }}</time>
+                            </div>
+                            <h3><a href="{{ $featuredNewsUrl }}">{{ $featuredGuildNews->title }}</a></h3>
+                            <p>{{ \Illuminate\Support\Str::limit(strip_tags($featuredGuildNews->excerpt ?: $featuredGuildNews->short_description ?: $featuredGuildNews->summary ?: $featuredGuildNews->body), 220) }}</p>
+                            <a class="guild-profile-news-feature__link" href="{{ $featuredNewsUrl }}">مشاهده خبر</a>
+                        </div>
+                    </article>
+
+                    @if($secondaryGuildNews->isNotEmpty())
+                        <div class="guild-profile-news-strip" aria-label="سایر اخبار اتحادیه">
+                            @foreach($secondaryGuildNews as $post)
+                                @php($postUrl = route('posts.show', $post->slug))
+                                <article class="guild-profile-news-mini">
+                                    <a href="{{ $postUrl }}">
+                                        <div class="guild-profile-news-mini__media">
+                                            <img src="{{ $post->featured_image_url }}" alt="{{ $post->featuredMedia?->alt_text ?: $post->title }}" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="guild-profile-news-mini__body">
+                                            <time datetime="{{ $post->published_at?->toIso8601String() }}">{{ jalali_datetime($post->published_at) ?: 'بدون تاریخ' }}</time>
+                                            <h3>{{ $post->title }}</h3>
+                                            <span>مشاهده خبر</span>
+                                        </div>
+                                    </a>
+                                </article>
+                            @endforeach
+                        </div>
+                    @endif
+                </section>
+            @endif
+
             @if($showCommissions)
                 <section class="guild-profile-section" id="guild-commissions" data-guild-profile-section>
                     <header class="guild-profile-section__head"><div><span>کمیسیون‌های تخصصی</span><h2>کمیسیون‌های اتحادیه</h2></div></header>
@@ -300,6 +308,35 @@
                 </section>
             @endif
 
+            @if($showServices)
+                <section class="guild-profile-section" id="guild-services" data-guild-profile-section>
+                    <header class="guild-profile-section__head">
+                        <div><span>دسترسی سریع</span><h2>خدمات و محتوای اتحادیه</h2><p>بخش‌های دارای اطلاعات به‌صورت خودکار در این صفحه نمایش داده می‌شوند.</p></div>
+                    </header>
+                    <div class="guild-profile-services">
+                        @foreach($contentLinks as $item)
+                            <a href="#{{ $item['id'] }}" class="guild-profile-service">
+                                <span class="guild-profile-service__icon">
+                                    @switch($item['icon'])
+                                        @case('members')<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 20c0-4 2.7-7 6-7s6 3 6 7M14 15c3 0 5 2 5 5"/></svg>@break
+                                        @case('commission')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16v12H4zM8 7V4h8v3M9 12h6"/></svg>@break
+                                        @case('rules')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>@break
+                                        @case('news')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM7 9h4v4H7zM13 9h4M13 12h4M7 16h10"/></svg>@break
+                                        @case('education')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m3 9 9-5 9 5-9 5-9-5Z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/></svg>@break
+                                        @case('announcement')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h3l9-5v10l-9-5H4zM7 15l2 5"/></svg>@break
+                                        @case('minutes')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16v14H4zM8 3v6M16 3v6M4 10h16"/></svg>@break
+                                        @case('prices')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/><circle cx="16" cy="16" r="3"/></svg>@break
+                                        @default<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m4 18 4-5 4 3 4-6 4 8H4Z"/><circle cx="8" cy="8" r="2"/></svg>
+                                    @endswitch
+                                </span>
+                                <strong>{{ $item['title'] }}</strong>
+                                <small>{{ $item['description'] }}</small>
+                            </a>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
             @if($showRules)
                 <section class="guild-profile-section" id="guild-rules" data-guild-profile-section>
                     <header class="guild-profile-section__head"><div><span>اسناد و مقررات</span><h2>قوانین و دستورالعمل‌ها</h2></div></header>
@@ -309,38 +346,6 @@
                                 <span><x-ui-icon :name="\App\Support\UnionIcon::normalize($rule->icon, 'document')" /></span>
                                 <div><h3>{{ $rule->title }}</h3>@if($rule->description)<p>{{ $plain($rule->description, 160) }}</p>@endif</div>
                                 @if($rule->file)<a href="{{ $assetImage($rule->file, '') }}" target="_blank" rel="noopener noreferrer">دانلود فایل</a>@endif
-                            </article>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
-
-            @if($showNews)
-                <section class="guild-profile-section" id="guild-news" data-guild-profile-section>
-                    <header class="guild-profile-section__head guild-profile-news-head"><div><span>رسانه اتحادیه</span><h2>آخرین اخبار اتحادیه</h2><p>جدیدترین خبرها و اطلاع‌رسانی‌های مرتبط با {{ $union->display_title }}</p></div><a href="{{ route('posts.index') }}">آرشیو اخبار</a></header>
-                    <div class="latest-news-list guild-profile-news-list">
-                        @foreach($posts->take(6) as $post)
-                            @php($postUrl = route('posts.show', $post->slug))
-                            <article class="latest-news-card">
-                                <a class="latest-news-thumb-link" href="{{ $postUrl }}">
-                                    <img
-                                        src="{{ $post->featured_image_url }}"
-                                        alt="{{ $post->featuredMedia?->alt_text ?: $post->title }}"
-                                        loading="lazy"
-                                        decoding="async"
-                                        @if($post->featuredMedia?->srcset) srcset="{{ $post->featuredMedia->srcset }}" sizes="(max-width: 560px) 100vw, 400px" @endif
-                                        @if($post->featuredMedia?->width && $post->featuredMedia?->height) width="{{ $post->featuredMedia->width }}" height="{{ $post->featuredMedia->height }}" @endif
-                                    >
-                                </a>
-                                <div class="latest-news-card-body">
-                                    <div class="latest-news-meta">
-                                        <time datetime="{{ $post->published_at?->toIso8601String() }}">{{ jalali_datetime($post->published_at) ?: 'بدون تاریخ' }}</time>
-                                        @if(filled($post->category_title))<span>{{ $post->category_title }}</span>@endif
-                                    </div>
-                                    <h3><a href="{{ $postUrl }}">{{ $post->title }}</a></h3>
-                                    <p>{{ \Illuminate\Support\Str::limit(strip_tags($post->excerpt ?: $post->short_description ?: $post->summary ?: $post->body), 135) }}</p>
-                                    <a class="read-more" href="{{ $postUrl }}" aria-label="مشاهده خبر: {{ $post->title }}">مشاهده خبر</a>
-                                </div>
                             </article>
                         @endforeach
                     </div>
@@ -438,7 +443,7 @@
                             @if(filled($unionPhoneHref))<a class="guild-profile-contact-card" href="tel:{{ $unionPhoneHref }}"><span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3 4 6c0 6 8 14 14 14l3-3-4-4-3 2c-2-1-4-3-5-5l2-3-4-4Z"/></svg></span><div><strong>شماره تماس</strong><p>{{ fa_number($unionPhone) }}</p></div></a>@endif
                             @if($union->email)<a class="guild-profile-contact-card" href="mailto:{{ $union->email }}"><span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 5h18v14H3zM4 7l8 6 8-6"/></svg></span><div><strong>پست الکترونیکی</strong><p>{{ $union->email }}</p></div></a>@endif
                             @if($union->working_hours)<div class="guild-profile-contact-card"><span><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg></span><div><strong>ساعات کاری</strong><p>{{ $union->working_hours }}</p></div></div>@endif
-                            @if($union->website)<a class="guild-profile-contact-card" href="{{ $union->website }}" target="_blank" rel="noopener noreferrer"><span><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 4 6 4 9s-1 6-4 9c-3-3-4-6-4-9s1-6 4-9Z"/></svg></span><div><strong>وب‌سایت اتحادیه</strong><p>مشاهده وب‌سایت رسمی</p></div></a>@endif
+                            @if($unionWebsiteUrl)<a class="guild-profile-contact-card" href="{{ $unionWebsiteUrl }}" target="_blank" rel="noopener noreferrer"><span><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 4 6 4 9s-1 6-4 9c-3-3-4-6-4-9s1-6 4-9Z"/></svg></span><div><strong>وب‌سایت اتحادیه</strong><p>مشاهده وب‌سایت رسمی</p></div></a>@endif
                         </div>
                         @if($union->isSectionEnabled('show_social_links', true) && $socialLinks->isNotEmpty())
                             <div class="guild-profile-socials">
@@ -457,11 +462,6 @@
                     <ul>@foreach($navItems as $item)<li><a href="#{{ $item['id'] }}" data-guild-profile-nav><span>{{ $item['label'] }}</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></a></li>@endforeach</ul>
                 </nav>
             @endif
-
-            <div class="guild-profile-side-card guild-profile-side-card--status">
-                <h2>وضعیت اطلاعات اتحادیه</h2>
-                <div class="guild-profile-status"><i aria-hidden="true"></i><span><strong>صفحه فعال است</strong><small>{{ $hasContactData ? 'اطلاعات ارتباطی ثبت شده است' : 'اطلاعات تکمیلی در حال بروزرسانی' }}</small></span></div>
-            </div>
 
             <div class="guild-profile-side-card guild-profile-side-card--office">
                 <h2>ارتباط با اتاق اصناف</h2>
