@@ -16,11 +16,18 @@ class UnionTypeController extends Controller
 {
     use SelectsMedia;
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $unionTypes = UnionType::query()->orderBy('sort_order')->orderBy('title')->paginate(20)->withQueryString();
+        $search = trim((string) $request->query('search', ''));
+        $status = (string) $request->query('status', '');
+        $unionTypes = UnionType::query()
+            ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
+                ->where('title', 'like', "%{$search}%")
+                ->orWhere('slug', 'like', "%{$search}%")))
+            ->when(in_array($status, ['active', 'inactive'], true), fn ($query) => $query->where('is_active', $status === 'active'))
+            ->orderBy('sort_order')->orderBy('title')->paginate(20)->withQueryString();
 
-        return view('admin.union_types.index', compact('unionTypes'));
+        return view('admin.union_types.index', compact('unionTypes', 'search', 'status'));
     }
 
     public function create(): View
