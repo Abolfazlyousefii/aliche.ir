@@ -17,12 +17,18 @@
         ->unique('url')
         ->values();
 
-    $latitude = filled($place->latitude) ? (string) $place->latitude : null;
-    $longitude = filled($place->longitude) ? (string) $place->longitude : null;
-    $coordinates = $latitude && $longitude ? $latitude.', '.$longitude : null;
+    $hasCoordinates = is_numeric($place->latitude) && is_numeric($place->longitude)
+        && (float) $place->latitude >= -90 && (float) $place->latitude <= 90
+        && (float) $place->longitude >= -180 && (float) $place->longitude <= 180;
+    $latitude = $hasCoordinates ? number_format((float) $place->latitude, 7, '.', '') : null;
+    $longitude = $hasCoordinates ? number_format((float) $place->longitude, 7, '.', '') : null;
+    $coordinates = $hasCoordinates ? $latitude.', '.$longitude : null;
     $mapUrl = filled($place->map_url) ? (string) $place->map_url : null;
-    $coordinateMapUrl = $coordinates ? 'https://www.google.com/maps/search/?api=1&query='.urlencode($coordinates) : null;
-    $mapLink = $mapUrl ?: $coordinateMapUrl;
+    // Neshan receives destination coordinates; users can start navigation there.
+    $coordinateMapUrl = $hasCoordinates ? 'https://neshan.org/maps/share/'.$latitude.','.$longitude : null;
+    $mapLink = $coordinateMapUrl ?: $mapUrl;
+    $neshanMapKey = $hasCoordinates ? trim((string) app(\App\Services\SettingService::class)->get('site.neshan_map_key', '')) : '';
+    $hasNeshanMap = $hasCoordinates && $neshanMapKey !== '';
     $mapParts = $mapUrl ? parse_url($mapUrl) : [];
     $mapHost = strtolower((string) ($mapParts['host'] ?? ''));
     $mapPath = (string) ($mapParts['path'] ?? '');
@@ -40,7 +46,7 @@
         ['key' => 'hours', 'title' => 'ساعت بازدید', 'value' => $place->working_hours, 'link' => null, 'linkLabel' => null, 'icon' => 'clock'],
         ['key' => 'price', 'title' => 'هزینه بازدید', 'value' => $place->visit_price, 'link' => null, 'linkLabel' => null, 'icon' => 'wallet'],
         ['key' => 'phone', 'title' => 'تلفن تماس', 'value' => $place->phone, 'link' => $phoneHref, 'linkLabel' => $phoneHref ? 'تماس مستقیم' : null, 'icon' => 'phone'],
-        ['key' => 'coords', 'title' => 'مختصات', 'value' => $coordinates, 'link' => $coordinateMapUrl, 'linkLabel' => $coordinateMapUrl ? 'مسیریابی' : null, 'icon' => 'compass', 'dir' => $coordinates ? 'ltr' : 'rtl'],
+        ['key' => 'coords', 'title' => 'مختصات', 'value' => $coordinates, 'link' => $coordinateMapUrl, 'linkLabel' => $coordinateMapUrl ? 'نمایش مقصد در نشان' : null, 'icon' => 'compass', 'dir' => $coordinates ? 'ltr' : 'rtl'],
     ])->filter(fn ($item) => filled($item['value']))->values();
 
     $publishedLabel = jalali_date($place->published_at) ?: jalali_date($place->created_at);
@@ -81,7 +87,7 @@
                     @if($mapLink)
                         <a class="tourism-detail-v2__primary-action" href="{{ $mapLink }}" target="_blank" rel="noopener">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11z"/><circle cx="12" cy="10" r="2"/></svg>
-                            مسیریابی
+                            {{ $coordinateMapUrl ? 'مسیریابی با نشان' : 'مسیریابی' }}
                         </a>
                     @endif
                     @if($phoneHref)
@@ -159,9 +165,13 @@
                             </div>
                         @endif
 
-                        @if($isEmbeddableMap)
+                        @if($hasNeshanMap)
+                            <div class="tourism-detail-v2__map" style="min-height:240px">
+                                <div id="tourism-neshan-map" aria-label="نقشه نشان: {{ $title }}" role="region" style="width:100%;height:100%"></div>
+                            </div>
+                        @elseif($isEmbeddableMap)
                             <div class="tourism-detail-v2__map">
-                                <iframe src="{{ $mapUrl }}" title="نقشه {{ $title }}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+                                <iframe src="{{ $mapUrl }}" title="نقشه {{ $title }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                             </div>
                         @endif
                     </section>
@@ -269,3 +279,39 @@
     <div class="lightbox-counter"></div>
 </div>
 @endsection
+
+@if($hasNeshanMap)
+    @push('styles')
+        <link rel="stylesheet" href="https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.css">
+    @endpush
+    @push('scripts')
+        <script src="https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.umd.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const container = document.getElementById('tourism-neshan-map');
+                const neshan = window.maplibregl?.default || window.maplibregl;
+                if (!container) return;
+                if (!neshan) {
+                    container.textContent = 'بارگذاری نقشه نشان امکان‌پذیر نیست. از لینک مسیریابی استفاده کنید.';
+                    return;
+                }
+
+                try {
+                    // MapLibre uses longitude first, unlike the stored latitude/longitude pair.
+                    const destination = [{{ $longitude }}, {{ $latitude }}];
+                    const map = new neshan.Map({
+                        container: container,
+                        style: 'https://static.neshan.org/sdk/maplibre/styles/light.json',
+                        center: destination,
+                        zoom: 13,
+                        apiKey: @json($neshanMapKey),
+                    });
+                    map.addControl(new neshan.NavigationControl(), 'top-left');
+                    new neshan.Marker().setLngLat(destination).addTo(map);
+                } catch (error) {
+                    container.textContent = 'نمایش نقشه فعلاً در دسترس نیست. از لینک مسیریابی استفاده کنید.';
+                }
+            });
+        </script>
+    @endpush
+@endif
