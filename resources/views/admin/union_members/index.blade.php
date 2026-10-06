@@ -5,33 +5,27 @@
 @section('content')
 <div class="admin-page-toolbar">
     <div><p class="admin-eyebrow">اعضای اتحادیه‌ها</p><h2>مدیریت اعضای اتحادیه‌ها</h2></div>
-    <a class="admin-primary-btn" href="{{ route('admin.union_members.create') }}">ایجاد عضو جدید</a>
+    @if(request()->user()->hasPermission('union_members.create'))
+        <a class="admin-primary-btn" href="{{ route('admin.union_members.create') }}">ایجاد عضو جدید</a>
+    @endif
 </div>
 
-<div class="admin-panel-card mb-3">
-    <form class="admin-search-form" action="{{ route('admin.union_members.index') }}" method="GET">
-        <label class="form-label mb-0" for="search">جستجو</label>
-        <input class="form-control" id="search" name="search" value="{{ $search }}" placeholder="نام، کد ملی، موبایل، کد عضویت یا کسب‌وکار...">
-        <select class="form-control" name="status" aria-label="فیلتر وضعیت">
-            <option value="">همه وضعیت‌ها</option>
-            @foreach (\App\Models\UnionMember::STATUSES as $itemStatus)
-                <option value="{{ $itemStatus }}" @selected($status === $itemStatus)>{{ $itemStatus }}</option>
-            @endforeach
-        </select>
-        <select class="form-control" name="union_id" aria-label="فیلتر اتحادیه">
-            <option value="">همه اتحادیه‌ها</option>
-            @foreach ($unions as $union)
-                <option value="{{ $union->id }}" @selected((string) $unionId === (string) $union->id)>{{ $union->display_title }}</option>
-            @endforeach
-        </select>
-        <button class="admin-primary-btn" type="submit">اعمال</button>
-        @if ($search !== '' || $status !== '' || $unionId)<a class="admin-secondary-btn" href="{{ route('admin.union_members.index') }}">حذف فیلتر</a>@endif
-    </form>
-</div>
+@include('admin.partials.list-filters', [
+    'listRoute' => 'admin.union_members.index',
+    'listTitle' => 'فیلتر اعضای اتحادیه',
+    'listDescription' => 'جستجوی عضو، کسب‌وکار، کد ملی و عضویت',
+    'listSearch' => $search,
+    'listPlaceholder' => 'نام، موبایل، کد عضویت یا کسب‌وکار...',
+    'listPaginator' => $members,
+    'listFilters' => [
+            ['name' => 'status', 'label' => 'وضعیت عضو', 'value' => $status, 'options' => ['active' => 'فعال', 'inactive' => 'غیرفعال', 'suspended' => 'تعلیق', 'expired' => 'منقضی'], 'empty' => 'همه وضعیت‌ها'],
+            ['name' => 'union_id', 'label' => 'اتحادیه', 'value' => $unionId, 'options' => $unions->mapWithKeys(fn ($union) => [(string) $union->id => $union->display_title])->all(), 'empty' => 'همه اتحادیه‌ها'],
+    ],
+])
 
 <div class="admin-panel-card">
-    <div class="table-responsive">
-        <table class="table admin-table align-middle">
+    <div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="فیلتر اعضای اتحادیه">
+        <table class="table admin-table align-middle admin-list-table" data-admin-list-table>
             <thead><tr><th>نام</th><th>کد ملی</th><th>موبایل</th><th>نام کسب‌وکار</th><th>اتحادیه</th><th>وضعیت</th><th>عملیات</th></tr></thead>
             <tbody>
                 @forelse ($members as $member)
@@ -50,8 +44,8 @@
                         <td>
                             <div class="admin-actions">
                                 <a href="{{ route('admin.union_members.show', $member) }}">مشاهده</a>
-                                <a href="{{ route('admin.union_members.edit', $member) }}">ویرایش</a>
-                                <form action="{{ route('admin.union_members.destroy', $member) }}" method="POST">@csrf @method('DELETE')<button type="submit">حذف</button></form>
+                                @if(request()->user()->hasPermission('union_members.edit'))<a href="{{ route('admin.union_members.edit', $member) }}">ویرایش</a>@endif
+                                @if(request()->user()->hasPermission('union_members.delete'))<form action="{{ route('admin.union_members.destroy', $member) }}" method="POST">@csrf @method('DELETE')<button type="submit">حذف</button></form>@endif
                             </div>
                         </td>
                     </tr>
