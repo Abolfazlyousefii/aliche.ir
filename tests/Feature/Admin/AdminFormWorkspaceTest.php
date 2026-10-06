@@ -58,7 +58,7 @@ class AdminFormWorkspaceTest extends TestCase
         $response->assertOk()
             ->assertSee('اتحادیه آزمایشی')
             ->assertSee('name="_method" value="PUT"', false)
-            ->assertSee('name="president_buttons[', false)
+            ->assertSee('data-section="president-buttons"', false)
             ->assertSee('name="selected_posts[]"', false)
             ->assertSee('name="settings[', false)
             ->assertSee('name="meta_title"', false)
