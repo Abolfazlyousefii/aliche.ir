@@ -20,7 +20,7 @@ class AdminDashboardController extends Controller
     public function index(ContentApprovalService $approvalService): View
     {
         $user = request()->user();
-        $pendingApprovals = $approvalService->pendingItems();
+        $pendingApprovals = $approvalService->pendingItems(null, $user);
 
         $openComplaintsQuery = Complaint::query()
             ->visibleTo($user)
