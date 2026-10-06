@@ -67,13 +67,20 @@ class UnionController extends Controller
         $this->authorizeCreate($request);
 
         $data = $this->unionData($request->validated());
-        $data['logo'] = $this->storeImage($request, 'logo', 'unions/logos');
-        $data['cover_image'] = $this->storeImage($request, 'cover_image', 'unions/covers');
-        $data['manager_image'] = $this->storeImage($request, 'manager_image', 'unions/managers');
-        $data['executive_image'] = $this->storeImage($request, 'executive_image', 'unions/executives');
-        $data['price_list_image'] = $this->storeImage($request, 'price_list_image', 'unions/price-lists');
 
         $union = DB::transaction(function () use ($data, $request): GuildUnion {
+            // Store media metadata and union-related rows in the same database
+            // transaction. Uploaded files themselves are filesystem resources.
+            foreach ([
+                'logo' => 'unions/logos',
+                'cover_image' => 'unions/covers',
+                'manager_image' => 'unions/managers',
+                'executive_image' => 'unions/executives',
+                'price_list_image' => 'unions/price-lists',
+            ] as $field => $directory) {
+                $data[$field] = $this->storeImage($request, $field, $directory);
+            }
+
             $union = GuildUnion::create($data);
             $this->syncPageSections($union, $request->validated('related', []));
             $this->syncSelectedPosts($union, $request->validated('selected_posts', []));
@@ -120,20 +127,26 @@ class UnionController extends Controller
 
         $data = $this->unionData($request->validated(), $union);
 
-        foreach (['logo' => 'unions/logos', 'cover_image' => 'unions/covers', 'manager_image' => 'unions/managers', 'executive_image' => 'unions/executives', 'price_list_image' => 'unions/price-lists'] as $field => $directory) {
-            if ($path = $this->storeImage($request, $field, $directory)) {
-                $data[$field] = $path;
-            }
-        }
-
-        if ($request->boolean('remove_executive_image')
-            && ! $request->hasFile('executive_image')
-            && ! $request->filled('executive_image_media_id')) {
-            // Unlink the photo without deleting potentially shared media.
-            $data['executive_image'] = null;
-        }
-
         DB::transaction(function () use ($union, $data, $request): void {
+            foreach ([
+                'logo' => 'unions/logos',
+                'cover_image' => 'unions/covers',
+                'manager_image' => 'unions/managers',
+                'executive_image' => 'unions/executives',
+                'price_list_image' => 'unions/price-lists',
+            ] as $field => $directory) {
+                if ($path = $this->storeImage($request, $field, $directory)) {
+                    $data[$field] = $path;
+                }
+            }
+
+            if ($request->boolean('remove_executive_image')
+                && ! $request->hasFile('executive_image')
+                && ! $request->filled('executive_image_media_id')) {
+                // Unlink without deleting potentially shared media.
+                $data['executive_image'] = null;
+            }
+
             $union->update($data);
             $this->syncPageSections($union, $request->validated('related', []));
             $this->syncSelectedPosts($union, $request->validated('selected_posts', []));
