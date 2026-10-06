@@ -9,25 +9,26 @@
         <h2>نقش‌های سامانه</h2>
     </div>
     <div class="admin-actions">
-        <a href="{{ route('admin.permissions.index') }}">مدیریت دسترسی‌ها</a>
-        <a class="admin-primary-btn" href="{{ route('admin.roles.create') }}">ایجاد نقش جدید</a>
+        @if(request()->user()->hasPermission('permissions.view'))<a href="{{ route('admin.permissions.index') }}">مدیریت دسترسی‌ها</a>@endif
+        @if(request()->user()->hasPermission('roles.create'))<a class="admin-primary-btn" href="{{ route('admin.roles.create') }}">ایجاد نقش جدید</a>@endif
     </div>
 </div>
 
-<div class="admin-panel-card mb-3">
-    <form class="admin-search-form" action="{{ route('admin.roles.index') }}" method="GET">
-        <label class="form-label mb-0" for="search">جستجو</label>
-        <input class="form-control" id="search" name="search" value="{{ $search }}" placeholder="عنوان، نام سیستمی یا توضیحات نقش...">
-        <button class="admin-primary-btn" type="submit">جستجو</button>
-        @if ($search !== '')
-            <a class="admin-secondary-btn" href="{{ route('admin.roles.index') }}">حذف فیلتر</a>
-        @endif
-    </form>
-</div>
+@include('admin.partials.list-filters', [
+    'listRoute' => 'admin.roles.index',
+    'listTitle' => 'فیلتر نقش‌های کاربری',
+    'listDescription' => 'جستجوی عنوان، نام سیستمی و توضیحات نقش',
+    'listSearch' => $search,
+    'listPlaceholder' => 'عنوان یا نام نقش...',
+    'listPaginator' => $roles,
+    'listFilters' => [
+
+    ],
+])
 
 <div class="admin-panel-card">
-    <div class="table-responsive">
-        <table class="table admin-table align-middle">
+    <div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="فیلتر نقش‌های کاربری">
+        <table class="table admin-table align-middle admin-list-table" data-admin-list-table>
             <thead>
                 <tr>
                     <th>عنوان</th>
@@ -47,12 +48,12 @@
                         <td>
                             <div class="admin-actions">
                                 <a href="{{ route('admin.roles.show', $role) }}">مشاهده</a>
-                                <a href="{{ route('admin.roles.edit', $role) }}">ویرایش</a>
-                                <form action="{{ route('admin.roles.destroy', $role) }}" method="POST">
+                                @if(request()->user()->hasPermission('roles.edit'))<a href="{{ route('admin.roles.edit', $role) }}">ویرایش</a>@endif
+                                @if(request()->user()->hasPermission('roles.delete'))<form action="{{ route('admin.roles.destroy', $role) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit">حذف</button>
-                                </form>
+                                </form>@endif
                             </div>
                         </td>
                     </tr>
