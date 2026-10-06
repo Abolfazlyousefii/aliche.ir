@@ -17,7 +17,7 @@
         return (str_starts_with($normalized, '+') ? '+' : '').str_replace('+', '', $normalized);
     };
 
-    $posts = collect($unionNews ?? []);
+    $posts = collect($unionNews?->items() ?? []);
     $articles = $union->posts->where('type', 'article')->values();
     $socialLinks = collect($union->social_link_items);
     $presidentButtons = collect($union->active_president_buttons);
@@ -34,7 +34,10 @@
     $showRules = $union->isSectionEnabled('show_rules', true) && $union->rules->isNotEmpty();
     // show_news is the current setting; show_news_slider remains a legacy fallback
     // until an old record is saved and both values are normalized by the admin form.
-    $showNews = $union->news_enabled && ($union->isSectionEnabled('show_news', true) || $union->isSectionEnabled('show_news_slider', false)) && $posts->isNotEmpty();
+    $showNews = $union->news_enabled
+        && ($union->news_mode ?? 'auto') !== 'disabled'
+        && $union->isSectionEnabled('show_news', true)
+        && ($unionNews?->total() ?? 0) > 0;
     $showArticles = $union->news_enabled && $union->isSectionEnabled('show_articles', true) && $articles->isNotEmpty();
     $showPrices = $union->isSectionEnabled('show_prices', false) && ($union->prices->isNotEmpty() || filled($union->price_list_image));
     $showComplaint = \App\Support\Features::complaintsEnabled() && $union->complaint_enabled && $union->isSectionEnabled('show_complaint', true);
@@ -69,8 +72,6 @@
         ['visible' => $showComplaint, 'id' => 'guild-complaint', 'title' => 'ثبت شکایت', 'subtitle' => 'ثبت و پیگیری آنلاین', 'icon' => 'complaint'],
     ])->filter(fn ($item) => $item['visible'])->take(3)->values();
 
-    $featuredGuildNews = $showNews ? $posts->first() : null;
-    $secondaryGuildNews = $showNews ? $posts->skip(1)->take(6)->values() : collect();
 @endphp
 
 @section('content')
@@ -90,10 +91,6 @@
                     <span class="guild-profile-kicker"><i aria-hidden="true"></i>{{ $unionTypeLabel }}</span>
                 @endif
                 <div class="guild-profile-hero__identity-row">
-                    @if($union->logo)
-                        <img class="guild-profile-hero__logo" src="{{ $assetImage($union->logo, '') }}"
-                             alt="لوگوی {{ $union->display_title }}" loading="eager" decoding="async">
-                    @endif
                     <h1>{{ $union->display_title }}</h1>
                 </div>
                 @if(filled($union->short_description) || filled($union->description))
@@ -118,7 +115,7 @@
             </div>
 
             @if($showManager || $showExecutive)
-                <div class="guild-profile-hero__leaders" aria-label="مدیریت اتحادیه">
+                <div class="guild-profile-hero__leaders guild-profile-hero__leaders--minimal" aria-label="مدیریت اتحادیه">
                     @if($showManager)
                         <article class="guild-profile-person guild-profile-person--president">
                             <div class="guild-profile-person__portrait" data-guild-profile-image-wrap>
@@ -130,9 +127,6 @@
                             <div class="guild-profile-person__copy">
                                 <span class="guild-profile-person__role">{{ $union->manager_position ?: 'رئیس اتحادیه' }}</span>
                                 <h2>{{ $union->manager_name }}</h2>
-                                @if(filled($union->manager_description))
-                                    <p>{{ $plain($union->manager_description, 120) }}</p>
-                                @endif
                                 @if($presidentButtons->isNotEmpty())
                                     <div class="guild-profile-person__actions">
                                         @foreach($presidentButtons as $button)
@@ -145,12 +139,12 @@
                     @endif
                     @if($showExecutive)
                         <article class="guild-profile-person guild-profile-person--executive">
-                            <div class="guild-profile-person__portrait" data-guild-profile-image-wrap>
-                                @if($union->executive_image)
+                            @if($union->executive_image)
+                                <div class="guild-profile-person__portrait" data-guild-profile-image-wrap>
                                     <img src="{{ $assetImage($union->executive_image, '') }}" alt="تصویر {{ $union->executive_name }}" loading="eager" decoding="async" data-guild-profile-optional-image>
-                                @endif
-                                <span @if($union->executive_image) hidden @endif data-guild-profile-image-fallback>{{ $initial($union->executive_name) }}</span>
-                            </div>
+                                    <span hidden data-guild-profile-image-fallback>{{ $initial($union->executive_name) }}</span>
+                                </div>
+                            @endif
                             <div class="guild-profile-person__copy">
                                 <span class="guild-profile-person__role">{{ $union->executive_position ?: 'مدیر اجرایی' }}</span>
                                 <h2>{{ $union->executive_name }}</h2>
@@ -184,78 +178,20 @@
 
     <div class="site-container guild-profile-layout guild-profile-layout--full">
         <div class="guild-profile-content">
-            @if($showNews && $featuredGuildNews)
+            @if($showNews)
                 <section class="guild-profile-section guild-profile-news-section" id="guild-news" data-guild-profile-section>
                     <header class="guild-profile-section__head guild-profile-news-head">
                         <div>
                             <span>رسانه اتحادیه</span>
-                            <h2>آخرین اخبار اتحادیه</h2>
+                            <h2 tabindex="-1" data-guild-news-title>آخرین اخبار اتحادیه</h2>
                             <p>خبرها و اطلاع‌رسانی‌های مرتبط با {{ $union->display_title }}</p>
                         </div>
                         <a href="{{ route('posts.index', ['union_id' => $union->id]) }}">آرشیو اخبار اتحادیه</a>
                     </header>
-
-                    @php($featuredNewsUrl = route('posts.show', $featuredGuildNews->slug))
-                    <article class="guild-profile-news-feature">
-                        <a class="guild-profile-news-feature__media" href="{{ $featuredNewsUrl }}">
-                            <img
-                                src="{{ $featuredGuildNews->featured_image_url }}"
-                                alt="{{ $featuredGuildNews->featuredMedia?->alt_text ?: $featuredGuildNews->title }}"
-                                loading="lazy"
-                                decoding="async"
-                                @if($featuredGuildNews->featuredMedia?->srcset) srcset="{{ $featuredGuildNews->featuredMedia->srcset }}" sizes="(max-width: 899px) 100vw, 720px" @endif
-                            >
-                        </a>
-                        <div class="guild-profile-news-feature__body">
-                            <div class="guild-profile-news-meta">
-                                @if(filled($featuredGuildNews->category_title))<span>{{ $featuredGuildNews->category_title }}</span>@endif
-                                <time datetime="{{ $featuredGuildNews->published_at?->toIso8601String() }}">{{ jalali_datetime($featuredGuildNews->published_at) ?: 'بدون تاریخ' }}</time>
-                            </div>
-                            <h3><a href="{{ $featuredNewsUrl }}">{{ $featuredGuildNews->title }}</a></h3>
-                            <p>{{ \Illuminate\Support\Str::limit(strip_tags($featuredGuildNews->excerpt ?: $featuredGuildNews->short_description ?: $featuredGuildNews->summary ?: $featuredGuildNews->body), 220) }}</p>
-                            <a class="guild-profile-news-feature__link" href="{{ $featuredNewsUrl }}">مشاهده خبر</a>
-                        </div>
-                    </article>
-
-                    @if($secondaryGuildNews->isNotEmpty())
-                        <div class="guild-profile-news-grid" aria-label="شش خبر دیگر اتحادیه">
-                            @foreach($secondaryGuildNews as $post)
-                                @php($postUrl = route('posts.show', $post->slug))
-                                <article class="guild-profile-news-card">
-                                    <a href="{{ $postUrl }}">
-                                        <div class="guild-profile-news-mini__media">
-                                            <img src="{{ $post->featured_image_url }}" alt="{{ $post->featuredMedia?->alt_text ?: $post->title }}" loading="lazy" decoding="async">
-                                        </div>
-                                        <div class="guild-profile-news-mini__body">
-                                            <time datetime="{{ $post->published_at?->toIso8601String() }}">{{ jalali_datetime($post->published_at) ?: 'بدون تاریخ' }}</time>
-                                            <h3>{{ $post->title }}</h3>
-                                            <p class="guild-profile-news-mini__excerpt">{{ $plain($post->excerpt ?: $post->short_description ?: $post->summary ?: $post->body, 100) }}</p>
-                                            <span>مشاهده خبر</span>
-                                        </div>
-                                    </a>
-                                </article>
-                            @endforeach
-                        </div>
-                    @endif
-                </section>
-            @endif
-
-            @if($showMembers)
-                <section class="guild-profile-section" id="guild-board" data-guild-profile-section>
-                    <header class="guild-profile-section__head"><div><span>ساختار مدیریتی</span><h2>اعضای هیئت‌مدیره اتحادیه</h2></div></header>
-                    <div class="guild-profile-members">
-                        @foreach($union->members as $member)
-                            <article class="guild-profile-member">
-                                <div class="guild-profile-member__avatar" data-guild-profile-image-wrap>
-                                    @if($member->image)
-                                        <img src="{{ $member->image_url }}" alt="{{ $member->full_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
-                                    @endif
-                                    <span @if($member->image) hidden @endif data-guild-profile-image-fallback>{{ $initial($member->full_name) }}</span>
-                                </div>
-                                <div><h3>{{ $member->full_name }}</h3><strong>{{ $member->position ?: 'عضو اتحادیه' }}</strong>@if($member->business_name)<p>{{ $member->business_name }}</p>@endif</div>
-                            </article>
-                        @endforeach
+                    <div data-guild-news data-guild-news-panel aria-busy="false">
+                        @include('frontend.guilds.partials.news-panel', ['unionNews' => $unionNews])
                     </div>
+                    <p class="visually-hidden" data-guild-news-status role="status" aria-live="polite"></p>
                 </section>
             @endif
 
@@ -272,6 +208,25 @@
                                         <ul>@foreach($commission->tasks as $task)<li>{{ $task->title }}</li>@endforeach</ul>
                                     @endif
                                 </div>
+                            </article>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
+            @if($showMembers)
+                <section class="guild-profile-section" id="guild-board" data-guild-profile-section>
+                    <header class="guild-profile-section__head"><div><span>ساختار مدیریتی</span><h2>اعضای هیئت‌مدیره اتحادیه</h2></div></header>
+                    <div class="guild-profile-members">
+                        @foreach($union->members as $member)
+                            <article class="guild-profile-member">
+                                <div class="guild-profile-member__avatar" data-guild-profile-image-wrap>
+                                    @if($member->image)
+                                        <img src="{{ $member->image_url }}" alt="{{ $member->full_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
+                                    @endif
+                                    <span @if($member->image) hidden @endif data-guild-profile-image-fallback>{{ $initial($member->full_name) }}</span>
+                                </div>
+                                <div><h3>{{ $member->full_name }}</h3><strong>{{ $member->position ?: 'عضو اتحادیه' }}</strong>@if($member->business_name)<p>{{ $member->business_name }}</p>@endif</div>
                             </article>
                         @endforeach
                     </div>
@@ -429,3 +384,82 @@
     </div>
 </main>
 @endsection
+
+
+@push('scripts')
+<script>
+(() => {
+    'use strict';
+    const section = document.querySelector('#guild-news');
+    const panel = section?.querySelector('[data-guild-news-panel]');
+    const status = section?.querySelector('[data-guild-news-status]');
+    if (!section || !panel || !status || !window.fetch || !window.history?.pushState) return;
+
+    let requestController = null;
+    let sequence = 0;
+    const path = window.location.pathname;
+
+    const loadPage = async (url, push, scrollToNews = true) => {
+        const target = new URL(url, window.location.href);
+        if (target.origin !== window.location.origin || target.pathname !== path) return;
+
+        if (requestController) requestController.abort();
+        const controller = new AbortController();
+        requestController = controller;
+        const currentRequest = ++sequence;
+
+        panel.setAttribute('aria-busy', 'true');
+        panel.classList.add('is-loading');
+        status.textContent = 'در حال دریافت اخبار اتحادیه…';
+
+        try {
+            const response = await fetch(target.href, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                credentials: 'same-origin',
+                signal: controller.signal,
+            });
+            if (!response.ok) throw new Error('News request failed');
+            const data = await response.json();
+            if (typeof data.html !== 'string' || currentRequest !== sequence) throw new Error('Invalid news response');
+
+            // This HTML is rendered by the same-origin Laravel Blade partial.
+            panel.innerHTML = data.html;
+            if (push) window.history.pushState({ guildNews: true }, '', target.href);
+            status.textContent = 'صفحه ' + data.current_page + ' از ' + data.last_page + ' اخبار نمایش داده شد.';
+
+            if (scrollToNews) {
+                const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+                section.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+            }
+        } catch (error) {
+            if (error.name !== 'AbortError' && currentRequest === sequence) {
+                status.textContent = 'بارگذاری اخبار ناموفق بود. لطفاً دوباره تلاش کنید.';
+                status.classList.remove('visually-hidden');
+            }
+        } finally {
+            if (currentRequest === sequence) {
+                panel.setAttribute('aria-busy', 'false');
+                panel.classList.remove('is-loading');
+                requestController = null;
+            }
+        }
+    };
+
+    section.addEventListener('click', (event) => {
+        const link = event.target.closest?.('a[data-guild-news-page]');
+        if (!link || !section.contains(link) || event.defaultPrevented
+            || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        status.classList.add('visually-hidden');
+        loadPage(link.href, true);
+    });
+
+    window.addEventListener('popstate', () => {
+        if (window.location.pathname === path) {
+            status.classList.add('visually-hidden');
+            loadPage(window.location.href, false, false);
+        }
+    });
+})();
+</script>
+@endpush
