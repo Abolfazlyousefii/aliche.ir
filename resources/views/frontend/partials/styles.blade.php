@@ -12,7 +12,10 @@
 
 @if(request()->routeIs('guilds.show'))
     @php
-        $guildProfileStylesPath = public_path('assets/css/guild-profile.css');
+        // The canonical guild-profile stylesheet lives under the repository's
+        // public/ tree, while public_path() may target the separate public_html/.
+        // Use its source mtime for cache-busting when the web root is synced.
+        $guildProfileStylesPath = base_path('public/assets/css/guild-profile.css');
         $guildProfileStylesVersion = is_file($guildProfileStylesPath) ? filemtime($guildProfileStylesPath) : '1';
         $guildMemberImagesPath = public_path('assets/css/guild-member-images.css');
         $guildMemberImagesVersion = is_file($guildMemberImagesPath) ? filemtime($guildMemberImagesPath) : '1';
