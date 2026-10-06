@@ -18,8 +18,24 @@
     $selectedPostIds = collect(old('selected_posts', $union?->selectedPosts?->pluck('id')->all() ?? []))->map(fn ($id) => (string) $id)->all();
 @endphp
 
-<div class="admin-panel-card">
-    <div class="row g-3">
+@php
+    $workspaceTabs = [
+        ['id' => 'identity', 'title' => 'هویت اتحادیه'],
+        ['id' => 'people', 'title' => 'مدیریت اتحادیه'],
+        ['id' => 'contact', 'title' => 'ارتباطات'],
+        ['id' => 'news', 'title' => 'امکانات و اخبار'],
+        ['id' => 'sections', 'title' => 'کمیسیون‌ها و خدمات'],
+        ['id' => 'settings', 'title' => 'نمایش و سئو'],
+    ];
+    $workspaceEyebrow = 'مدیریت اتحادیه‌ها';
+    $workspaceHeading = $union ? 'ویرایش اطلاعات اتحادیه' : 'ساخت اتحادیه جدید';
+    $workspaceDescription = 'اطلاعات را در بخش‌های جداگانه ویرایش کنید؛ ذخیره در همه بخش‌ها یکپارچه است.';
+@endphp
+
+<div class="admin-form-workspace" data-admin-form-workspace data-admin-workspace-kind="union">
+    @include('admin.partials.form-workspace-tabs')
+<section class="admin-workspace-pane is-active" id="admin-form-pane-identity" role="tabpanel" aria-labelledby="admin-form-tab-identity" tabindex="0" data-admin-workspace-pane="identity">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-12"><h3 class="h6 mb-0">هویت اتحادیه</h3></div>
         <div class="col-md-8">
             <label class="form-label" for="title">عنوان اتحادیه</label>
@@ -74,6 +90,11 @@
             <textarea class="form-control js-rich-editor" id="description" name="description" rows="6">{{ old('description', $union?->description) }}</textarea>
         </div>
 
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-people" role="tabpanel" aria-labelledby="admin-form-tab-people" tabindex="0" data-admin-workspace-pane="people">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-12"><h3 class="h6 mt-2 mb-0">رئیس اتحادیه</h3></div>
         <div class="col-md-4">
             <label class="form-label" for="manager_name">نام رئیس</label>
@@ -156,6 +177,11 @@
             <button class="btn btn-outline-primary" type="button" data-add-row>افزودن دکمه رئیس</button>
         </div>
 
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-contact" role="tabpanel" aria-labelledby="admin-form-tab-contact" tabindex="0" data-admin-workspace-pane="contact">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-12"><h3 class="h6 mt-2 mb-0">اطلاعات تماس</h3></div>
         <div class="col-md-6">
             <label class="form-label" for="address">آدرس</label>
@@ -178,6 +204,11 @@
             </div>
         @endforeach
         <div class="col-12"><small class="text-muted">لینک شبکه اجتماعی باید URL کامل و معتبر باشد. فقط شبکه‌های پشتیبانی‌شده در صفحه عمومی نمایش داده می‌شوند.</small></div>
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-news" role="tabpanel" aria-labelledby="admin-form-tab-news" tabindex="0" data-admin-workspace-pane="news">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-12"><h3 class="h6 mt-2">امکانات اتحادیه</h3></div>
         @foreach ($featureFields as $field => $label)
             <div class="col-md-3">
@@ -214,6 +245,11 @@
                 @endif
             </small>
         </div>
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-sections" role="tabpanel" aria-labelledby="admin-form-tab-sections" tabindex="0" data-admin-workspace-pane="sections">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-12"><h3 class="h6 mt-2">نرخنامه اتحادیه</h3></div>
         <div class="col-md-4">
             <label class="form-label" for="price_list_mode">حالت نمایش نرخنامه</label>
@@ -249,6 +285,11 @@
         <div class="col-12">
             @include('admin.unions._page_sections_form')
         </div>
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-settings" role="tabpanel" aria-labelledby="admin-form-tab-settings" tabindex="0" data-admin-workspace-pane="settings">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-md-4">
             <label class="form-label" for="is_active">وضعیت</label>
             <select class="form-control" id="is_active" name="is_active">
@@ -262,10 +303,17 @@
         <div class="col-md-6"><label class="form-label" for="meta_keywords">کلیدواژه‌های متا</label><input class="form-control" id="meta_keywords" name="meta_keywords" value="{{ old('meta_keywords', $union?->meta_keywords) }}"></div>
     </div>
 </div>
-
-<div class="mt-3 d-flex gap-2">
-    <button class="admin-primary-btn" type="submit">ذخیره اتحادیه</button>
-    <a class="admin-secondary-btn" href="{{ route('admin.unions.index') }}">انصراف</a>
+</section>
+<div class="admin-workspace-savebar" role="group" aria-label="ذخیره اطلاعات اتحادیه">
+    <div class="admin-workspace-savebar__status" aria-live="polite" data-admin-workspace-status>
+        <strong>آماده ذخیره</strong>
+        <span>تغییرات تمام بخش‌ها با هم ثبت می‌شوند.</span>
+    </div>
+    <div class="admin-workspace-savebar__actions">
+        <a class="admin-secondary-btn" href="{{ route('admin.unions.index') }}">انصراف</a>
+        <button class="admin-primary-btn" type="submit" data-admin-workspace-submit>ذخیره اتحادیه</button>
+    </div>
+</div>
 </div>
 
 @push('scripts')
