@@ -44,17 +44,21 @@
                                             @if($item['show_url'])
                                                 <a href="{{ $item['show_url'] }}" class="btn btn-sm btn-outline-secondary">مشاهده</a>
                                             @endif
+                                            @if($item['can_publish'] ?? false)
                                             <form method="POST" action="{{ route('admin.pending_approvals.publish', [$item['type'], $item['model']->getKey()]) }}">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button class="btn btn-sm btn-success" type="submit">تایید و انتشار</button>
                                             </form>
+                                            @endif
+                                            @if($item['can_approve'] ?? false)
                                             <form method="POST" action="{{ route('admin.pending_approvals.reject', [$item['type'], $item['model']->getKey()]) }}" class="d-flex gap-1">
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="text" name="rejected_reason" class="form-control form-control-sm" placeholder="دلیل رد" required style="min-width: 180px;">
                                                 <button class="btn btn-sm btn-danger" type="submit">رد</button>
                                             </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
