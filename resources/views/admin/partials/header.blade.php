@@ -5,8 +5,8 @@
             <span></span>
             <span></span>
         </button>
-        <div>
-            <p class="admin-eyebrow">سامانه مدیریت محتوا</p>
+        <div class="admin-header-title">
+            <p class="admin-eyebrow"><span>پنل مدیریت</span><span aria-hidden="true">/</span><span>اتاق اصناف گرگان</span></p>
             <h1>@yield('title', 'داشبورد مدیریت')</h1>
         </div>
     </div>
@@ -32,7 +32,7 @@
                 <p class="admin-quick-results__empty" data-admin-quick-empty hidden>بخشی با این عبارت پیدا نشد.</p>
             </div>
         </div>
-        <a class="admin-header-action" href="{{ route('admin.messages.inbox') }}" aria-label="پیام‌ها">
+        <a class="admin-header-action" href="{{ route('admin.messages.inbox') }}" aria-label="صندوق پیام‌های داخلی">
             @include('admin.components.icon', ['name' => 'mail'])
             <span class="admin-header-action-label">پیام‌ها</span>
             @if (($unreadMessagesCount ?? 0) > 0)
@@ -44,7 +44,7 @@
             <div class="admin-avatar">{{ mb_substr(auth()->user()?->name ?? 'م', 0, 1) }}</div>
             <div>
                 <strong>{{ auth()->user()?->name ?? 'مدیر سامانه' }}</strong>
-                <span>خوش آمدید</span>
+                <span>حساب کاربری</span>
             </div>
         </div>
         <form class="admin-logout-form" action="{{ route('logout') }}" method="POST">
