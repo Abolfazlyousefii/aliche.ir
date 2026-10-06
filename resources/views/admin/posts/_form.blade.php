@@ -10,8 +10,23 @@
         ->values();
 @endphp
 
-<div class="admin-panel-card">
-    <div class="row g-3">
+@php
+    $workspaceTabs = [
+        ['id' => 'identity', 'title' => 'اطلاعات خبر'],
+        ['id' => 'publication', 'title' => 'انتشار و نمایش'],
+        ['id' => 'article', 'title' => 'متن خبر'],
+        ['id' => 'media', 'title' => 'تصاویر و گالری'],
+        ['id' => 'seo', 'title' => 'سئو و توضیحات'],
+    ];
+    $workspaceEyebrow = 'تحریریه اخبار';
+    $workspaceHeading = $post ? 'ویرایش خبر' : 'ایجاد خبر جدید';
+    $workspaceDescription = 'محتوا، انتشار و تصاویر را جداگانه تنظیم کنید؛ همه بخش‌ها با یک ذخیره ثبت می‌شوند.';
+@endphp
+
+<div class="admin-form-workspace" data-admin-form-workspace data-admin-workspace-kind="post">
+    @include('admin.partials.form-workspace-tabs')
+<section class="admin-workspace-pane is-active" id="admin-form-pane-identity" role="tabpanel" aria-labelledby="admin-form-tab-identity" tabindex="0" data-admin-workspace-pane="identity">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-md-8">
             <label class="form-label" for="title">عنوان خبر</label>
             <input class="form-control" id="title" name="title" value="{{ old('title', $post?->title) }}" required>
@@ -48,6 +63,11 @@
                 @endforeach
             </select>
         </div>
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-publication" role="tabpanel" aria-labelledby="admin-form-tab-publication" tabindex="0" data-admin-workspace-pane="publication">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-md-6">
             <label class="form-label" for="status">وضعیت</label>
             <select class="form-control" id="status" name="status" required>
@@ -86,6 +106,11 @@
                 </small>
             </div>
         </div>
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-article" role="tabpanel" aria-labelledby="admin-form-tab-article" tabindex="0" data-admin-workspace-pane="article">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-12">
             <label class="form-label" for="excerpt">خلاصه خبر</label>
             <textarea class="form-control js-rich-editor" id="excerpt" name="excerpt" rows="3">{{ old('excerpt', $post?->excerpt) }}</textarea>
@@ -94,6 +119,11 @@
             <label class="form-label" for="body">متن کامل خبر</label>
             <textarea class="form-control js-rich-editor" id="body" name="body" rows="12">{{ old('body', $post?->body) }}</textarea>
         </div>
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-media" role="tabpanel" aria-labelledby="admin-form-tab-media" tabindex="0" data-admin-workspace-pane="media">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-md-6">
             <label class="form-label" for="featured_image">تصویر شاخص</label>
             <input class="form-control" id="featured_image" name="featured_image" type="file" accept="image/*" data-skip-media-picker>
@@ -143,6 +173,11 @@
                 </div>
             </div>
         @endif
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-seo" role="tabpanel" aria-labelledby="admin-form-tab-seo" tabindex="0" data-admin-workspace-pane="seo">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-12">
             <label class="form-label" for="rejected_reason">دلیل رد خبر</label>
             <textarea class="form-control" id="rejected_reason" name="rejected_reason" rows="3">{{ old('rejected_reason', $post?->rejected_reason) }}</textarea>
@@ -166,10 +201,17 @@
         </div>
     </div>
 </div>
-
-<div class="mt-3 d-flex gap-2">
-    <button class="admin-primary-btn" type="submit">ذخیره خبر</button>
-    <a class="admin-secondary-btn" href="{{ route('admin.posts.index') }}">انصراف</a>
+</section>
+<div class="admin-workspace-savebar" role="group" aria-label="ذخیره خبر">
+    <div class="admin-workspace-savebar__status" aria-live="polite" data-admin-workspace-status>
+        <strong>آماده ذخیره</strong>
+        <span>تغییرات همه بخش‌ها با یک بار ذخیره ثبت می‌شوند.</span>
+    </div>
+    <div class="admin-workspace-savebar__actions">
+        <a class="admin-secondary-btn" href="{{ route('admin.posts.index') }}">انصراف</a>
+        <button class="admin-primary-btn" type="submit" data-admin-workspace-submit>ذخیره خبر</button>
+    </div>
+</div>
 </div>
 
 @push('scripts')
@@ -177,10 +219,13 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
 const titleInput=document.getElementById('title'), slugInput=document.getElementById('slug'), slugPreview=document.getElementById('slugPreview'); let slugTouched=!!slugInput?.value; const cleanSlug=(value)=>value.trim().replace(/[\s_]+/g,'-').replace(/[^\u0600-\u06FF\p{L}\p{N}-]+/gu,'').replace(/-+/g,'-').replace(/^-|-$/g,'').toLowerCase(); const updateSlugPreview=()=>{ if(slugPreview) slugPreview.textContent=slugInput?.value || 'اسلاگ-خبر'; }; slugInput?.addEventListener('input',()=>{slugTouched=true; slugInput.value=cleanSlug(slugInput.value); updateSlugPreview();}); titleInput?.addEventListener('input',()=>{ if(slugTouched) return; slugInput.value=cleanSlug(titleInput.value); updateSlugPreview(); }); updateSlugPreview();
-document.querySelectorAll('.js-union-select').forEach((el) => new TomSelect(el, {create: false, allowEmptyOption: true, sortField: {field: 'text', direction: 'asc'}, placeholder: el.dataset.placeholder || 'جستجوی اتحادیه'}));
-new TomSelect('#featured_media_id', {create: false, allowEmptyOption: true});
-new TomSelect('#gallery_media_ids', {plugins: ['remove_button'], create: false});
-new TomSelect('#meta_keywords', {plugins: ['remove_button'], persist: false, create: true, createOnBlur: true, delimiter: ',', placeholder: 'مثلا: اصناف, گرگان, خبر'});
+// When the Select UI CDN is unavailable, leave the native controls functional.
+if (window.TomSelect) {
+    document.querySelectorAll('.js-union-select').forEach(el => new TomSelect(el, {create: false, allowEmptyOption: true, sortField: {field: 'text', direction: 'asc'}, placeholder: el.dataset.placeholder || 'جستجوی اتحادیه'}));
+    new TomSelect('#featured_media_id', {create: false, allowEmptyOption: true});
+    new TomSelect('#gallery_media_ids', {plugins: ['remove_button'], create: false});
+    new TomSelect('#meta_keywords', {plugins: ['remove_button'], persist: false, create: true, createOnBlur: true, delimiter: ',', placeholder: 'مثلا: اصناف, گرگان, خبر'});
+}
 const galleryInput = document.getElementById('gallery_images');
 const galleryCaptionFields = document.getElementById('galleryCaptionFields');
 galleryInput?.addEventListener('change', () => {
@@ -197,15 +242,33 @@ const featuredSelect = document.getElementById('featured_media_id');
 const featuredPreview = document.getElementById('featuredPreview');
 featuredSelect?.addEventListener('change', () => {
     const url = featuredSelect.selectedOptions[0]?.dataset.url;
-    featuredPreview.innerHTML = url ? `<img src="${url}" alt="تصویر شاخص" class="img-fluid rounded" style="max-height:160px;object-fit:cover">` : '';
+    if (!featuredPreview) return;
+    featuredPreview.replaceChildren();
+    if (url) {
+        const image = document.createElement('img');
+        image.src = url;
+        image.alt = 'تصویر شاخص';
+        image.className = 'img-fluid rounded';
+        image.style.cssText = 'max-height:160px;object-fit:cover';
+        featuredPreview.appendChild(image);
+    }
 });
 const gallerySelect = document.getElementById('gallery_media_ids');
 const galleryPreview = document.getElementById('galleryMediaPreview');
 const renderGalleryPreview = () => {
-    galleryPreview.innerHTML = '';
-    Array.from(gallerySelect?.selectedOptions || []).forEach((option) => {
+    if (!galleryPreview) return;
+    galleryPreview.replaceChildren();
+    Array.from(gallerySelect?.selectedOptions || []).forEach(option => {
         if (!option.dataset.url) return;
-        galleryPreview.insertAdjacentHTML('beforeend', `<div class="col-3"><img src="${option.dataset.url}" alt="${option.text}" class="img-fluid rounded" style="height:90px;width:100%;object-fit:cover"></div>`);
+        const container = document.createElement('div');
+        container.className = 'col-3';
+        const image = document.createElement('img');
+        image.src = option.dataset.url;
+        image.alt = option.text;
+        image.className = 'img-fluid rounded';
+        image.style.cssText = 'height:90px;width:100%;object-fit:cover';
+        container.appendChild(image);
+        galleryPreview.appendChild(container);
     });
 };
 gallerySelect?.addEventListener('change', renderGalleryPreview);

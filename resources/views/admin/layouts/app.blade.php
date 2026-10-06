@@ -28,6 +28,12 @@
         $adminUiV2Css = base_path('public/assets/admin/css/admin-ui-v2.css');
     @endphp
     <link href="{{ asset('assets/admin/css/admin-ui-v2.css') }}?v={{ is_file($adminUiV2Css) ? filemtime($adminUiV2Css) : '1' }}" rel="stylesheet">
+    @if(request()->routeIs('admin.unions.create', 'admin.unions.edit', 'admin.posts.create', 'admin.posts.edit'))
+        @php
+            $formWorkspaceCss = base_path('public/assets/admin/css/form-workspace.css');
+        @endphp
+        <link href="{{ asset('assets/admin/css/form-workspace.css') }}?v={{ is_file($formWorkspaceCss) ? filemtime($formWorkspaceCss) : '1' }}" rel="stylesheet">
+    @endif
 </head>
 <body class="admin-phase2">
     <a class="admin-skip-link" href="#adminMainContent">رفتن به محتوای اصلی</a>
@@ -79,6 +85,12 @@
     @endphp
     <script src="{{ asset('assets/admin/js/navigation.js') }}?v={{ is_file($adminNavigationJs) ? filemtime($adminNavigationJs) : '1' }}"></script>
     <script src="{{ asset('assets/admin/js/rich-editor.js') }}"></script>
+    @if(request()->routeIs('admin.unions.create', 'admin.unions.edit', 'admin.posts.create', 'admin.posts.edit'))
+        @php
+            $formWorkspaceJs = base_path('public/assets/admin/js/form-workspace.js');
+        @endphp
+        <script src="{{ asset('assets/admin/js/form-workspace.js') }}?v={{ is_file($formWorkspaceJs) ? filemtime($formWorkspaceJs) : '1' }}"></script>
+    @endif
     @stack('scripts')
 </body>
 </html>
