@@ -10,6 +10,7 @@ use App\Rules\SafeImageUpload;
 use App\Services\ContentApprovalService;
 use App\Services\SlugService;
 use App\Support\PublicStorage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -101,9 +102,14 @@ class CommissionController extends Controller
 
     public function destroy(Commission $commission): RedirectResponse
     {
-        // Only remove database records. Attached files may be shared by other
-        // content and must not be physically deleted without a reference audit.
-        $commission->delete();
+        // The production schema may not enforce the cascading foreign keys from
+        // our migrations, so remove child records explicitly and atomically.
+        // Preserve physical media: files may be referenced by other content.
+        DB::transaction(function () use ($commission): void {
+            $commission->sessions()->delete();
+            $commission->tasks()->delete();
+            $commission->delete();
+        });
 
         return redirect()->route('admin.commissions.index')->with('success', 'کمیسیون با موفقیت حذف شد.');
     }
