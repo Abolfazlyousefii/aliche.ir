@@ -188,8 +188,8 @@ class TourismPlaceController extends Controller
                     }
                 },
             ],
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'latitude' => ['nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'required_with:latitude', 'numeric', 'between:-180,180'],
             'phone' => ['nullable', 'string', 'max:255'],
             'working_hours' => ['nullable', 'string', 'max:255'],
             'visit_price' => ['nullable', 'string', 'max:255'],
