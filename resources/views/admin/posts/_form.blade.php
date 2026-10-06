@@ -219,10 +219,13 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
 const titleInput=document.getElementById('title'), slugInput=document.getElementById('slug'), slugPreview=document.getElementById('slugPreview'); let slugTouched=!!slugInput?.value; const cleanSlug=(value)=>value.trim().replace(/[\s_]+/g,'-').replace(/[^\u0600-\u06FF\p{L}\p{N}-]+/gu,'').replace(/-+/g,'-').replace(/^-|-$/g,'').toLowerCase(); const updateSlugPreview=()=>{ if(slugPreview) slugPreview.textContent=slugInput?.value || 'اسلاگ-خبر'; }; slugInput?.addEventListener('input',()=>{slugTouched=true; slugInput.value=cleanSlug(slugInput.value); updateSlugPreview();}); titleInput?.addEventListener('input',()=>{ if(slugTouched) return; slugInput.value=cleanSlug(titleInput.value); updateSlugPreview(); }); updateSlugPreview();
-document.querySelectorAll('.js-union-select').forEach((el) => new TomSelect(el, {create: false, allowEmptyOption: true, sortField: {field: 'text', direction: 'asc'}, placeholder: el.dataset.placeholder || 'جستجوی اتحادیه'}));
-new TomSelect('#featured_media_id', {create: false, allowEmptyOption: true});
-new TomSelect('#gallery_media_ids', {plugins: ['remove_button'], create: false});
-new TomSelect('#meta_keywords', {plugins: ['remove_button'], persist: false, create: true, createOnBlur: true, delimiter: ',', placeholder: 'مثلا: اصناف, گرگان, خبر'});
+// When the Select UI CDN is unavailable, leave the native controls functional.
+if (window.TomSelect) {
+    document.querySelectorAll('.js-union-select').forEach(el => new TomSelect(el, {create: false, allowEmptyOption: true, sortField: {field: 'text', direction: 'asc'}, placeholder: el.dataset.placeholder || 'جستجوی اتحادیه'}));
+    new TomSelect('#featured_media_id', {create: false, allowEmptyOption: true});
+    new TomSelect('#gallery_media_ids', {plugins: ['remove_button'], create: false});
+    new TomSelect('#meta_keywords', {plugins: ['remove_button'], persist: false, create: true, createOnBlur: true, delimiter: ',', placeholder: 'مثلا: اصناف, گرگان, خبر'});
+}
 const galleryInput = document.getElementById('gallery_images');
 const galleryCaptionFields = document.getElementById('galleryCaptionFields');
 galleryInput?.addEventListener('change', () => {
@@ -239,15 +242,33 @@ const featuredSelect = document.getElementById('featured_media_id');
 const featuredPreview = document.getElementById('featuredPreview');
 featuredSelect?.addEventListener('change', () => {
     const url = featuredSelect.selectedOptions[0]?.dataset.url;
-    featuredPreview.innerHTML = url ? `<img src="${url}" alt="تصویر شاخص" class="img-fluid rounded" style="max-height:160px;object-fit:cover">` : '';
+    if (!featuredPreview) return;
+    featuredPreview.replaceChildren();
+    if (url) {
+        const image = document.createElement('img');
+        image.src = url;
+        image.alt = 'تصویر شاخص';
+        image.className = 'img-fluid rounded';
+        image.style.cssText = 'max-height:160px;object-fit:cover';
+        featuredPreview.appendChild(image);
+    }
 });
 const gallerySelect = document.getElementById('gallery_media_ids');
 const galleryPreview = document.getElementById('galleryMediaPreview');
 const renderGalleryPreview = () => {
-    galleryPreview.innerHTML = '';
-    Array.from(gallerySelect?.selectedOptions || []).forEach((option) => {
+    if (!galleryPreview) return;
+    galleryPreview.replaceChildren();
+    Array.from(gallerySelect?.selectedOptions || []).forEach(option => {
         if (!option.dataset.url) return;
-        galleryPreview.insertAdjacentHTML('beforeend', `<div class="col-3"><img src="${option.dataset.url}" alt="${option.text}" class="img-fluid rounded" style="height:90px;width:100%;object-fit:cover"></div>`);
+        const container = document.createElement('div');
+        container.className = 'col-3';
+        const image = document.createElement('img');
+        image.src = option.dataset.url;
+        image.alt = option.text;
+        image.className = 'img-fluid rounded';
+        image.style.cssText = 'height:90px;width:100%;object-fit:cover';
+        container.appendChild(image);
+        galleryPreview.appendChild(container);
     });
 };
 gallerySelect?.addEventListener('change', renderGalleryPreview);
