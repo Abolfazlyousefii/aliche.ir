@@ -131,7 +131,7 @@ class UnionController extends Controller
         ]);
     }
 
-    public function show(string $slug): View|RedirectResponse
+    public function show(Request $request, string $slug): View|RedirectResponse|JsonResponse
     {
         if ($redirect = app(SlugRedirectService::class)->redirectIfLegacy(GuildUnion::class, $slug, 'guilds.show')) {
             return $redirect;
@@ -142,6 +142,37 @@ class UnionController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
+        // Only editorial news directly associated with this union may appear here.
+        // The union-specific page uses its own page parameter to avoid interfering
+        // with the homepage and the global news archive.
+        $unionNews = Post::query()
+            ->where('union_id', $union->id)
+            ->published()
+            ->editorial()
+            ->with(['category', 'featuredMedia'])
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
+            ->paginate(6, ['*'], 'news_page')
+            ->withPath(route('guilds.show', $union->slug));
+
+        if ($request->ajax() || $request->expectsJson()) {
+            $newsVisible = $union->news_enabled
+                && ($union->news_mode ?? 'auto') !== 'disabled'
+                && $union->isSectionEnabled('show_news', true);
+
+            return response()->json([
+                'html' => view('frontend.guilds.partials.news-panel', [
+                    'unionNews' => $newsVisible ? $unionNews : null,
+                ])->render(),
+                'current_page' => $unionNews->currentPage(),
+                'last_page' => $newsVisible ? $unionNews->lastPage() : 1,
+                'total' => $newsVisible ? $unionNews->total() : 0,
+                'url' => $request->fullUrl(),
+            ]);
+        }
+
+        // The AJAX response needs only the paginated posts, not the union's
+        // board, commissions, article library or media collections.
         $union->load([
             'category',
             'unionType',
@@ -151,14 +182,13 @@ class UnionController extends Controller
             'minutes' => fn ($q) => $q->where('is_active', true)->orderByDesc('meeting_date'),
             'educations' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
             'prices' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+            // The page's additional article section still needs only articles.
+            // News itself is fetched in its own six-item paginator below.
             'posts' => fn ($q) => $q
                 ->published()
+                ->where('type', 'article')
                 ->with(['category', 'featuredMedia'])
                 ->latest('published_at'),
-            'selectedPosts' => fn ($q) => $q
-                ->published()
-                ->editorial()
-                ->with(['category', 'featuredMedia']),
             'announcements' => fn ($q) => $q->published()->latest('published_at'),
             'galleries' => fn ($q) => $q->published()->forUnion()->with(['images'])->latest('published_at'),
             'videos' => fn ($q) => $q->published()->latest('published_at'),
@@ -170,24 +200,6 @@ class UnionController extends Controller
                 ->reject(fn ($member) => $member->isSeedPlaceholderProfile())
                 ->values()
         );
-
-        $connectedNews = $union->posts
-            ->whereIn('type', Post::TYPES)
-            ->values();
-
-        $manuallySelectedNews = $union->selectedPosts->values();
-
-        $unionNews = match ($union->news_mode ?? 'auto') {
-            'disabled' => collect(),
-            // Selecting a union on the news form is the primary relation. In manual mode,
-            // explicitly selected news is added to those directly connected news items.
-            'manual' => $connectedNews
-                ->concat($manuallySelectedNews)
-                ->unique('id')
-                ->sortByDesc(fn ($post) => $post->published_at?->getTimestamp() ?? 0)
-                ->values(),
-            default => $connectedNews,
-        };
 
         $unionMessages = CongratulationMessage::where('is_active', true)
             ->where('status', 'published')
