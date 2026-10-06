@@ -21,7 +21,7 @@ class RichTextUploadSecurityTest extends TestCase
     public function test_file_upload_uses_server_detected_extension_instead_of_client_extension(): void
     {
         $response = $this->postJson(route('admin.rich_text.upload'), [
-            'file' => UploadedFile::fake()->createWithContent('notes.php', 'plain text attachment'),
+            'file' => UploadedFile::fake()->createWithContent('notes.php', str_repeat("Plain text UTF-8 document for MIME detection.\n", 100)),
             'type' => 'file',
         ])->assertOk();
 
