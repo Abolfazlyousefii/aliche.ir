@@ -97,6 +97,33 @@ class TourismDetailUiTest extends TestCase
             ->assertDontSee('window.unsafe', false);
     }
 
+    public function test_untrusted_map_url_remains_a_link_without_becoming_an_iframe(): void
+    {
+        $place = $this->place([
+            'map_url' => 'https://example.org/embed/fake-map',
+            'location' => null,
+            'address' => null,
+        ]);
+
+        $this->get(route('tourism.show', $place->slug))
+            ->assertOk()
+            ->assertSee('https://example.org/embed/fake-map', false)
+            ->assertDontSee('<iframe', false)
+            ->assertDontSee('<dt>محدوده</dt>', false);
+    }
+
+    public function test_google_maps_embedded_url_renders_a_map_frame(): void
+    {
+        $place = $this->place([
+            'map_url' => 'https://www.google.com/maps/embed?pb=test-map',
+        ]);
+
+        $this->get(route('tourism.show', $place->slug))
+            ->assertOk()
+            ->assertSee('<iframe', false)
+            ->assertSee('https://www.google.com/maps/embed?pb=test-map', false);
+    }
+
     private function place(array $overrides = []): TourismPlace
     {
         return TourismPlace::query()->create(array_replace([
