@@ -33,6 +33,8 @@ class SiteSettingController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
             'address' => ['nullable', 'string'],
             'map_url' => ['nullable', 'url', 'max:500'],
+            'neshan_map_key' => ['nullable', 'string', 'max:255'],
+            'remove_neshan_map_key' => ['sometimes', 'boolean'],
             'social_links_items' => ['nullable', 'array'],
             'social_links_items.*.title' => ['nullable', 'string', 'max:100'],
             'social_links_items.*.url' => ['nullable', 'url', 'max:500'],
@@ -41,6 +43,18 @@ class SiteSettingController extends Controller
         ]);
 
         $validated = $this->sanitizeRichTextFields($validated, ['site_description']);
+
+        // A blank password field must not erase a previously configured key.
+        // Only an explicit removal request clears the stored browser map key.
+        $removeNeshanKey = (bool) ($validated['remove_neshan_map_key'] ?? false);
+        unset($validated['remove_neshan_map_key']);
+        if ($removeNeshanKey) {
+            $validated['neshan_map_key'] = null;
+        } elseif (! filled($validated['neshan_map_key'] ?? null)) {
+            unset($validated['neshan_map_key']);
+        } else {
+            $validated['neshan_map_key'] = trim($validated['neshan_map_key']);
+        }
 
         foreach (['site_logo', 'site_favicon'] as $field) {
             if ($path = $this->uploadedOrSelectedImage($request, $field, 'settings/site')) {

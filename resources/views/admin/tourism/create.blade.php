@@ -48,8 +48,9 @@
         <div class="col-md-6"><label class="form-label" for="phone">تلفن</label><input class="form-control" id="phone" name="phone" value="{{ old('phone') }}"></div>
         <div class="col-md-6"><label class="form-label" for="working_hours">ساعت بازدید</label><input class="form-control" id="working_hours" name="working_hours" value="{{ old('working_hours') }}"></div>
         <div class="col-md-4"><label class="form-label" for="visit_price">هزینه بازدید</label><input class="form-control" id="visit_price" name="visit_price" value="{{ old('visit_price') }}"></div>
-        <div class="col-md-4"><label class="form-label" for="latitude">عرض جغرافیایی</label><input class="form-control" id="latitude" name="latitude" value="{{ old('latitude') }}" dir="ltr"></div>
-        <div class="col-md-4"><label class="form-label" for="longitude">طول جغرافیایی</label><input class="form-control" id="longitude" name="longitude" value="{{ old('longitude') }}" dir="ltr"></div>
+        <div class="col-md-4"><label class="form-label" for="latitude">عرض جغرافیایی (Latitude)</label><input class="form-control" inputmode="decimal" placeholder="36.8..." id="latitude" name="latitude" value="{{ old('latitude') }}" dir="ltr"></div>
+        <div class="col-md-4"><label class="form-label" for="longitude">طول جغرافیایی (Longitude)</label><input class="form-control" inputmode="decimal" placeholder="54.4..." id="longitude" name="longitude" value="{{ old('longitude') }}" dir="ltr"></div>
+        <div class="col-12"><p class="text-muted small mb-1">برای نمایش نقشه نشان و مسیریابی، عرض و طول جغرافیایی مقصد را با هم وارد کنید؛ هر دو فیلد اختیاری‌اند. لینک نقشه زیر صرفاً برای مکان‌های قدیمی بدون مختصات باقی می‌ماند.</p></div>
         <div class="col-12"><label class="form-label" for="map_url">لینک نقشه</label><input class="form-control" id="map_url" name="map_url" value="{{ old('map_url') }}" dir="ltr" placeholder="https://..."></div>
         <div class="col-12"><label class="form-label" for="address">آدرس</label><textarea class="form-control" id="address" name="address" rows="2">{{ old('address') }}</textarea></div>
         <div class="col-12"><label class="form-label" for="short_description">توضیح کوتاه</label><textarea class="form-control js-rich-editor" id="short_description" name="short_description" rows="3">{{ old('short_description') }}</textarea></div>

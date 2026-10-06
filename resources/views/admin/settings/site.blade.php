@@ -21,6 +21,23 @@
 <div class="col-md-4"><label class="form-label">ایمیل</label><input class="form-control" name="email" value="{{ old('email', $settings->get('site.email')) }}" dir="ltr"></div>
 <div class="col-12"><label class="form-label">آدرس</label><textarea class="form-control" name="address" rows="2">{{ old('address', $settings->get('site.address')) }}</textarea></div>
 <div class="col-12"><label class="form-label">لینک نقشه</label><input class="form-control" name="map_url" value="{{ old('map_url', $settings->get('site.map_url')) }}" dir="ltr"></div>
+<div class="col-12"><div class="border rounded-3 p-3 mt-2">
+    <h3 class="h6 mb-2">نقشه نشان برای گردشگری</h3>
+    <label class="form-label" for="neshan_map_key">کلید API نقشه وب نشان (Web Map Key)</label>
+    <input class="form-control" id="neshan_map_key" name="neshan_map_key" type="password"
+           autocomplete="new-password" dir="ltr" maxlength="255"
+           placeholder="{{ filled($settings->get('site.neshan_map_key')) ? 'کلید فعلی تنظیم شده؛ برای حفظ آن خالی بگذارید' : 'کلید نقشه وب را از پنل نشان دریافت کنید' }}">
+    <small class="text-muted d-block mt-2">
+        فقط کلید Web SDK نقشه را وارد کنید، نه کلید وب‌سرویس مسیریابی. کلید وب در درخواست‌های مرورگر قابل مشاهده است؛
+        آن را در پنل نشان به دامنه gorganasnaf.ir محدود کنید. خالی‌گذاشتن این ورودی، مقدار قبلی را حفظ می‌کند.
+    </small>
+    @if(filled($settings->get('site.neshan_map_key')))
+        <div class="form-check mt-2">
+            <input class="form-check-input" id="remove_neshan_map_key" name="remove_neshan_map_key" type="checkbox" value="1">
+            <label class="form-check-label" for="remove_neshan_map_key">حذف کلید فعلی نشان</label>
+        </div>
+    @endif
+</div></div>
 <div class="col-12"><label class="form-label">شبکه‌های اجتماعی</label><div data-social-list="social_links_items" data-platforms='@json($socialPlatforms)' data-next-index="{{ $socialLinks->count() }}"><div data-rows>@foreach($socialLinks as $index => $social)<div class="row g-2 align-items-end mb-2" data-row><div class="col-md-2"><label class="form-label">شبکه</label><select class="form-control" name="social_links_items[{{ $index }}][platform]">@foreach($socialPlatforms as $value => $platform)<option value="{{ $value }}" @selected(($social['platform'] ?? 'custom') === $value)>{{ $platform['icon'] }} {{ $platform['title'] }}</option>@endforeach</select></div><div class="col-md-2"><label class="form-label">عنوان</label><input class="form-control" name="social_links_items[{{ $index }}][title]" placeholder="عنوان" value="{{ $social['title'] ?? '' }}"></div><div class="col-md-4"><label class="form-label">لینک</label><input class="form-control" name="social_links_items[{{ $index }}][url]" placeholder="لینک" dir="ltr" value="{{ $social['url'] ?? '' }}"></div><div class="col-md-2"><label class="form-label">آیکن</label><input class="form-control" name="social_links_items[{{ $index }}][icon]" placeholder="آیکن" value="{{ $social['icon'] ?? '' }}"></div><div class="col-md-2"><button class="btn btn-outline-danger" type="button" data-remove-row>حذف</button></div></div>@endforeach</div><button class="btn btn-outline-primary" type="button" data-add-social>افزودن شبکه اجتماعی</button></div></div>
 </div><div class="mt-3"><button class="admin-primary-btn">ذخیره تنظیمات</button></div></form>
 @push('scripts')<script>document.addEventListener('click',function(e){const add=e.target.closest('[data-add-social]');if(add){const list=add.closest('[data-social-list]'),rows=list.querySelector('[data-rows]'),name=list.dataset.socialList,index=Number(list.dataset.nextIndex||0),platforms=JSON.parse(list.dataset.platforms||'{}');list.dataset.nextIndex=index+1;const options=Object.entries(platforms).map(([value,item])=>`<option value="${value}">${item.icon||''} ${item.title||value}</option>`).join('');rows.insertAdjacentHTML('beforeend',`<div class="row g-2 align-items-end mb-2" data-row><div class="col-md-2"><label class="form-label">شبکه</label><select class="form-control" name="${name}[${index}][platform]">${options}</select></div><div class="col-md-2"><label class="form-label">عنوان</label><input class="form-control" name="${name}[${index}][title]" placeholder="عنوان"></div><div class="col-md-4"><label class="form-label">لینک</label><input class="form-control" name="${name}[${index}][url]" placeholder="لینک" dir="ltr"></div><div class="col-md-2"><label class="form-label">آیکن</label><input class="form-control" name="${name}[${index}][icon]" placeholder="آیکن"></div><div class="col-md-2"><button class="btn btn-outline-danger" type="button" data-remove-row>حذف</button></div></div>`);}const remove=e.target.closest('[data-remove-row]');if(remove){remove.closest('[data-row]')?.remove();}});</script>@endpush
