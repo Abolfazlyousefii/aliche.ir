@@ -52,6 +52,20 @@ class CommissionDetailUiTest extends TestCase
             'status' => 'draft',
             'is_active' => true,
         ]);
+        CommissionSession::query()->create([
+            'commission_id' => $commission->id,
+            'title' => 'جلسه غیرفعال',
+            'status' => 'published',
+            'published_at' => now()->subMinute(),
+            'is_active' => false,
+        ]);
+        CommissionSession::query()->create([
+            'commission_id' => $commission->id,
+            'title' => 'جلسه آینده',
+            'status' => 'published',
+            'published_at' => now()->addDay(),
+            'is_active' => true,
+        ]);
 
         $this->get(route('commissions.show', $commission->slug))
             ->assertOk()
@@ -69,6 +83,8 @@ class CommissionDetailUiTest extends TestCase
             ->assertSee('فایل معرفی')
             ->assertDontSee('وظیفه غیرفعال')
             ->assertDontSee('جلسه پیش‌نویس')
+            ->assertDontSee('جلسه غیرفعال')
+            ->assertDontSee('جلسه آینده')
             ->assertDontSee('commission-detail-cover', false);
     }
 
