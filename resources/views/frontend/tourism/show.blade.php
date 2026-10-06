@@ -169,7 +169,7 @@
                             <div class="tourism-detail-v2__map" style="min-height:240px;position:relative">
                                 <div id="tourism-neshan-map" aria-label="نقشه نشان: {{ $title }}" role="region" style="position:absolute;inset:0"></div>
                             </div>
-                        @elseif($isEmbeddableMap)
+                        @elseif($isEmbeddableMap && ! $hasCoordinates)
                             <div class="tourism-detail-v2__map">
                                 <iframe src="{{ $mapUrl }}" title="نقشه {{ $title }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                             </div>
