@@ -29,7 +29,7 @@
             <thead><tr><th>جابجایی</th><th>کاور</th><th>عنوان</th><th>نوع</th><th>محل نمایش</th><th>تصاویر</th><th>وضعیت</th><th>انتشار</th><th>عملیات</th></tr></thead>
             <tbody id="gallery-sortable">
                 @forelse ($galleries as $gallery)
-                    <tr draggable="true" data-id="{{ $gallery->id }}">
+                    <tr @if(request()->user()->hasPermission('galleries.edit')) draggable="true" @endif data-id="{{ $gallery->id }}">
                         <td class="text-muted" style="cursor:move">☰</td>
                         <td><img src="{{ $gallery->cover_image_url }}" alt="{{ $gallery->title }}" style="width:72px;height:52px;object-fit:cover;border-radius:10px"></td>
                         <td><strong>{{ $gallery->title }}</strong><br><small dir="ltr">{{ $gallery->slug }}</small></td>
@@ -60,6 +60,7 @@
 
 
 @push('scripts')
+@if(request()->user()->hasPermission('galleries.edit'))
 <script>
 const sortable = document.getElementById('gallery-sortable');
 let draggedRow = null;
@@ -83,4 +84,5 @@ sortable?.addEventListener('drop', () => {
     document.body.appendChild(form); form.submit();
 });
 </script>
+@endif
 @endpush
