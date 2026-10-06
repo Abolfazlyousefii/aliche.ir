@@ -1,0 +1,45 @@
+name: Admin phase 1 safety checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  admin-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3, dom, xml, gd, fileinfo, zip
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Prepare isolated application key
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+      - name: Check PHP and JavaScript syntax
+        run: |
+          php -l app/Support/AdminNavigation.php
+          php -l app/Support/AdminCategoryAccess.php
+          php -l app/Http/Controllers/Admin/CategoryController.php
+          php -l app/Services/ContentApprovalService.php
+          php -l routes/web.php
+          node --check public/assets/admin/js/navigation.js
+      - name: Test admin role boundaries and existing personal inbox behavior
+        run: |
+          vendor/bin/phpunit tests/Feature/Admin/AdminPhaseOneSecurityTest.php
+          vendor/bin/phpunit tests/Feature/Admin/AdminPhaseOneModerationTest.php
+          vendor/bin/phpunit tests/Feature/Admin/InternalMessageAccessTest.php
+          vendor/bin/phpunit tests/Feature/Media/RichTextUploadSecurityTest.php
+      - name: Compile Blade views
+        run: php artisan view:cache
