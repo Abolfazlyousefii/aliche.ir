@@ -151,8 +151,11 @@ class UnionController extends Controller
             'minutes' => fn ($q) => $q->where('is_active', true)->orderByDesc('meeting_date'),
             'educations' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
             'prices' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+            // The page's additional article section still needs only articles.
+            // News itself is fetched in its own six-item paginator below.
             'posts' => fn ($q) => $q
                 ->published()
+                ->where('type', 'article')
                 ->with(['category', 'featuredMedia'])
                 ->latest('published_at'),
             'announcements' => fn ($q) => $q->published()->latest('published_at'),
@@ -179,11 +182,6 @@ class UnionController extends Controller
             ->orderByDesc('id')
             ->paginate(6, ['*'], 'news_page')
             ->withPath(route('guilds.show', $union->slug));
-
-        if (($union->news_mode ?? 'auto') === 'disabled') {
-            // Honour the admin's explicit disabled mode, even for AJAX requests.
-            $unionNews->setCollection(collect());
-        }
 
         if ($request->ajax() || $request->expectsJson()) {
             $newsVisible = $union->news_enabled
