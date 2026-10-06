@@ -5,106 +5,187 @@
 @section('footer_links_variant', 'short')
 
 @section('content')
-<section class="page-header page-header-alt commissions-hero commission-detail-hero">
-    <div class="site-container">
-        <span class="commissions-eyebrow">جزئیات کمیسیون</span>
-        <h1>{{ $commission->title }}</h1>
-        <p>{{ plain_text($commission->description, 180) ?: 'اطلاعات تکمیلی این کمیسیون در حال تکمیل است.' }}</p>
-        <nav class="breadcrumb">
-            <a href="{{ route('home') }}">خانه</a>
-            <a href="{{ route('commissions.index') }}">کمیسیون‌ها</a>
-            <span>{{ $commission->title }}</span>
-        </nav>
-    </div>
-</section>
+@php
+    $tasks = $commission->activeTasks;
+    $sessions = $commission->publishedSessions;
+    $memberNames = collect($commission->members ?? [])
+        ->map(fn ($member) => trim((string) (is_array($member) ? ($member['name'] ?? '') : $member)))
+        ->filter()
+        ->values();
+    $attachments = collect($commission->attachments ?? [])
+        ->filter(fn ($file) => is_array($file) && filled($file['path'] ?? null))
+        ->values();
+    $hasDescription = filled(plain_text($commission->description));
+    // Sanitize on output too: old records may predate the admin-side sanitizer.
+    $richTextSanitizer = app(\App\Services\RichTextSanitizer::class);
+@endphp
 
-<section class="site-container commission-detail-page">
-    <div class="commission-detail-layout">
-        <article class="commission-detail-main">
-            @if($commission->image)
-                <figure class="commission-detail-cover">
-                    <img src="{{ $commission->image_url }}" alt="{{ $commission->title }}" loading="eager" fetchpriority="high" decoding="async">
-                </figure>
-            @endif
+<main class="commission-profile-v3">
+    <header class="commission-profile-v3__header">
+        <div class="site-container">
+            <nav class="commission-profile-v3__breadcrumb" aria-label="مسیر صفحه">
+                <a href="{{ route('home') }}">خانه</a>
+                <span aria-hidden="true">/</span>
+                <a href="{{ route('commissions.index') }}">کمیسیون‌ها</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">{{ $commission->title }}</span>
+            </nav>
+            <span class="commission-profile-v3__eyebrow">کمیسیون تخصصی اتاق اصناف</span>
+            <h1>{{ $commission->title }}</h1>
+            <p>معرفی، اعضا، وظایف و جلسات منتشرشده این کمیسیون</p>
+        </div>
+    </header>
 
-            <div class="commission-detail-card commission-description-card">
-                <span class="commissions-eyebrow">معرفی</span>
-                <h2>{{ $commission->title }}</h2>
-                <div class="commission-rich-text">{!! $commission->description ?: '<p>توضیحات این کمیسیون هنوز تکمیل نشده است.</p>' !!}</div>
-            </div>
-
-            <div class="commission-detail-card">
-                <div class="commission-section-title">
-                    <span>وظایف کمیسیون</span>
-                    <small>{{ $commission->activeTasks->count() }} مورد</small>
-                </div>
-                <div class="commission-task-list">
-                    @forelse($commission->activeTasks as $task)
-                        <div class="commission-task-card">
-                            <strong>{{ $task->title }}</strong>
-                            <div>{!! $task->description ?: '<p>توضیحی برای این وظیفه ثبت نشده است.</p>' !!}</div>
+    <div class="site-container commission-profile-v3__body">
+        <div class="commission-profile-v3__layout">
+            <div class="commission-profile-v3__main">
+                <section class="commission-profile-v3__overview" aria-labelledby="commission-overview-title">
+                    <div class="commission-profile-v3__overview-content">
+                        <div class="commission-profile-v3__section-title">
+                            <span class="commission-profile-v3__eyebrow">آشنایی با کمیسیون</span>
+                            <h2 id="commission-overview-title">معرفی کمیسیون</h2>
                         </div>
-                    @empty
-                        <p class="text-muted">وظیفه‌ای برای این کمیسیون ثبت نشده است.</p>
-                    @endforelse
-                </div>
-            </div>
-
-            <div class="commission-detail-card">
-                <div class="commission-section-title">
-                    <span>جلسات کمیسیون</span>
-                    <small>{{ $commission->publishedSessions->count() }} جلسه</small>
-                </div>
-                <div class="commission-session-list">
-                    @forelse($commission->publishedSessions as $session)
-                        <div class="commission-session-card">
-                            <div>
-                                <strong>{{ $session->title }}</strong>
-                                <span>{{ jalali_datetime($session->session_date) ?: 'بدون تاریخ' }}</span>
-                                <p>{{ plain_text($session->description, 150) ?: 'شرحی برای این جلسه ثبت نشده است.' }}</p>
+                        @if($hasDescription)
+                            <div class="commission-profile-v3__rich-text">
+                                {!! $richTextSanitizer->sanitize($commission->description) !!}
                             </div>
-                            @if($session->minutes_file)
-                                <a class="commission-download-link" href="{{ \App\Support\PublicFileUrl::make($session->minutes_file, '') }}" target="_blank">دانلود صورتجلسه</a>
-                            @endif
-                        </div>
-                    @empty
-                        <p class="text-muted">جلسه منتشرشده‌ای برای این کمیسیون وجود ندارد.</p>
-                    @endforelse
-                </div>
-            </div>
-        </article>
-
-        <aside class="commission-detail-sidebar">
-            <div class="commission-sidebar-card">
-                <h3>اطلاعات کمیسیون</h3>
-                <div class="commission-stat-row"><span>تعداد اعضا</span><strong>{{ count($commission->members ?? []) }}</strong></div>
-                <div class="commission-stat-row"><span>تعداد وظایف</span><strong>{{ $commission->activeTasks->count() }}</strong></div>
-                <div class="commission-stat-row"><span>جلسات منتشرشده</span><strong>{{ $commission->publishedSessions->count() }}</strong></div>
-                <a class="commission-back-link" href="{{ route('commissions.index') }}">بازگشت به فهرست کمیسیون‌ها</a>
-            </div>
-
-            <div class="commission-sidebar-card">
-                <h3>اعضای کمیسیون</h3>
-                <div class="commission-member-list">
-                    @forelse($commission->members ?? [] as $member)
-                        <span>{{ $member['name'] ?? '' }}</span>
-                    @empty
-                        <p class="text-muted">اعضایی برای نمایش ثبت نشده است.</p>
-                    @endforelse
-                </div>
-            </div>
-
-            @if(!empty($commission->attachments))
-                <div class="commission-sidebar-card">
-                    <h3>پیوست‌ها</h3>
-                    <div class="commission-attachment-list">
-                        @foreach($commission->attachments as $file)
-                            <a href="{{ \App\Support\PublicFileUrl::make($file['path'] ?? '', '') }}" target="_blank">{{ $file['name'] ?? 'دانلود فایل' }}</a>
-                        @endforeach
+                        @else
+                            <p class="commission-profile-v3__muted">توضیحات این کمیسیون هنوز در پنل مدیریت تکمیل نشده است.</p>
+                        @endif
                     </div>
-                </div>
-            @endif
-        </aside>
+                    @if($commission->image)
+                        <figure class="commission-profile-v3__thumbnail">
+                            <img src="{{ $commission->image_url }}" alt="تصویر {{ $commission->title }}" loading="eager" decoding="async">
+                        </figure>
+                    @endif
+                </section>
+
+                @if($tasks->isNotEmpty())
+                    <section class="commission-profile-v3__section" aria-labelledby="commission-tasks-title">
+                        <div class="commission-profile-v3__section-head">
+                            <div>
+                                <span class="commission-profile-v3__eyebrow">حوزه فعالیت</span>
+                                <h2 id="commission-tasks-title">وظایف کمیسیون</h2>
+                            </div>
+                            <span class="commission-profile-v3__count">{{ fa_number($tasks->count()) }} وظیفه</span>
+                        </div>
+                        <div class="commission-profile-v3__tasks">
+                            @foreach($tasks as $task)
+                                <article class="commission-profile-v3__task">
+                                    <div class="commission-profile-v3__task-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+                                    </div>
+                                    <div>
+                                        <h3>{{ $task->title }}</h3>
+                                        @if(filled(plain_text($task->description)))
+                                            <div class="commission-profile-v3__rich-text">
+                                                {!! $richTextSanitizer->sanitize($task->description) !!}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
+
+                @if($sessions->isNotEmpty())
+                    <section class="commission-profile-v3__section" aria-labelledby="commission-sessions-title">
+                        <div class="commission-profile-v3__section-head">
+                            <div>
+                                <span class="commission-profile-v3__eyebrow">گزارش فعالیت</span>
+                                <h2 id="commission-sessions-title">جلسات منتشرشده</h2>
+                            </div>
+                            <span class="commission-profile-v3__count">{{ fa_number($sessions->count()) }} جلسه</span>
+                        </div>
+                        <div class="commission-profile-v3__sessions">
+                            @foreach($sessions as $session)
+                                <article class="commission-profile-v3__session">
+                                    <div class="commission-profile-v3__session-top">
+                                        <h3>{{ $session->title }}</h3>
+                                        @if($session->session_date)
+                                            <time datetime="{{ $session->session_date->toDateString() }}">
+                                                {{ jalali_datetime($session->session_date) }}
+                                            </time>
+                                        @endif
+                                    </div>
+                                    @if(filled(plain_text($session->description)))
+                                        <p>{{ plain_text($session->description, 220) }}</p>
+                                    @endif
+
+                                    @php
+                                        $sessionAttachments = collect($session->attachments ?? [])
+                                            ->filter(fn ($file) => is_array($file) && filled($file['path'] ?? null));
+                                        $sessionImages = collect($session->images ?? [])
+                                            ->filter(fn ($file) => is_array($file) && filled($file['path'] ?? null));
+                                    @endphp
+
+                                    @if($session->minutes_file || $sessionAttachments->isNotEmpty())
+                                        <div class="commission-profile-v3__files">
+                                            @if($session->minutes_file)
+                                                <a href="{{ \App\Support\PublicFileUrl::make($session->minutes_file, '') }}" target="_blank" rel="noopener noreferrer">دریافت صورتجلسه</a>
+                                            @endif
+                                            @foreach($sessionAttachments as $file)
+                                                <a href="{{ \App\Support\PublicFileUrl::make($file['path'], '') }}" target="_blank" rel="noopener noreferrer">{{ $file['name'] ?? 'دانلود پیوست جلسه' }}</a>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                    @if($sessionImages->isNotEmpty())
+                                        <div class="commission-profile-v3__session-images">
+                                            @foreach($sessionImages as $image)
+                                                <a href="{{ \App\Support\PublicFileUrl::make($image['path'], '') }}" target="_blank" rel="noopener noreferrer" aria-label="مشاهده تصویر جلسه">
+                                                    <img src="{{ \App\Support\PublicFileUrl::make($image['path'], '') }}" alt="{{ $image['name'] ?? $session->title }}" loading="lazy" decoding="async">
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </article>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
+            </div>
+
+            <aside class="commission-profile-v3__sidebar" aria-label="اطلاعات تکمیلی کمیسیون">
+                <section class="commission-profile-v3__side-card">
+                    <h2>اطلاعات کمیسیون</h2>
+                    <dl class="commission-profile-v3__stats">
+                        <div><dt>اعضای ثبت‌شده</dt><dd>{{ fa_number($memberNames->count()) }}</dd></div>
+                        <div><dt>وظایف فعال</dt><dd>{{ fa_number($tasks->count()) }}</dd></div>
+                        <div><dt>جلسات منتشرشده</dt><dd>{{ fa_number($sessions->count()) }}</dd></div>
+                    </dl>
+                    <a class="commission-profile-v3__back" href="{{ route('commissions.index') }}">
+                        <span>بازگشت به فهرست کمیسیون‌ها</span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+                    </a>
+                </section>
+
+                @if($memberNames->isNotEmpty())
+                    <section class="commission-profile-v3__side-card">
+                        <h2>اعضای کمیسیون</h2>
+                        <ul class="commission-profile-v3__members">
+                            @foreach($memberNames as $name)
+                                <li>{{ $name }}</li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+
+                @if($attachments->isNotEmpty())
+                    <section class="commission-profile-v3__side-card">
+                        <h2>پیوست‌های کمیسیون</h2>
+                        <div class="commission-profile-v3__attachments">
+                            @foreach($attachments as $file)
+                                <a href="{{ \App\Support\PublicFileUrl::make($file['path'], '') }}" target="_blank" rel="noopener noreferrer">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h7l4 4v12H8zM15 4v5h4M11 14h5M11 17h4"/></svg>
+                                    <span>{{ $file['name'] ?? 'دانلود پیوست' }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
+            </aside>
+        </div>
     </div>
-</section>
+</main>
 @endsection
