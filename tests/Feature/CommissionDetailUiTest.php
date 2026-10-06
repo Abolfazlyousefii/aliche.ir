@@ -119,6 +119,29 @@ class CommissionDetailUiTest extends TestCase
         $this->get(route('commissions.show', $commission->slug))->assertNotFound();
     }
 
+    public function test_detail_sanitizes_legacy_html_in_description_and_tasks(): void
+    {
+        $commission = $this->commission([
+            'slug' => 'commission-legacy-html',
+            'description' => '<p onclick="alert(1)">متن معتبر کمیسیون</p><script>window.insecure=true</script>',
+        ]);
+
+        $commission->tasks()->create([
+            'title' => 'وظیفه آزمایشی',
+            'description' => '<p onmouseover="alert(1)">متن معتبر وظیفه</p><iframe src="https://example.com"></iframe>',
+            'is_active' => true,
+        ]);
+
+        $this->get(route('commissions.show', $commission->slug))
+            ->assertOk()
+            ->assertSee('متن معتبر کمیسیون')
+            ->assertSee('متن معتبر وظیفه')
+            ->assertDontSee('onclick=', false)
+            ->assertDontSee('onmouseover=', false)
+            ->assertDontSee('window.insecure', false)
+            ->assertDontSee('<iframe', false);
+    }
+
     private function commission(array $overrides = []): Commission
     {
         return Commission::query()->create(array_replace([
