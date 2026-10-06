@@ -122,7 +122,7 @@ class AdminPhaseFiveCompletionTest extends TestCase
 
     public function test_home_section_reordering_is_editable_with_keyboard_and_disabled_for_view_only(): void
     {
-        HomeSection::query()->create(['key' => 'hero_slider', 'title' => 'اسلایدر صفحه اول', 'sort_order' => 10, 'is_active' => true]);
+        HomeSection::query()->updateOrCreate(['key' => 'hero_slider'], ['title' => 'اسلایدر صفحه اول', 'sort_order' => 10, 'is_active' => true]);
 
         $viewer = $this->withPermissions(['home_sections.view']);
         $this->actingAs($viewer)
