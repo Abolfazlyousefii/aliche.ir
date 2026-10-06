@@ -3,7 +3,9 @@
 @section('title', 'مدیریت سکشن‌های صفحه اصلی')
 
 @section('content')
-@php($canSortHome = request()->user()->hasPermission('home_sections.edit'))
+@php
+    $canSortHome = request()->user()->hasPermission('home_sections.edit');
+@endphp
 <div class="admin-page-toolbar">
     <div><p class="admin-eyebrow">صفحه اصلی</p><h2>مدیریت سکشن‌های صفحه اصلی</h2></div>
 </div>
