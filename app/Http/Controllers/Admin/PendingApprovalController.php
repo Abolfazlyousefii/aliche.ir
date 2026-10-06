@@ -13,7 +13,7 @@ class PendingApprovalController extends Controller
     public function index(ContentApprovalService $approvalService): View
     {
         return view('admin.pending_approvals.index', [
-            'items' => $approvalService->pendingItems(),
+            'items' => $approvalService->pendingItems(null, request()->user()),
             'statusLabels' => ContentApprovalService::statusLabels(),
         ]);
     }
