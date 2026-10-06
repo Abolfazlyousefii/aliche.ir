@@ -119,7 +119,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const option = select?.selectedOptions?.[0];
         const url = option?.dataset?.url || fallbackUrl || '';
         if (!preview) return;
-        preview.innerHTML = url ? `<img src="${url}" alt="پیش‌نمایش تصویر گردشگری" class="img-fluid rounded" style="max-height:140px;object-fit:cover">` : '';
+        preview.replaceChildren();
+        if (!url) return;
+
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'پیش‌نمایش تصویر گردشگری';
+        img.className = 'img-fluid rounded';
+        img.style.cssText = 'max-height:140px;object-fit:cover';
+        preview.appendChild(img);
     };
 
     const cardSelect = document.getElementById('image_media_id');
@@ -134,10 +142,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const galleryPreview = document.getElementById('gallery_images_media_preview');
     const renderGalleryMedia = () => {
         if (!galleryPreview) return;
-        galleryPreview.innerHTML = '';
+        galleryPreview.replaceChildren();
         Array.from(gallerySelect?.selectedOptions || []).forEach((option) => {
             if (!option.dataset.url) return;
-            galleryPreview.insertAdjacentHTML('beforeend', `<div class="col-6 col-md-3"><img src="${option.dataset.url}" alt="${option.text}" class="img-fluid rounded" style="height:90px;width:100%;object-fit:cover"></div>`);
+            const tile = document.createElement('div');
+            tile.className = 'col-6 col-md-3';
+            const img = document.createElement('img');
+            img.src = option.dataset.url;
+            img.alt = option.text;
+            img.className = 'img-fluid rounded';
+            img.style.cssText = 'height:90px;width:100%;object-fit:cover';
+            tile.appendChild(img);
+            galleryPreview.appendChild(tile);
         });
     };
     gallerySelect?.addEventListener('change', renderGalleryMedia);
