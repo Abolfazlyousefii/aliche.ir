@@ -63,7 +63,7 @@
                     @if($place->location || $place->address)
                         <span>
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11z"/><circle cx="12" cy="10" r="2"/></svg>
-                            {{ $place->location ?: IlluminateSupportStr::limit($place->address, 58) }}
+                            {{ $place->location ?: \Illuminate\Support\Str::limit($place->address, 58) }}
                         </span>
                     @endif
                 </div>
@@ -100,7 +100,7 @@
                     </header>
 
                     <div class="tourism-detail-v2__rich-text">
-                        {!! $place->description ?: '<p>توضیحات کامل این مکان هنوز در پایگاه داده ثبت نشده است.</p>' !!}
+                        {!! filled(plain_text($place->description)) ? app(\App\Services\RichTextSanitizer::class)->sanitize($place->description) : '<p>توضیحات کامل این مکان هنوز در پایگاه داده ثبت نشده است.</p>' !!}
                     </div>
                 </section>
 
