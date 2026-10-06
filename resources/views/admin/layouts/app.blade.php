@@ -12,6 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet">
     <link href="{{ asset('assets/admin/css/admin.css') }}?v={{ filemtime(public_path('assets/admin/css/admin.css')) }}" rel="stylesheet">
+    @php($adminNavigationCss = base_path('public/assets/admin/css/navigation.css'))
+    <link href="{{ asset('assets/admin/css/navigation.css') }}?v={{ is_file($adminNavigationCss) ? filemtime($adminNavigationCss) : '1' }}" rel="stylesheet">
 
     @if(request()->routeIs('admin.unions.*', 'admin.union_members.*'))
         @php
@@ -65,6 +67,8 @@
     <script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js" referrerpolicy="origin"></script>
     <script>window.adminRichTextUploadUrl = @json(route('admin.rich_text.upload')); window.adminMediaPickerUrl = @json(route('admin.media.picker')); window.adminMediaUploadUrl = @json(route('admin.media.store'));</script>
     <script src="{{ asset('assets/admin/js/admin.js') }}?v={{ filemtime(public_path('assets/admin/js/admin.js')) }}"></script>
+    @php($adminNavigationJs = base_path('public/assets/admin/js/navigation.js'))
+    <script src="{{ asset('assets/admin/js/navigation.js') }}?v={{ is_file($adminNavigationJs) ? filemtime($adminNavigationJs) : '1' }}"></script>
     <script src="{{ asset('assets/admin/js/rich-editor.js') }}"></script>
     @stack('scripts')
 </body>
