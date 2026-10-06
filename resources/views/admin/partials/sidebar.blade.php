@@ -7,12 +7,14 @@
     <div class="admin-brand">
         <div class="admin-brand-mark">ا</div>
         <div>
-            <strong>پنل مدیریت</strong>
-            <span>اتاق اصناف مرکز استان گلستان</span>
+            <strong>گرگان اصناف</strong>
+            <span>پنل مدیریت یکپارچه</span>
         </div>
+        <button class="admin-sidebar-close" type="button" data-admin-sidebar-close aria-label="بستن منوی مدیریت">×</button>
     </div>
 
-    <nav class="admin-sidebar-nav">
+    <div class="admin-sidebar-caption">بخش‌های مدیریتی</div>
+    <nav class="admin-sidebar-nav" aria-label="دسترسی به بخش‌های سامانه">
         @foreach ($adminMenuGroups as $item)
             @php
                 $menuIcon = $item['icon'] ?? 'file';
@@ -55,4 +57,11 @@
             @endif
         @endforeach
     </nav>
+    <div class="admin-sidebar-bottom">
+        <span class="admin-sidebar-bottom__caption">اتاق اصناف مرکز استان گلستان</span>
+        <a href="{{ route('home') }}" target="_blank" rel="noopener noreferrer">
+            @include('admin.components.icon', ['name' => 'external'])
+            <span>نمایش وب‌سایت</span>
+        </a>
+    </div>
 </aside>

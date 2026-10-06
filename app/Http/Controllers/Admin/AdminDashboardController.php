@@ -20,27 +20,59 @@ class AdminDashboardController extends Controller
     public function index(ContentApprovalService $approvalService): View
     {
         $user = request()->user();
-        $pendingApprovals = $approvalService->pendingItems(null, $user);
+        $can = fn (string $permission): bool => $user?->hasPermission($permission) === true;
 
-        $openComplaintsQuery = Complaint::query()
-            ->visibleTo($user)
-            ->whereIn('status', ['registered', 'reviewing', 'need_more_info']);
+        // A dashboard is also a view of protected operational information.
+        // Never display counts or details belonging to modules the user cannot view.
+        $canReview = $can('pending_approvals.view');
+        $canComplaints = $can('complaints.view');
+        $canContact = $can('contact_messages.view');
+        $canUnions = $can('unions.view');
+        $canMembers = $can('union_members.view');
+        $canSms = $can('sms.view');
 
-        $smsQuery = SmsLog::query()->visibleTo($user);
-        $latestSmsLog = (clone $smsQuery)->latest()->first();
+        $pendingApprovals = $canReview
+            ? $approvalService->pendingItems(null, $user)
+            : collect();
+        $openComplaintsCount = $canComplaints
+            ? Complaint::query()->visibleTo($user)
+                ->whereIn('status', ['registered', 'reviewing', 'need_more_info'])->count()
+            : 0;
+        $unreadContactMessagesCount = $canContact
+            ? ContactMessage::query()->unread()->count()
+            : 0;
+        $smsQuery = $canSms ? SmsLog::query()->visibleTo($user) : null;
+        $latestSmsLog = $smsQuery ? (clone $smsQuery)->latest()->first() : null;
 
-        $publishedThisMonthCount = $this->publishedThisMonthCount($approvalService);
-        $openComplaintsCount = (clone $openComplaintsQuery)->count();
-        $unreadContactMessagesCount = ContactMessage::query()->unread()->count();
+        $stats = array_values(array_filter([
+            $canReview ? ['title' => 'در انتظار بررسی', 'count' => $pendingApprovals->count(), 'icon' => 'check', 'tone' => 'warning', 'route' => 'admin.pending_approvals.index', 'hint' => 'محتوای نیازمند تصمیم'] : null,
+            $canComplaints ? ['title' => 'شکایت‌های باز', 'count' => $openComplaintsCount, 'icon' => 'complaint', 'tone' => 'danger', 'route' => 'admin.complaints.index', 'hint' => 'پرونده‌های نیازمند پیگیری'] : null,
+            $canContact ? ['title' => 'پیام‌های تماس جدید', 'count' => $unreadContactMessagesCount, 'icon' => 'phone', 'tone' => 'info', 'route' => 'admin.contact_messages.index', 'hint' => 'پیام‌های خوانده‌نشده'] : null,
+            $canUnions ? ['title' => 'اتحادیه‌های فعال', 'count' => GuildUnion::query()->where('is_active', true)->count(), 'icon' => 'building', 'tone' => 'primary', 'route' => 'admin.unions.index', 'hint' => 'مدیریت پروفایل اتحادیه‌ها'] : null,
+            $canMembers ? ['title' => 'اعضای فعال', 'count' => UnionMember::query()->visibleTo($user)->where('is_active', true)->count(), 'icon' => 'users', 'tone' => 'success', 'route' => 'admin.union_members.index', 'hint' => 'فهرست اعضای ثبت‌شده'] : null,
+            $canSms ? ['title' => 'گیرندگان پیامک موفق', 'count' => (clone $smsQuery)->where('status', 'sent')->sum('recipient_count'), 'icon' => 'sms', 'tone' => 'purple', 'route' => 'admin.sms.index', 'hint' => 'بر پایه گزارش ارسال'] : null,
+        ]));
+
+        $tasks = array_values(array_filter([
+            $canReview && $pendingApprovals->isNotEmpty() ? ['title' => 'بررسی محتواهای در انتظار', 'count' => $pendingApprovals->count(), 'route' => 'admin.pending_approvals.index', 'icon' => 'check'] : null,
+            $canComplaints && $openComplaintsCount > 0 ? ['title' => 'پیگیری شکایت‌های باز', 'count' => $openComplaintsCount, 'route' => 'admin.complaints.index', 'icon' => 'complaint'] : null,
+            $canContact && $unreadContactMessagesCount > 0 ? ['title' => 'پاسخ به پیام‌های جدید', 'count' => $unreadContactMessagesCount, 'route' => 'admin.contact_messages.index', 'icon' => 'mail'] : null,
+        ]));
+
+        $shortcuts = array_values(array_filter([
+            $can('posts.create') ? ['title' => 'خبر جدید', 'route' => 'admin.posts.create', 'icon' => 'news'] : null,
+            $can('unions.create') ? ['title' => 'اتحادیه جدید', 'route' => 'admin.unions.create', 'icon' => 'building'] : null,
+            $can('pages.create') ? ['title' => 'صفحه جدید', 'route' => 'admin.pages.create', 'icon' => 'file'] : null,
+            $can('messages.send') ? ['title' => 'ارسال پیام', 'route' => 'admin.messages.create', 'icon' => 'mail'] : null,
+            $can('announcements.create') ? ['title' => 'اطلاعیه جدید', 'route' => 'admin.announcements.create', 'icon' => 'check'] : null,
+        ]));
 
         return view('admin.dashboard', [
-            'pendingApprovals' => $pendingApprovals->take(8)->values(),
-            'pendingApprovalsCount' => $pendingApprovals->count(),
-            'unreadContactMessagesCount' => $unreadContactMessagesCount,
-            'openComplaintsCount' => $openComplaintsCount,
-            'unionsCount' => GuildUnion::query()->where('is_active', true)->count(),
-            'membersCount' => UnionMember::query()->visibleTo($user)->where('is_active', true)->count(),
-            'sentSmsRecipientCount' => (clone $smsQuery)->where('status', 'sent')->sum('recipient_count'),
+            'stats' => $stats,
+            'tasks' => $tasks,
+            'shortcuts' => $shortcuts,
+            'pendingApprovals' => $pendingApprovals->take(6)->values(),
+            'canReview' => $canReview,
             'privateAnnouncements' => Announcement::query()
                 ->privateVisibleTo($user)
                 ->with('union')
@@ -48,31 +80,14 @@ class AdminDashboardController extends Controller
                 ->latest('published_at')
                 ->take(5)
                 ->get(),
-            'dashboardTasks' => $this->dashboardTasks(
-                $pendingApprovals->count(),
-                $openComplaintsCount,
-                $unreadContactMessagesCount,
-            ),
-            'systemStatus' => [
+            'systemStatus' => $user->hasRole('super-admin') ? [
                 'site' => config('app.debug') ? 'حالت توسعه' : 'فعال',
                 'database' => $this->databaseStatus(),
                 'sms' => $this->smsStatus($latestSmsLog),
                 'latest_sms' => $latestSmsLog?->created_at,
-                'published_this_month' => $publishedThisMonthCount,
-            ],
+                'published_this_month' => $this->publishedThisMonthCount($approvalService),
+            ] : null,
         ]);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function dashboardTasks(int $pendingApprovalsCount, int $openComplaintsCount, int $unreadContactMessagesCount): array
-    {
-        return collect([
-            $pendingApprovalsCount > 0 ? "بررسی و تعیین تکلیف {$pendingApprovalsCount} محتوای در انتظار تایید" : null,
-            $openComplaintsCount > 0 ? "پیگیری {$openComplaintsCount} شکایت باز" : null,
-            $unreadContactMessagesCount > 0 ? "بازبینی {$unreadContactMessagesCount} پیام تماس خوانده‌نشده" : null,
-        ])->filter()->values()->whenEmpty(fn ($tasks) => $tasks->push('مورد فوری برای اقدام در داشبورد ثبت نشده است.'))->all();
     }
 
     private function databaseStatus(): string

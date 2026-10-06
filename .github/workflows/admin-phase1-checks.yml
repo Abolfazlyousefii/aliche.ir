@@ -1,4 +1,4 @@
-name: Admin phase 1 safety checks
+name: Admin interface safety checks
 
 on:
   pull_request:
@@ -31,6 +31,8 @@ jobs:
       - name: Check PHP and JavaScript syntax
         run: |
           php -l app/Support/AdminNavigation.php
+          php -l app/Http/Controllers/Admin/AdminDashboardController.php
+          test -s public/assets/admin/css/admin-ui-v2.css
           php -l app/Support/AdminCategoryAccess.php
           php -l app/Http/Controllers/Admin/CategoryController.php
           php -l app/Services/ContentApprovalService.php
@@ -39,6 +41,7 @@ jobs:
       - name: Test admin role boundaries and existing personal inbox behavior
         run: |
           vendor/bin/phpunit tests/Feature/Admin/AdminPhaseOneSecurityTest.php
+          vendor/bin/phpunit tests/Feature/Admin/AdminDashboardV2Test.php
           vendor/bin/phpunit tests/Feature/Admin/AdminPhaseOneModerationTest.php
           vendor/bin/phpunit tests/Feature/Admin/InternalMessageAccessTest.php
           vendor/bin/phpunit tests/Feature/Media/RichTextUploadSecurityTest.php
