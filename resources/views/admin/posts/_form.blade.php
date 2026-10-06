@@ -1,5 +1,10 @@
 @php
     $selectedStatus = old('status', $post?->status ?? 'draft');
+    // Old draft dates should not silently turn into stale publication dates.
+    // Display only an actual published date or an explicit future schedule.
+    $defaultPublicationDate = $post && ($post->status === 'published' || $post->published_at?->isFuture())
+        ? $post->published_at
+        : null;
     $selectedType = old('type', $post?->type ?? 'news');
     $selectedHomepagePosition = old('homepage_position', $post?->homepage_position ?? 'normal');
     $isImportantNews = (bool) old('is_important', $post?->is_important ?? false);
@@ -78,8 +83,9 @@
             <small class="text-muted">کاربران محتواگذار فقط می‌توانند draft یا pending انتخاب کنند.</small>
         </div>
         <div class="col-md-3">
-            <label class="form-label" for="published_at">تاریخ انتشار</label>
-            <input class="form-control" id="published_at" name="published_at" type="text" data-jalali-datepicker value="{{ jalali_input_datetime(old('published_at', $post?->published_at ?? now())) }}">
+            <label class="form-label" for="published_at">تاریخ انتشار (شمسی)</label>
+            <input class="form-control" id="published_at" name="published_at" type="text" data-jalali-datepicker value="{{ jalali_input_datetime(old('published_at', $defaultPublicationDate)) }}">
+            <small class="text-muted d-block mt-1">اختیاری؛ اگر خالی باشد، تاریخ روز انتشار ثبت می‌شود. برای زمان‌بندی، تاریخ و ساعت شمسی آینده را انتخاب کنید.</small>
         </div>
         <div class="col-md-3">
             <label class="form-label" for="sort_order">ترتیب نمایش</label>

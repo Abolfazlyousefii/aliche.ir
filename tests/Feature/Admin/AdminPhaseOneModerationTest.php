@@ -174,6 +174,47 @@ class AdminPhaseOneModerationTest extends TestCase
         );
     }
 
+    public function test_publishing_old_pending_post_from_approval_queue_uses_actual_time(): void
+    {
+        $this->travelTo(now()->startOfMinute());
+        $user = $this->withPermissions(['posts.publish']);
+        $post = $this->publishedPost([
+            'title' => 'خبر تازه از صف انتشار',
+            'slug' => 'publish-pending-old-date',
+            'status' => 'pending',
+            'published_at' => now()->subDays(5),
+        ]);
+
+        $this->actingAs($user)
+            ->patch(route('admin.pending_approvals.publish', ['posts', $post->id]))
+            ->assertRedirect();
+
+        $post->refresh();
+        $this->assertSame('published', $post->status);
+        $this->assertSame(now()->format('Y-m-d H:i:s'), $post->published_at->format('Y-m-d H:i:s'));
+        $this->get(route('posts.index'))->assertOk()->assertSee($post->title);
+    }
+
+    public function test_publishing_scheduled_post_from_approval_queue_preserves_future_date(): void
+    {
+        $this->travelTo(now()->startOfMinute());
+        $user = $this->withPermissions(['posts.publish']);
+        $future = now()->addDays(2);
+        $post = $this->publishedPost([
+            'title' => 'خبر زمان‌بندی‌شده صف',
+            'slug' => 'scheduled-post-approval-queue',
+            'status' => 'pending',
+            'published_at' => $future,
+        ]);
+
+        $this->actingAs($user)
+            ->patch(route('admin.pending_approvals.publish', ['posts', $post->id]))
+            ->assertRedirect();
+
+        $this->assertSame($future->format('Y-m-d H:i:s'), $post->fresh()->published_at->format('Y-m-d H:i:s'));
+        $this->get(route('posts.index'))->assertOk()->assertDontSee($post->title);
+    }
+
     private function withPermissions(array $permissions): User
     {
         $role = Role::create(['name' => 'moderator-test-'.uniqid(), 'label' => 'مدیر محتوا']);

@@ -221,7 +221,7 @@ class PostController extends Controller
         $post->update([
             'status' => 'published',
             'approved_by' => $request->user()?->id,
-            'published_at' => $post->published_at ?: now(),
+            'published_at' => $post->publicationDateForPublishing(),
             'rejected_reason' => null,
         ]);
         $this->flushFrontendCache();
@@ -296,7 +296,10 @@ class PostController extends Controller
             'featured_order' => $validated['featured_order'] ?? ($validated['sort_order'] ?? 0),
             'is_top' => ($validated['homepage_position'] ?? 'normal') === 'top',
             'status' => $validated['status'],
-            'published_at' => $validated['published_at'] ?: ($post?->published_at ?: ($post ? null : now())),
+            // Drafts have no automatic publication date. An explicit date remains
+            // available for future scheduling or a deliberate manual backdate.
+            'published_at' => ($validated['published_at'] ?? null)
+                ?: ($post?->status === 'published' ? $post->published_at : null),
             'rejected_reason' => $validated['rejected_reason'] ?? null,
             'meta_title' => $validated['meta_title'] ?? null,
             'meta_description' => $validated['meta_description'] ?? null,

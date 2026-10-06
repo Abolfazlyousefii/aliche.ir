@@ -296,7 +296,9 @@ class ContentApprovalService
         $attributes = [
             'status' => 'published',
             'approved_by' => $user->id,
-            'published_at' => $model->getAttribute('published_at') ?: now(),
+            'published_at' => $model instanceof Post
+                ? $model->publicationDateForPublishing()
+                : ($model->getAttribute('published_at') ?: now()),
             'rejected_reason' => null,
         ];
 

@@ -189,6 +189,17 @@ class Post extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    /**
+     * Keep a future publication schedule; a stale date on an unpublished draft
+     * must not make a newly published story appear old in the news archive.
+     */
+    public function publicationDateForPublishing(): \Illuminate\Support\Carbon
+    {
+        return $this->published_at?->isFuture()
+            ? $this->published_at
+            : now();
+    }
+
     public function canBeApproved(): bool
     {
         return in_array($this->status, ['draft', 'pending', 'rejected'], true) && $this->is_active;
