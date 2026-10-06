@@ -2710,3 +2710,383 @@ a.guild-profile-contact-card:focus-visible {
     max-height: 250px;
   }
 }
+
+
+/* Guild detail v5: compact institutional hero and homepage-like news rows.
+   These rules are intentionally scoped to guilds.show only. */
+.guild-profile-page--v4 .guild-profile-hero--light {
+  border-bottom: 1px solid #e4ebf0;
+  background: #fff;
+}
+.guild-profile-page--v4 .guild-profile-hero__inner--v4 {
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr);
+  gap: clamp(20px, 3vw, 42px);
+  padding-block: 23px 27px;
+}
+.guild-profile-page--v4 .guild-profile-breadcrumb {
+  margin-bottom: 10px;
+}
+.guild-profile-page--v4 .guild-profile-kicker {
+  margin-bottom: 7px;
+  padding: 3px 9px;
+  font-size: 10px;
+}
+.guild-profile-page--v4 .guild-profile-hero__content h1 {
+  font-size: clamp(20px, 2vw, 27px);
+  line-height: 1.55;
+}
+.guild-profile-page--v4 .guild-profile-hero__content > p {
+  margin-top: 7px;
+  font-size: 12px;
+}
+.guild-profile-page--v4 .guild-profile-hero__actions {
+  margin-top: 11px;
+  gap: 7px;
+}
+.guild-profile-page--v4 .guild-profile-hero__actions .guild-profile-btn {
+  min-height: 33px;
+  padding: 5px 11px;
+  background: #f7fbfe;
+  font-size: 10.5px;
+}
+.guild-profile-page--v4 .guild-profile-hero__leaders--minimal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 0;
+  justify-content: flex-start;
+  align-items: center;
+  align-content: center;
+}
+.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person {
+  flex: 1 1 165px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person:first-child {
+  padding-inline-start: 0;
+}
+.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person + .guild-profile-person {
+  border-inline-start: 1px solid #e2eaf0;
+}
+.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__portrait {
+  width: 55px;
+  height: 55px;
+  flex: 0 0 55px;
+  border-radius: 50%;
+  border: 1px solid #dce8f0;
+  font-size: 20px;
+  background: #ebf4fa;
+}
+.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__copy {
+  min-width: 0;
+  flex: 1;
+}
+.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__copy h2 {
+  font-size: 13.5px;
+  font-weight: 750;
+  line-height: 1.65;
+}
+.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__role {
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__actions {
+  margin-top: 5px;
+  gap: 4px;
+}
+.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__actions a {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 9px;
+  padding: 3px 6px;
+}
+.guild-profile-page--v4 .guild-profile-quickbar {
+  margin-top: 0;
+}
+.guild-profile-page--v4 .guild-profile-quickbar__inner {
+  border-radius: 0 0 10px 10px;
+  box-shadow: none;
+}
+.guild-profile-page--v4 .guild-profile-quickbar__item {
+  min-height: 53px;
+  padding: 7px 12px;
+}
+.guild-profile-page--v4 .guild-profile-quickbar__icon {
+  width: 30px;
+  height: 30px;
+}
+.guild-profile-page--v4 .guild-profile-quickbar__item strong {
+  font-size: 11px;
+}
+.guild-profile-page--v4 .guild-profile-layout--full {
+  padding-top: 21px;
+}
+
+/* Headline (1) + five horizontal editorial rows, mirroring the homepage. */
+.guild-profile-page--v4 .guild-profile-news-section .guild-profile-news-feature {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border: 1px solid #e5ecef;
+  border-radius: 8px;
+  background: #fafcfd;
+}
+.guild-profile-page--v4 .guild-profile-news-feature__media,
+.guild-profile-page--v4 .guild-profile-news-feature__media img {
+  min-height: 205px;
+}
+.guild-profile-page--v4 .guild-profile-news-feature__body {
+  padding: clamp(16px, 2vw, 24px);
+}
+.guild-profile-page--v4 .guild-profile-news-rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: 10px;
+}
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  width: 100%;
+  padding: 13px 6px;
+  border: 0;
+  border-bottom: 1px solid #edf0f2;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transition: background .18s ease;
+}
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-card:last-child {
+  border-bottom: 0;
+}
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-card:hover,
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-card:focus-within {
+  background: #f8fafb;
+}
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-thumb-link {
+  position: relative;
+  display: block;
+  flex: 0 0 140px;
+  width: 140px;
+  max-width: 140px;
+  height: 79px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: #eef2f4;
+}
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-thumb-link img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-category {
+  position: absolute;
+  inset: auto 5px 5px auto;
+  max-width: calc(100% - 10px);
+  padding: 2px 5px;
+  overflow: hidden;
+  background: rgba(10, 25, 36, .73);
+  color: #fff;
+  border-radius: 3px;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-card-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-card-body time {
+  color: #778592;
+  font-size: 10.5px;
+}
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-card-body h3 {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #17384d;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.7;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-card-body h3 a {
+  color: inherit;
+}
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-card-body h3 a:hover {
+  color: #11679d;
+}
+.guild-profile-page--v4 .guild-profile-news-rows .latest-news-card-body p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #687780;
+  font-size: 11.5px;
+  line-height: 1.75;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.guild-profile-page--v4 [data-guild-news-panel].is-loading {
+  opacity: .6;
+  pointer-events: none;
+  transition: opacity .15s ease;
+}
+.guild-profile-page--v4 .guild-profile-news-empty {
+  padding: 24px 12px;
+  color: #526d7d;
+  text-align: center;
+}
+.guild-profile-page--v4 .guild-profile-news-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 17px;
+  padding-top: 15px;
+  border-top: 1px solid #e7edf1;
+}
+.guild-profile-page--v4 .guild-profile-news-pagination > :is(a, span) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 5px 10px;
+  border: 1px solid #dce6ec;
+  border-radius: 6px;
+  background: #fff;
+  color: #335970;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.guild-profile-page--v4 .guild-profile-news-pagination a:hover,
+.guild-profile-page--v4 .guild-profile-news-pagination a:focus-visible {
+  color: #136da5;
+  border-color: #95cae5;
+  background: #eff8fd;
+}
+.guild-profile-page--v4 .guild-profile-news-pagination .is-current {
+  color: #fff;
+  background: #0e70ad;
+  border-color: #0e70ad;
+}
+.guild-profile-page--v4 .guild-profile-news-pagination .is-disabled {
+  color: #9baab6;
+  background: #f6f8f9;
+}
+.guild-profile-page--v4 .guild-profile-socials {
+  flex-wrap: wrap;
+}
+.guild-profile-page--v4 .guild-profile-social {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.guild-profile-page--v4 .guild-profile-social span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.guild-profile-page--v4 :is(.guild-profile-btn, .guild-profile-person__actions a, .guild-profile-quickbar__item):focus-visible {
+  outline: 2px solid #1478b3;
+  outline-offset: 3px;
+}
+.guild-profile-page--v4 .guild-profile-hero__actions .guild-profile-btn:hover,
+.guild-profile-page--v4 .guild-profile-hero__actions .guild-profile-btn:focus-visible {
+  color: #0c5988;
+  border-color: #8dc7e5;
+  background: #ebf6fd;
+}
+.guild-profile-page--v4 .guild-profile-person__actions a:hover,
+.guild-profile-page--v4 .guild-profile-person__actions a:focus-visible {
+  color: #0c5988;
+  background: #e6f4fc;
+}
+
+@media (max-width: 1100px) {
+  .guild-profile-page--v4 .guild-profile-hero__inner--v4 {
+    grid-template-columns: 1fr;
+    gap: 13px;
+  }
+  .guild-profile-page--v4 .guild-profile-hero__leaders--minimal {
+    gap: 8px 0;
+  }
+  .guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person {
+    flex: 0 1 255px;
+  }
+}
+@media (max-width: 575.98px) {
+  .guild-profile-page--v4 .guild-profile-hero__inner--v4 {
+    padding-block: 16px 20px;
+  }
+  .guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person {
+    flex: 1 1 145px;
+    padding: 5px 8px;
+  }
+  .guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__portrait {
+    flex-basis: 43px;
+    width: 43px;
+    height: 43px;
+    font-size: 17px;
+  }
+  .guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__copy h2 {
+    font-size: 12px;
+  }
+  .guild-profile-page--v4 .guild-profile-quickbar__item {
+    min-height: 48px;
+    padding: 6px 4px;
+  }
+  .guild-profile-page--v4 .guild-profile-news-section .guild-profile-news-feature {
+    grid-template-columns: 1fr;
+  }
+  .guild-profile-page--v4 .guild-profile-news-feature__media,
+  .guild-profile-page--v4 .guild-profile-news-feature__media img {
+    min-height: 165px;
+  }
+  .guild-profile-page--v4 .guild-profile-news-rows .latest-news-card {
+    gap: 11px;
+    padding: 11px 2px;
+  }
+  .guild-profile-page--v4 .guild-profile-news-rows .latest-news-thumb-link {
+    flex-basis: 104px;
+    width: 104px;
+    height: 68px;
+  }
+  .guild-profile-page--v4 .guild-profile-news-rows .latest-news-card-body h3 {
+    font-size: 12px;
+    line-height: 1.65;
+  }
+  .guild-profile-page--v4 .guild-profile-news-rows .latest-news-card-body p {
+    display: none;
+  }
+  .guild-profile-page--v4 .guild-profile-news-pagination {
+    gap: 3px;
+  }
+  .guild-profile-page--v4 .guild-profile-news-pagination > :is(a, span) {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 4px 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guild-profile-page--v4 [data-guild-news-panel] {
+    transition: none;
+  }
+}
