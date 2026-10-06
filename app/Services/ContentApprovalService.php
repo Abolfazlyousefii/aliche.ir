@@ -172,13 +172,11 @@ class ContentApprovalService
     public function ensureCanModerate(User $user, string $type, string $action = 'approve'): void
     {
         $definition = $this->definition($type);
-        $permissions = [$definition['permission']];
+        $requiredPermission = in_array($action, ['publish', 'archive'], true)
+            ? ($definition['publish_permission'] ?? $definition['permission'])
+            : $definition['permission'];
 
-        if (in_array($action, ['publish', 'archive'], true)) {
-            $permissions[] = $definition['publish_permission'] ?? $definition['permission'];
-        }
-
-        abort_unless($user->hasAnyPermission(array_values(array_unique($permissions))), 403);
+        abort_unless($user->hasPermission($requiredPermission), 403);
     }
 
     /**
@@ -320,11 +318,19 @@ class ContentApprovalService
         return $model->refresh();
     }
 
-    public function pendingItems(?int $limit = null): Collection
+    public function pendingItems(?int $limit = null, ?User $viewer = null): Collection
     {
         $items = collect();
 
         foreach ($this->contentTypes() as $type => $definition) {
+            $publishPermission = $definition['publish_permission'] ?? $definition['permission'];
+            $canApprove = $viewer?->hasPermission($definition['permission']) ?? true;
+            $canPublish = $viewer?->hasPermission($publishPermission) ?? true;
+
+            // A moderated queue must not disclose items from other modules.
+            if (! $canApprove && ! $canPublish) {
+                continue;
+            }
             /** @var class-string<Model> $model */
             $model = $definition['model'];
             $query = $model::query()->where('status', 'pending')->latest();
@@ -333,7 +339,7 @@ class ContentApprovalService
                 $query->with('commission');
             }
 
-            $query->get()->each(function (Model $item) use ($items, $type, $definition): void {
+            $query->get()->each(function (Model $item) use ($items, $type, $definition, $canApprove, $canPublish): void {
                 $items->push([
                     'type' => $type,
                     'label' => $definition['label'],
@@ -342,6 +348,8 @@ class ContentApprovalService
                     'summary' => $this->summary($item, $definition),
                     'image' => $this->image($item, $definition),
                     'show_url' => $this->showUrl($item, $definition),
+                    'can_approve' => $canApprove,
+                    'can_publish' => $canPublish,
                     'created_at' => $item->getAttribute('created_at'),
                 ]);
             });

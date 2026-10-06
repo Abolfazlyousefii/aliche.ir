@@ -25,6 +25,10 @@ class RolePermissionSeeder extends Seeder
         'posts.view', 'posts.create', 'posts.edit', 'posts.delete', 'posts.approve', 'posts.publish', 'posts.unpublish', 'posts.manage_important', 'posts.manage_featured', 'media.view', 'media.upload', 'media.edit', 'media.delete',
         'announcements.view', 'announcements.create', 'announcements.edit', 'announcements.delete', 'announcements.approve', 'announcements.publish',
         'unions.view', 'unions.create', 'unions.edit', 'unions.delete',
+        // Reserved for centrally managed reference data; super-admin can use these
+        // immediately without rerunning seeders or changing production data.
+        'union_types.view', 'union_types.create', 'union_types.edit', 'union_types.delete',
+        'chamber_members.view', 'chamber_members.create', 'chamber_members.edit', 'chamber_members.delete',
         'union_members.view', 'union_members.create', 'union_members.edit', 'union_members.delete',
         'complaints.view', 'complaints.edit', 'complaints.reply', 'complaints.delete',
         'galleries.view', 'galleries.create', 'galleries.edit', 'galleries.delete', 'galleries.approve', 'galleries.publish',
@@ -133,7 +137,7 @@ class RolePermissionSeeder extends Seeder
         $groups = [
             'dashboard' => 'داشبورد', 'pending_approvals' => 'تایید محتوا', 'users' => 'کاربران', 'roles' => 'نقش‌ها', 'permissions' => 'دسترسی‌ها',
             'menus' => 'منوها', 'pages' => 'صفحات', 'posts' => 'اخبار', 'announcements' => 'اطلاعیه‌ها',
-            'unions' => 'اتحادیه‌ها', 'union_members' => 'اعضای اتحادیه‌ها', 'complaints' => 'شکایات',
+            'unions' => 'اتحادیه‌ها', 'union_types' => 'انواع اتحادیه', 'chamber_members' => 'اعضای اتاق اصناف', 'union_members' => 'اعضای اتحادیه‌ها', 'complaints' => 'شکایات',
             'galleries' => 'گالری تصاویر', 'videos' => 'ویدیوها', 'tourism' => 'گردشگری',
             'advertisements' => 'تبلیغات', 'systems' => 'سامانه‌ها', 'electronic_services' => 'خدمات الکترونیک', 'commissions' => 'کمیسیون‌ها',
             'home_sections' => 'تنظیمات صفحه اصلی', 'header_settings' => 'تنظیمات هدر', 'footer_settings' => 'تنظیمات فوتر',
