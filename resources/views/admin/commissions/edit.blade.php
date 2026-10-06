@@ -47,13 +47,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const select = document.getElementById('image_media_id');
     const preview = document.getElementById('image_media_preview');
 
+    const existingImageUrl = @json($commission->image ? $commission->image_url : '');
+
     function renderPreview() {
         const option = select && select.selectedOptions ? select.selectedOptions[0] : null;
-        const url = option ? option.dataset.url : '';
+        const url = option?.dataset?.url || existingImageUrl;
         if (!preview) return;
-        preview.innerHTML = url
-            ? '<img class="rounded" src="' + url + '" alt="پیش‌نمایش تصویر کمیسیون" style="width:100%;max-width:260px;height:150px;object-fit:cover">'
-            : '';
+
+        // Use DOM APIs so a stored media URL cannot inject HTML attributes.
+        preview.replaceChildren();
+        if (!url) return;
+
+        const img = document.createElement('img');
+        img.className = 'rounded';
+        img.src = url;
+        img.alt = 'پیش‌نمایش تصویر کمیسیون';
+        img.style.cssText = 'width:100%;max-width:260px;height:150px;object-fit:cover';
+        preview.appendChild(img);
     }
 
     if (select) select.addEventListener('change', renderPreview);
