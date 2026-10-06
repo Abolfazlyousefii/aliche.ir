@@ -63,7 +63,7 @@
     $showServices = $union->services_enabled && $contentLinks->isNotEmpty();
 
     $quickActions = collect([
-        ['visible' => ($showManager || $showExecutive), 'id' => 'guild-manager', 'title' => 'مدیریت اتحادیه', 'subtitle' => $union->manager_name, 'icon' => 'manager'],
+        ['visible' => ($showManager || $showExecutive), 'id' => 'guild-manager', 'title' => $showManager ? 'رئیس اتحادیه' : 'مدیر اجرایی', 'subtitle' => $showManager ? $union->manager_name : $union->executive_name, 'icon' => 'manager'],
         ['visible' => $showContact, 'id' => 'guild-contact', 'title' => 'راه‌های ارتباطی', 'subtitle' => $hasContactData ? 'تماس و اطلاعات اتحادیه' : 'اطلاعات در حال تکمیل', 'icon' => 'contact'],
         ['visible' => $showServices, 'id' => 'guild-services', 'title' => 'خدمات اتحادیه', 'subtitle' => 'دسترسی سریع به بخش‌ها', 'icon' => 'services'],
         ['visible' => $showComplaint, 'id' => 'guild-complaint', 'title' => 'ثبت شکایت', 'subtitle' => 'ثبت و پیگیری آنلاین', 'icon' => 'complaint'],
