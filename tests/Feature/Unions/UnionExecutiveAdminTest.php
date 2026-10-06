@@ -56,6 +56,7 @@ class UnionExecutiveAdminTest extends TestCase
         $this->assertSame('مدیر اجرایی اول', $union->executive_name);
         $this->assertSame('مدیر اجرایی', $union->executive_position);
         $this->assertSame($portrait->path, $union->executive_image);
+        $this->assertTrue($portrait->inUse(), 'Media in use as an executive image should be protected.');
 
         $this->put(route('admin.unions.update', $union), $this->unionPayload([
             'title' => $union->title,
@@ -69,6 +70,29 @@ class UnionExecutiveAdminTest extends TestCase
         $this->assertSame('مدیر اجرایی دوم', $union->executive_name);
         $this->assertSame('مسئول اجرایی', $union->executive_position);
         $this->assertSame($portrait->path, $union->executive_image);
+    }
+
+    public function test_non_image_media_cannot_be_assigned_as_executive_portrait(): void
+    {
+        $this->signInAsSuperAdmin();
+        $document = Media::query()->create([
+            'file_name' => 'document.pdf',
+            'original_name' => 'document.pdf',
+            'path' => 'media/document.pdf',
+            'disk' => 'public',
+            'mime_type' => 'application/pdf',
+            'extension' => 'pdf',
+            'size' => 4096,
+        ]);
+
+        $this->post(route('admin.unions.store'), $this->unionPayload([
+            'title' => 'اتحادیه نامعتبر',
+            'slug' => 'invalid-executive-picture',
+            'executive_name' => 'مدیر تست',
+            'executive_image_media_id' => $document->id,
+        ]))->assertSessionHasErrors('executive_image_media_id');
+
+        $this->assertDatabaseMissing('unions', ['slug' => 'invalid-executive-picture']);
     }
 
     public function test_unlinking_executive_photo_preserves_underlying_media(): void
