@@ -10,8 +10,23 @@
         ->values();
 @endphp
 
-<div class="admin-panel-card">
-    <div class="row g-3">
+@php
+    $workspaceTabs = [
+        ['id' => 'identity', 'title' => 'اطلاعات خبر'],
+        ['id' => 'publication', 'title' => 'انتشار و نمایش'],
+        ['id' => 'article', 'title' => 'متن خبر'],
+        ['id' => 'media', 'title' => 'تصاویر و گالری'],
+        ['id' => 'seo', 'title' => 'سئو و توضیحات'],
+    ];
+    $workspaceEyebrow = 'تحریریه اخبار';
+    $workspaceHeading = $post ? 'ویرایش خبر' : 'ایجاد خبر جدید';
+    $workspaceDescription = 'محتوا، انتشار و تصاویر را جداگانه تنظیم کنید؛ همه بخش‌ها با یک ذخیره ثبت می‌شوند.';
+@endphp
+
+<div class="admin-form-workspace" data-admin-form-workspace data-admin-workspace-kind="post">
+    @include('admin.partials.form-workspace-tabs')
+<section class="admin-workspace-pane is-active" id="admin-form-pane-identity" role="tabpanel" aria-labelledby="admin-form-tab-identity" tabindex="0" data-admin-workspace-pane="identity">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-md-8">
             <label class="form-label" for="title">عنوان خبر</label>
             <input class="form-control" id="title" name="title" value="{{ old('title', $post?->title) }}" required>
@@ -48,6 +63,11 @@
                 @endforeach
             </select>
         </div>
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-publication" role="tabpanel" aria-labelledby="admin-form-tab-publication" tabindex="0" data-admin-workspace-pane="publication">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-md-6">
             <label class="form-label" for="status">وضعیت</label>
             <select class="form-control" id="status" name="status" required>
@@ -86,6 +106,11 @@
                 </small>
             </div>
         </div>
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-article" role="tabpanel" aria-labelledby="admin-form-tab-article" tabindex="0" data-admin-workspace-pane="article">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-12">
             <label class="form-label" for="excerpt">خلاصه خبر</label>
             <textarea class="form-control js-rich-editor" id="excerpt" name="excerpt" rows="3">{{ old('excerpt', $post?->excerpt) }}</textarea>
@@ -94,6 +119,11 @@
             <label class="form-label" for="body">متن کامل خبر</label>
             <textarea class="form-control js-rich-editor" id="body" name="body" rows="12">{{ old('body', $post?->body) }}</textarea>
         </div>
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-media" role="tabpanel" aria-labelledby="admin-form-tab-media" tabindex="0" data-admin-workspace-pane="media">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-md-6">
             <label class="form-label" for="featured_image">تصویر شاخص</label>
             <input class="form-control" id="featured_image" name="featured_image" type="file" accept="image/*" data-skip-media-picker>
@@ -143,6 +173,11 @@
                 </div>
             </div>
         @endif
+    </div>
+</div>
+</section>
+<section class="admin-workspace-pane " id="admin-form-pane-seo" role="tabpanel" aria-labelledby="admin-form-tab-seo" tabindex="0" data-admin-workspace-pane="seo">
+<div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-12">
             <label class="form-label" for="rejected_reason">دلیل رد خبر</label>
             <textarea class="form-control" id="rejected_reason" name="rejected_reason" rows="3">{{ old('rejected_reason', $post?->rejected_reason) }}</textarea>
@@ -166,10 +201,17 @@
         </div>
     </div>
 </div>
-
-<div class="mt-3 d-flex gap-2">
-    <button class="admin-primary-btn" type="submit">ذخیره خبر</button>
-    <a class="admin-secondary-btn" href="{{ route('admin.posts.index') }}">انصراف</a>
+</section>
+<div class="admin-workspace-savebar" role="group" aria-label="ذخیره خبر">
+    <div class="admin-workspace-savebar__status" aria-live="polite" data-admin-workspace-status>
+        <strong>آماده ذخیره</strong>
+        <span>تغییرات همه بخش‌ها با یک بار ذخیره ثبت می‌شوند.</span>
+    </div>
+    <div class="admin-workspace-savebar__actions">
+        <a class="admin-secondary-btn" href="{{ route('admin.posts.index') }}">انصراف</a>
+        <button class="admin-primary-btn" type="submit" data-admin-workspace-submit>ذخیره خبر</button>
+    </div>
+</div>
 </div>
 
 @push('scripts')
