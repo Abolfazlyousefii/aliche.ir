@@ -23,7 +23,16 @@
     $mapUrl = filled($place->map_url) ? (string) $place->map_url : null;
     $coordinateMapUrl = $coordinates ? 'https://www.google.com/maps/search/?api=1&query='.urlencode($coordinates) : null;
     $mapLink = $mapUrl ?: $coordinateMapUrl;
-    $isEmbeddableMap = $mapUrl && str_contains($mapUrl, 'embed');
+    $mapParts = $mapUrl ? parse_url($mapUrl) : [];
+    $mapHost = strtolower((string) ($mapParts['host'] ?? ''));
+    $mapPath = (string) ($mapParts['path'] ?? '');
+    $isEmbeddableMap = (
+        in_array($mapHost, ['google.com', 'www.google.com', 'maps.google.com'], true)
+        && ($mapPath === '/maps/embed' || str_starts_with($mapPath, '/maps/embed/'))
+    ) || (
+        in_array($mapHost, ['openstreetmap.org', 'www.openstreetmap.org'], true)
+        && $mapPath === '/export/embed.html'
+    );
     $phoneHref = filled($place->phone) ? 'tel:'.preg_replace('/[^0-9+]/', '', (string) $place->phone) : null;
 
     $visitInfoCards = collect([
@@ -194,10 +203,12 @@
                             <dt>دسته‌بندی</dt>
                             <dd>{{ $categoryTitle }}</dd>
                         </div>
-                        <div>
-                            <dt>محدوده</dt>
-                            <dd>{{ $place->location ?: 'گرگان' }}</dd>
-                        </div>
+                        @if(filled($place->location))
+                            <div>
+                                <dt>محدوده</dt>
+                                <dd>{{ $place->location }}</dd>
+                            </div>
+                        @endif
                         @if($galleryImages->isNotEmpty())
                             <div>
                                 <dt>تعداد تصاویر</dt>
