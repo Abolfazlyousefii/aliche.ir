@@ -282,10 +282,10 @@
 
 @if($hasNeshanMap)
     @push('styles')
-        <link rel="stylesheet" href="https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@neshan-maps-platform/maplibre-sdk@5.24.4/dist/neshan-maplibre-sdk.css">
     @endpush
     @push('scripts')
-        <script src="https://static.neshan.org/sdk/maplibre/5.24.3/neshan-maplibre-sdk.umd.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@neshan-maps-platform/maplibre-sdk@5.24.4/dist/neshan-maplibre-sdk.umd.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const container = document.getElementById('tourism-neshan-map');
