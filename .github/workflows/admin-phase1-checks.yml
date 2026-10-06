@@ -39,9 +39,12 @@ jobs:
           php -l routes/web.php
           node --check public/assets/admin/js/navigation.js
           node --check public/assets/admin/js/form-workspace.js
+          node --check public/assets/admin/js/list-workspace.js
+          test -s public/assets/admin/css/list-workspace.css
           test -s public/assets/admin/css/form-workspace.css
       - name: Test admin role boundaries and existing personal inbox behavior
         run: |
+          vendor/bin/phpunit tests/Feature/Admin/AdminListWorkspaceTest.php
           vendor/bin/phpunit tests/Feature/Admin/AdminFormWorkspaceTest.php
           vendor/bin/phpunit tests/Feature/Admin/AdminPhaseOneSecurityTest.php
           vendor/bin/phpunit tests/Feature/Admin/AdminDashboardV2Test.php
