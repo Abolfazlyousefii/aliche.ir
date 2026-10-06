@@ -75,7 +75,7 @@ class UpdateUnionRequest extends FormRequest
             'president_buttons.*.target' => ['nullable', Rule::in(['_self', '_blank'])],
             'president_buttons.*.is_active' => ['nullable', 'boolean'],
             'selected_posts' => ['nullable', 'array'],
-            'selected_posts.*' => ['nullable', 'integer', 'exists:posts,id'],
+            'selected_posts.*' => ['nullable', 'integer', Rule::exists('posts', 'id')->where('union_id', $unionId)],
             'price_list_mode' => ['required', Rule::in(['image', 'table'])],
             'price_list_image' => ['nullable', 'bail', 'file', 'image', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'price_list_image_media_id' => ['nullable', 'integer', 'exists:media,id'],
