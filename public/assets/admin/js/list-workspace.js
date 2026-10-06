@@ -28,6 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Enable mobile card layout only after every visible cell has a label.
-        table.classList.add('admin-list-cards-ready');
+        // Drag-sorted galleries require a real table to preserve row reorder.
+        if (!table.hasAttribute('data-admin-list-sortable')) {
+            table.classList.add('admin-list-cards-ready');
+        }
     });
 });
