@@ -46,6 +46,10 @@ class UpdateUnionRequest extends FormRequest
             'manager_name' => ['nullable', 'string', 'max:190'],
             'manager_position' => ['nullable', 'string', 'max:190'],
             'manager_description' => ['nullable', 'string', 'max:3000'],
+            'executive_name' => ['nullable', 'string', 'max:190'],
+            'executive_position' => ['nullable', 'string', 'max:190'],
+            'executive_image' => ['nullable', 'bail', 'file', 'image', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
+            'executive_image_media_id' => ['nullable', 'integer', 'exists:media,id'],
             'union_type' => ['nullable', 'string', 'max:190'],
             'union_type_id' => ['nullable', 'exists:union_types,id'],
             'manager_image' => ['nullable', 'bail', 'file', 'image', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
@@ -145,9 +149,10 @@ class UpdateUnionRequest extends FormRequest
             'logo.max' => 'حجم لوگوی اتحادیه نباید بیشتر از ۵ مگابایت باشد.',
             'cover_image.max' => 'حجم تصویر اصلی اتحادیه نباید بیشتر از ۵ مگابایت باشد.',
             'manager_image.max' => 'حجم تصویر رئیس اتحادیه نباید بیشتر از ۵ مگابایت باشد.',
+            'executive_image.max' => 'حجم تصویر مدیر اجرایی نباید بیشتر از ۵ مگابایت باشد.',
             'price_list_image.max' => 'حجم تصویر نرخنامه نباید بیشتر از ۵ مگابایت باشد.',
         ];
-        foreach (['logo', 'cover_image', 'manager_image', 'price_list_image'] as $field) {
+        foreach (['logo', 'cover_image', 'manager_image', 'executive_image', 'price_list_image'] as $field) {
             $messages[$field.'.image'] = 'فایل انتخاب‌شده باید یک تصویر معتبر باشد.';
         }
 
@@ -156,6 +161,6 @@ class UpdateUnionRequest extends FormRequest
 
     public function attributes(): array
     {
-        return ['title' => 'عنوان اتحادیه', 'slug' => 'اسلاگ', 'logo' => 'لوگوی اتحادیه', 'cover_image' => 'تصویر اصلی اتحادیه', 'manager_image' => 'تصویر رئیس اتحادیه', 'price_list_image' => 'تصویر نرخنامه'];
+        return ['title' => 'عنوان اتحادیه', 'slug' => 'اسلاگ', 'logo' => 'لوگوی اتحادیه', 'cover_image' => 'تصویر اصلی اتحادیه', 'manager_image' => 'تصویر رئیس اتحادیه', 'executive_image' => 'تصویر مدیر اجرایی', 'price_list_image' => 'تصویر نرخنامه'];
     }
 }
