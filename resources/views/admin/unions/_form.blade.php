@@ -200,12 +200,19 @@
         </div>
         <div class="col-md-8">
             <label class="form-label" for="selected_posts">خبرهای انتخابی در حالت دستی</label>
-            <select class="form-control js-select2" id="selected_posts" name="selected_posts[]" multiple size="6">
+            <select class="form-control js-select2" id="selected_posts" name="selected_posts[]" multiple size="6" @disabled(! $union)>
                 @foreach (($selectablePosts ?? collect()) as $post)
                     <option value="{{ $post->id }}" @selected(in_array((string) $post->id, $selectedPostIds, true))>{{ $post->title }}</option>
                 @endforeach
             </select>
-            <small class="text-muted">این فیلد برای Select2 آماده شده است و در نبود کتابخانه، انتخاب چندگانه مرورگر را نمایش می‌دهد.</small>
+            <small class="text-muted">
+                @if($union)
+                    فقط اخبار منتشرشده و متعلق به همین اتحادیه قابل انتخاب هستند؛ ترتیب انتخاب با «ترتیب انتخاب دستی» ذخیره می‌شود.
+                    انتخاب‌های قبلی هنگام تغییر حالت به خودکار یا غیرفعال حفظ خواهند شد.
+                @else
+                    ابتدا اتحادیه را ایجاد کنید؛ سپس در ویرایش اتحادیه، خبرهای مرتبط را انتخاب کنید.
+                @endif
+            </small>
         </div>
         <div class="col-12"><h3 class="h6 mt-2">نرخنامه اتحادیه</h3></div>
         <div class="col-md-4">
