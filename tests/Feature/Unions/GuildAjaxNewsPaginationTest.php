@@ -61,6 +61,13 @@ class GuildAjaxNewsPaginationTest extends TestCase
             ]);
         }
 
+        // Full-page links work without JS; then test the AJAX-only partial.
+        $fullPage = $this->get(route('guilds.show', ['union' => $union->slug, 'news_page' => 2]));
+        $fullPage->assertOk()
+            ->assertSee('id="guild-news"', false)
+            ->assertSee('خبر صفحه‌بندی 6')
+            ->assertDontSee('خبر صفحه‌بندی 0');
+
         $response = $this->withHeaders([
             'X-Requested-With' => 'XMLHttpRequest',
             'Accept' => 'application/json',
@@ -69,18 +76,12 @@ class GuildAjaxNewsPaginationTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('current_page', 2)
             ->assertJsonPath('last_page', 2)
-            ->assertJsonPath('total', 8)
-            ->assertSee('خبر صفحه‌بندی 6')
-            ->assertSee('خبر صفحه‌بندی 7')
-            ->assertDontSee('خبر صفحه‌بندی 0')
-            ->assertDontSee('<html', false)
-            ->assertDontSee('خبر صفحه‌بندی 8');
-
-        $fullPage = $this->get(route('guilds.show', ['union' => $union->slug, 'news_page' => 2]));
-        $fullPage->assertOk()
-            ->assertSee('id="guild-news"', false)
-            ->assertSee('خبر صفحه‌بندی 6')
-            ->assertDontSee('خبر صفحه‌بندی 0');
+            ->assertJsonPath('total', 8);
+        $html = $response->json('html');
+        $this->assertStringContainsString('خبر صفحه‌بندی 6', $html);
+        $this->assertStringContainsString('خبر صفحه‌بندی 7', $html);
+        $this->assertStringNotContainsString('خبر صفحه‌بندی 0', $html);
+        $this->assertStringNotContainsString('<html', $html);
     }
 
     public function test_pager_displays_at_most_six_page_numbers_plus_previous_and_next(): void
@@ -115,17 +116,15 @@ class GuildAjaxNewsPaginationTest extends TestCase
             ->assertOk()
             ->assertDontSee('id="guild-news"', false);
 
-        $this->withHeader('X-Requested-With', 'XMLHttpRequest')
-            ->get(route('guilds.show', $union->slug))
-            ->assertOk()
-            ->assertJsonPath('total', 0)
-            ->assertDontSee('خبر مخفی‌شده');
-
         $union->update(['news_mode' => 'disabled', 'settings' => ['show_news' => true]]);
-
         $this->get(route('guilds.show', $union->slug))
             ->assertOk()
             ->assertDontSee('id="guild-news"', false);
+
+        $jsonResponse = $this->withHeader('X-Requested-With', 'XMLHttpRequest')
+            ->get(route('guilds.show', $union->slug));
+        $jsonResponse->assertOk()->assertJsonPath('total', 0);
+        $this->assertStringNotContainsString('خبر مخفی‌شده', $jsonResponse->json('html'));
     }
 
     public function test_executive_without_photo_renders_as_text_without_placeholder_portrait(): void
