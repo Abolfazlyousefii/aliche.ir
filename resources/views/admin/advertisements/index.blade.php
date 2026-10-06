@@ -13,32 +13,22 @@
     </div>
 </div>
 
-<div class="admin-panel-card mb-3">
-    <form class="admin-search-form" action="{{ route('admin.advertisements.index') }}" method="GET">
-        <label class="form-label mb-0" for="search">جستجو</label>
-        <input class="form-control" id="search" name="search" value="{{ $search }}" placeholder="عنوان یا لینک...">
-        <select class="form-control" name="position_id" aria-label="فیلتر جایگاه">
-            <option value="">همه جایگاه‌ها</option>
-            @foreach ($positions as $position)
-                <option value="{{ $position->id }}" @selected((string) $positionId === (string) $position->id)>{{ $position->title }}</option>
-            @endforeach
-        </select>
-        <select class="form-control" name="status" aria-label="فیلتر وضعیت">
-            <option value="">همه وضعیت‌ها</option>
-            <option value="displayable" @selected($status === 'displayable')>در حال نمایش</option>
-            <option value="active" @selected($status === 'active')>فعال</option>
-            <option value="inactive" @selected($status === 'inactive')>غیرفعال</option>
-            <option value="scheduled" @selected($status === 'scheduled')>زمان‌بندی شده</option>
-            <option value="expired" @selected($status === 'expired')>منقضی شده</option>
-        </select>
-        <button class="admin-primary-btn" type="submit">اعمال فیلتر</button>
-        <a class="admin-secondary-btn" href="{{ route('admin.advertisements.index') }}">حذف فیلتر</a>
-    </form>
-</div>
+@include('admin.partials.list-filters', [
+    'listRoute' => 'admin.advertisements.index',
+    'listTitle' => 'فیلتر تبلیغات',
+    'listDescription' => 'یافتن تبلیغ براساس عنوان، جایگاه و زمان نمایش',
+    'listSearch' => $search,
+    'listPlaceholder' => 'عنوان تبلیغ یا لینک...',
+    'listPaginator' => $advertisements,
+    'listFilters' => [
+            ['name' => 'position_id', 'label' => 'جایگاه نمایش', 'value' => $positionId, 'options' => $positions->mapWithKeys(fn ($position) => [(string) $position->id => $position->title])->all(), 'empty' => 'همه جایگاه‌ها'],
+            ['name' => 'status', 'label' => 'وضعیت تبلیغ', 'value' => $status, 'options' => ['displayable' => 'در حال نمایش', 'active' => 'فعال', 'inactive' => 'غیرفعال', 'scheduled' => 'زمان‌بندی‌شده', 'expired' => 'منقضی‌شده'], 'empty' => 'همه وضعیت‌ها'],
+    ],
+])
 
 <div class="admin-panel-card">
-    <div class="table-responsive">
-        <table class="admin-table">
+    <div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="فیلتر تبلیغات">
+        <table class="admin-table admin-list-table" data-admin-list-table>
             <thead><tr><th>تصویر</th><th>عنوان</th><th>جایگاه</th><th>وضعیت</th><th>بازه نمایش</th><th>آمار</th><th>ترتیب</th><th>عملیات</th></tr></thead>
             <tbody>
             @forelse ($advertisements as $advertisement)
