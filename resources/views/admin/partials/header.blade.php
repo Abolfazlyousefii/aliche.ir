@@ -12,9 +12,23 @@
     </div>
 
     <div class="admin-header-end">
-        <div class="admin-search" role="search">
+        @php($adminQuickLinks = \App\Support\AdminNavigation::searchableLinks(request()->user()))
+        <button class="admin-search-mobile-toggle" type="button" data-admin-search-toggle aria-label="جستجوی بخش‌های پنل" aria-controls="adminQuickNavSearch" aria-expanded="false">
             @include('admin.components.icon', ['name' => 'search'])
-            <input type="search" placeholder="جستجو در پنل..." aria-label="جستجو در پنل مدیریت">
+        </button>
+        <div class="admin-search admin-quick-search" id="adminQuickNavSearch" data-admin-quick-search role="search">
+            @include('admin.components.icon', ['name' => 'search'])
+            <input type="search" placeholder="جستجوی بخش‌های پنل..." aria-label="جستجوی بخش‌های قابل دسترس" aria-controls="adminQuickNavResults" aria-expanded="false" data-admin-quick-input autocomplete="off" spellcheck="false">
+            <div class="admin-quick-results" id="adminQuickNavResults" data-admin-quick-results hidden>
+                <p class="admin-quick-results__heading">بخش‌های قابل دسترس</p>
+                @foreach($adminQuickLinks as $quickLink)
+                    <a href="{{ route($quickLink['route'], $quickLink['params']) }}" data-admin-quick-link data-search-text="{{ $quickLink['group'].' '.$quickLink['title'] }}">
+                        <span>{{ $quickLink['title'] }}</span>
+                        <small>{{ $quickLink['group'] }}</small>
+                    </a>
+                @endforeach
+                <p class="admin-quick-results__empty" data-admin-quick-empty hidden>بخشی با این عبارت پیدا نشد.</p>
+            </div>
         </div>
         <a class="admin-header-action" href="{{ route('admin.messages.inbox') }}" aria-label="پیام‌ها">
             @include('admin.components.icon', ['name' => 'mail'])
