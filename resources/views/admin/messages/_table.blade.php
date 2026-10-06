@@ -1,5 +1,5 @@
-<div class="table-responsive">
-    <table class="admin-table">
+<div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="فهرست پیام‌های داخلی">
+    <table class="admin-table admin-list-table" data-admin-list-table>
         <thead>
             <tr>
                 <th>عنوان پیام</th>
