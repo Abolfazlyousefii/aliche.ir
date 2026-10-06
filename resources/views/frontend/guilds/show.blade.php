@@ -192,7 +192,7 @@
                             <h2>آخرین اخبار اتحادیه</h2>
                             <p>خبرها و اطلاع‌رسانی‌های مرتبط با {{ $union->display_title }}</p>
                         </div>
-                        <a href="{{ route('posts.index') }}">آرشیو اخبار</a>
+                        <a href="{{ route('posts.index', ['union_id' => $union->id]) }}">آرشیو اخبار اتحادیه</a>
                     </header>
 
                     @php($featuredNewsUrl = route('posts.show', $featuredGuildNews->slug))
@@ -229,6 +229,7 @@
                                         <div class="guild-profile-news-mini__body">
                                             <time datetime="{{ $post->published_at?->toIso8601String() }}">{{ jalali_datetime($post->published_at) ?: 'بدون تاریخ' }}</time>
                                             <h3>{{ $post->title }}</h3>
+                                            <p class="guild-profile-news-mini__excerpt">{{ $plain($post->excerpt ?: $post->short_description ?: $post->summary ?: $post->body, 100) }}</p>
                                             <span>مشاهده خبر</span>
                                         </div>
                                     </a>
