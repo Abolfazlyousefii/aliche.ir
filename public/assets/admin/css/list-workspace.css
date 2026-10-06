@@ -367,3 +367,38 @@
         flex-basis: 54px;
     }
 }
+
+/* Phase 5 completion: accessible reorder controls and moderation summaries. */
+.admin-phase2 .admin-home-sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+.admin-phase2 .admin-home-sort-controls > span {
+    cursor: grab;
+    color: #6d8da0;
+    margin-inline-end: 5px;
+}
+.admin-phase2 .admin-home-sort-controls button {
+    min-width: 33px;
+    min-height: 33px;
+    padding: 4px;
+    border: 1px solid #d6e6ee;
+    border-radius: 8px;
+    background: #f7fbfd;
+    color: #176c92;
+    font-size: 17px;
+    cursor: pointer;
+}
+.admin-phase2 .admin-home-sort-controls button:hover { background: #e8f5fb; }
+.admin-phase2 .admin-home-sort-controls button:disabled { color: #aebbc5; background: #f7f8f9; cursor: not-allowed; }
+.admin-phase2 .admin-home-sort-controls button:focus-visible { outline: 3px solid #89cce5; outline-offset: 2px; }
+.admin-phase2 .admin-pending-summary { margin: 10px 0 0; color: #748b9a; font-size: 11px; }
+.admin-phase2 .admin-list-table form input[required] { max-width: 230px; }
+.admin-phase2 .admin-list-table .admin-status-badge { white-space: nowrap; }
+@media(max-width: 767.98px) {
+    .admin-phase2 .admin-home-sort-controls { justify-content: flex-end; }
+    .admin-phase2 .admin-list-cards-ready tr.admin-list-item-row > td form { max-width: 100%; }
+    .admin-phase2 .admin-list-cards-ready tr.admin-list-item-row > td form input { max-width: 100%; }
+}
