@@ -23,8 +23,9 @@ jobs:
           node-version: '22'
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
-      - name: Prepare isolated application key
+      - name: Prepare isolated application key and Laravel runtime directories
         run: |
+          mkdir -p storage/framework/{views,cache/data,sessions,testing} storage/logs bootstrap/cache
           cp .env.example .env
           php artisan key:generate --ansi
       - name: Check PHP and JavaScript syntax
