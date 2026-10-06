@@ -142,34 +142,6 @@ class UnionController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        $union->load([
-            'category',
-            'unionType',
-            'members' => fn ($q) => $q->where('is_active', true)->where('status', 'active')->orderBy('sort_order')->orderBy('id'),
-            'commissions' => fn ($q) => $q->where('is_active', true)->with(['tasks' => fn ($t) => $t->where('is_active', true)->orderBy('sort_order')])->orderBy('sort_order'),
-            'rules' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
-            'minutes' => fn ($q) => $q->where('is_active', true)->orderByDesc('meeting_date'),
-            'educations' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
-            'prices' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
-            // The page's additional article section still needs only articles.
-            // News itself is fetched in its own six-item paginator below.
-            'posts' => fn ($q) => $q
-                ->published()
-                ->where('type', 'article')
-                ->with(['category', 'featuredMedia'])
-                ->latest('published_at'),
-            'announcements' => fn ($q) => $q->published()->latest('published_at'),
-            'galleries' => fn ($q) => $q->published()->forUnion()->with(['images'])->latest('published_at'),
-            'videos' => fn ($q) => $q->published()->latest('published_at'),
-        ]);
-
-        $union->setRelation(
-            'members',
-            $union->members
-                ->reject(fn ($member) => $member->isSeedPlaceholderProfile())
-                ->values()
-        );
-
         // Only editorial news directly associated with this union may appear here.
         // The union-specific page uses its own page parameter to avoid interfering
         // with the homepage and the global news archive.
@@ -198,6 +170,36 @@ class UnionController extends Controller
                 'url' => $request->fullUrl(),
             ]);
         }
+
+        // The AJAX response needs only the paginated posts, not the union's
+        // board, commissions, article library or media collections.
+        $union->load([
+            'category',
+            'unionType',
+            'members' => fn ($q) => $q->where('is_active', true)->where('status', 'active')->orderBy('sort_order')->orderBy('id'),
+            'commissions' => fn ($q) => $q->where('is_active', true)->with(['tasks' => fn ($t) => $t->where('is_active', true)->orderBy('sort_order')])->orderBy('sort_order'),
+            'rules' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+            'minutes' => fn ($q) => $q->where('is_active', true)->orderByDesc('meeting_date'),
+            'educations' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+            'prices' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+            // The page's additional article section still needs only articles.
+            // News itself is fetched in its own six-item paginator below.
+            'posts' => fn ($q) => $q
+                ->published()
+                ->where('type', 'article')
+                ->with(['category', 'featuredMedia'])
+                ->latest('published_at'),
+            'announcements' => fn ($q) => $q->published()->latest('published_at'),
+            'galleries' => fn ($q) => $q->published()->forUnion()->with(['images'])->latest('published_at'),
+            'videos' => fn ($q) => $q->published()->latest('published_at'),
+        ]);
+
+        $union->setRelation(
+            'members',
+            $union->members
+                ->reject(fn ($member) => $member->isSeedPlaceholderProfile())
+                ->values()
+        );
 
         $unionMessages = CongratulationMessage::where('is_active', true)
             ->where('status', 'published')
