@@ -156,7 +156,7 @@ Route::middleware(\App\Http\Middleware\EnsureComplaintsEnabled::class)->group(fu
 
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     Route::post('rich-text/upload', [RichTextUploadController::class, 'store'])
-        ->middleware('throttle:30,1')
+        ->middleware(['permission:media.upload', 'throttle:30,1'])
         ->name('rich_text.upload');
 
     Route::get('/', [AdminDashboardController::class, 'index'])
@@ -198,8 +198,23 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         ->name('pending_approvals.archive');
 
     Route::resource('categories', AdminCategoryController::class)->except(['show']);
-    Route::resource('chamber-members', ChamberMemberController::class)->except(['show'])->names('chamber_members');
-    Route::resource('union-types', AdminUnionTypeController::class)->except(['show']);
+    // Global chamber leadership and union-type definitions are separate from
+    // an individual union manager's authority. Apply action-specific checks.
+    Route::get('chamber-members', [ChamberMemberController::class, 'index'])->middleware('permission:chamber_members.view')->name('chamber_members.index');
+    Route::get('chamber-members/create', [ChamberMemberController::class, 'create'])->middleware('permission:chamber_members.create')->name('chamber_members.create');
+    Route::post('chamber-members', [ChamberMemberController::class, 'store'])->middleware('permission:chamber_members.create')->name('chamber_members.store');
+    Route::get('chamber-members/{chamber_member}/edit', [ChamberMemberController::class, 'edit'])->middleware('permission:chamber_members.edit')->name('chamber_members.edit');
+    Route::put('chamber-members/{chamber_member}', [ChamberMemberController::class, 'update'])->middleware('permission:chamber_members.edit')->name('chamber_members.update');
+    Route::patch('chamber-members/{chamber_member}', [ChamberMemberController::class, 'update'])->middleware('permission:chamber_members.edit');
+    Route::delete('chamber-members/{chamber_member}', [ChamberMemberController::class, 'destroy'])->middleware('permission:chamber_members.delete')->name('chamber_members.destroy');
+
+    Route::get('union-types', [AdminUnionTypeController::class, 'index'])->middleware('permission:union_types.view')->name('union-types.index');
+    Route::get('union-types/create', [AdminUnionTypeController::class, 'create'])->middleware('permission:union_types.create')->name('union-types.create');
+    Route::post('union-types', [AdminUnionTypeController::class, 'store'])->middleware('permission:union_types.create')->name('union-types.store');
+    Route::get('union-types/{union_type}/edit', [AdminUnionTypeController::class, 'edit'])->middleware('permission:union_types.edit')->name('union-types.edit');
+    Route::put('union-types/{union_type}', [AdminUnionTypeController::class, 'update'])->middleware('permission:union_types.edit')->name('union-types.update');
+    Route::patch('union-types/{union_type}', [AdminUnionTypeController::class, 'update'])->middleware('permission:union_types.edit');
+    Route::delete('union-types/{union_type}', [AdminUnionTypeController::class, 'destroy'])->middleware('permission:union_types.delete')->name('union-types.destroy');
 
     Route::get('pages', [AdminPageController::class, 'index'])->middleware('permission:pages.view')->name('pages.index');
     Route::get('pages/create', [AdminPageController::class, 'create'])->middleware('permission:pages.create')->name('pages.create');
