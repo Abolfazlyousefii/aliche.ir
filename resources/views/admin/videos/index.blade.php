@@ -10,36 +10,23 @@
     @endif
 </div>
 
-<div class="admin-panel-card mb-3">
-    <form class="admin-search-form" action="{{ route('admin.videos.index') }}" method="GET">
-        <label class="form-label mb-0" for="search">جستجو</label>
-        <input class="form-control" id="search" name="search" value="{{ $search }}" placeholder="عنوان، نامک یا توضیحات...">
-        <select class="form-control" name="video_type" aria-label="فیلتر نوع ویدیو">
-            <option value="">همه نوع‌ها</option>
-            @foreach ($typeLabels as $type => $label)
-                <option value="{{ $type }}" @selected($videoType === $type)>{{ $label }}</option>
-            @endforeach
-        </select>
-        <select class="form-control" name="status" aria-label="فیلتر وضعیت">
-            <option value="">همه وضعیت‌ها</option>
-            @foreach ($statusLabels as $itemStatus => $label)
-                <option value="{{ $itemStatus }}" @selected($status === $itemStatus)>{{ $label }}</option>
-            @endforeach
-        </select>
-        <select class="form-control" name="union_id" aria-label="فیلتر اتحادیه">
-            <option value="">عمومی و همه اتحادیه‌ها</option>
-            @foreach ($unions as $union)
-                <option value="{{ $union->id }}" @selected((string) $unionId === (string) $union->id)>{{ $union->display_title }}</option>
-            @endforeach
-        </select>
-        <button class="admin-primary-btn" type="submit">اعمال</button>
-        @if ($search !== '' || $status !== '' || $videoType !== '' || $unionId)<a class="admin-secondary-btn" href="{{ route('admin.videos.index') }}">حذف فیلتر</a>@endif
-    </form>
-</div>
+@include('admin.partials.list-filters', [
+    'listRoute' => 'admin.videos.index',
+    'listTitle' => 'فیلتر ویدئوها',
+    'listDescription' => 'انتخاب ویدئو براساس نوع، اتحادیه و وضعیت انتشار',
+    'listSearch' => $search,
+    'listPlaceholder' => 'عنوان یا توضیحات ویدئو...',
+    'listPaginator' => $videos,
+    'listFilters' => [
+            ['name' => 'video_type', 'label' => 'نوع ویدئو', 'value' => $videoType, 'options' => $typeLabels, 'empty' => 'همه نوع‌ها'],
+            ['name' => 'status', 'label' => 'وضعیت', 'value' => $status, 'options' => $statusLabels, 'empty' => 'همه وضعیت‌ها'],
+            ['name' => 'union_id', 'label' => 'اتحادیه', 'value' => $unionId, 'options' => $unions->mapWithKeys(fn ($union) => [(string) $union->id => $union->display_title])->all(), 'empty' => 'عمومی و همه اتحادیه‌ها'],
+    ],
+])
 
 <div class="admin-panel-card">
-    <div class="table-responsive">
-        <table class="table admin-table align-middle">
+    <div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="فیلتر ویدئوها">
+        <table class="table admin-table align-middle admin-list-table" data-admin-list-table>
             <thead><tr><th>کاور</th><th>عنوان</th><th>نوع ویدیو</th><th>اتحادیه</th><th>وضعیت</th><th>انتشار</th><th>ترتیب</th><th>عملیات</th></tr></thead>
             <tbody>
                 @forelse ($videos as $video)
