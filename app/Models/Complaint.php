@@ -10,6 +10,9 @@ class Complaint extends Model
 {
     use HasFactory;
 
+    /** New complaint uploads live outside the web root; legacy paths remain on the public disk. */
+    public const PRIVATE_ATTACHMENT_PREFIX = 'private:';
+
     public const STATUSES = [
         'registered',
         'reviewing',
@@ -40,6 +43,31 @@ class Complaint extends Model
         return [
             'answered_at' => 'datetime',
         ];
+    }
+
+    public static function privateAttachmentValue(string $path): string
+    {
+        return self::PRIVATE_ATTACHMENT_PREFIX.$path;
+    }
+
+    public function attachmentDisk(): string
+    {
+        return str_starts_with((string) $this->attachment, self::PRIVATE_ATTACHMENT_PREFIX)
+            ? 'local'
+            : 'public';
+    }
+
+    public function attachmentPath(): ?string
+    {
+        $attachment = (string) $this->attachment;
+
+        if ($attachment === '') {
+            return null;
+        }
+
+        return $this->attachmentDisk() === 'local'
+            ? substr($attachment, strlen(self::PRIVATE_ATTACHMENT_PREFIX)) ?: null
+            : $attachment;
     }
 
     public function union(): BelongsTo

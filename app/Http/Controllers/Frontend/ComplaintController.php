@@ -7,8 +7,11 @@ use App\Models\Complaint;
 use App\Models\GuildUnion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 use Illuminate\View\View;
 
 class ComplaintController extends Controller
@@ -53,16 +56,32 @@ class ComplaintController extends Controller
             'attachment' => 'پیوست',
         ]);
 
-        $attachment = $request->hasFile('attachment')
-            ? $request->file('attachment')->store('complaints/attachments', 'public')
+        // Complaint evidence may contain identity documents. Never put new
+        // uploads on the public disk or under the web document root.
+        $privatePath = $request->hasFile('attachment')
+            ? $request->file('attachment')->store('complaints/attachments', 'local')
             : null;
 
-        $complaint = Complaint::create([
-            ...$validated,
-            'tracking_code' => $this->generateTrackingCode(),
-            'attachment' => $attachment,
-            'status' => 'registered',
-        ]);
+        if ($request->hasFile('attachment') && ! is_string($privatePath)) {
+            throw ValidationException::withMessages([
+                'attachment' => 'ذخیره فایل پیوست انجام نشد؛ لطفاً دوباره تلاش کنید.',
+            ]);
+        }
+
+        try {
+            $complaint = Complaint::create([
+                ...$validated,
+                'tracking_code' => $this->generateTrackingCode(),
+                'attachment' => $privatePath ? Complaint::privateAttachmentValue($privatePath) : null,
+                'status' => 'registered',
+            ]);
+        } catch (Throwable $exception) {
+            if ($privatePath) {
+                Storage::disk('local')->delete($privatePath);
+            }
+
+            throw $exception;
+        }
 
         $complaint->load('union');
 

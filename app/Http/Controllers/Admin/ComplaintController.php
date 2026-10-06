@@ -109,8 +109,8 @@ class ComplaintController extends Controller
     {
         $this->authorizeVisible($request, $complaint);
 
-        if ($complaint->attachment) {
-            Storage::disk('public')->delete($complaint->attachment);
+        if ($path = $complaint->attachmentPath()) {
+            Storage::disk($complaint->attachmentDisk())->delete($path);
         }
 
         $complaint->delete();
@@ -121,9 +121,15 @@ class ComplaintController extends Controller
     public function download(Request $request, Complaint $complaint): StreamedResponse
     {
         $this->authorizeVisible($request, $complaint);
-        abort_unless($complaint->attachment && Storage::disk('public')->exists($complaint->attachment), 404);
+        $path = $complaint->attachmentPath();
+        $disk = Storage::disk($complaint->attachmentDisk());
+        abort_unless($path && $disk->exists($path), 404);
 
-        return Storage::disk('public')->download($complaint->attachment);
+        $response = $disk->download($path);
+        $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+
+        return $response;
     }
 
     private function authorizeVisible(Request $request, Complaint $complaint): void
