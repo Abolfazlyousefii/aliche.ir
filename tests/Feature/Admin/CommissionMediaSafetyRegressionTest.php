@@ -41,17 +41,23 @@ class CommissionMediaSafetyRegressionTest extends TestCase
         $commission = $this->commission([
             'attachments' => [['name' => 'پیوست', 'path' => $paths[0]]],
         ]);
-        $commission->sessions()->create([
+        $session = $commission->sessions()->create([
             'title' => 'جلسه',
             'minutes_file' => $paths[1],
             'attachments' => [['name' => 'پیوست جلسه', 'path' => $paths[2]]],
             'images' => [['name' => 'عکس', 'path' => $paths[3]]],
+        ]);
+        $task = $commission->tasks()->create([
+            'title' => 'وظیفه مرتبط',
+            'is_active' => true,
         ]);
 
         $this->delete(route('admin.commissions.destroy', $commission))
             ->assertRedirect(route('admin.commissions.index'));
 
         $this->assertDatabaseMissing('commissions', ['id' => $commission->id]);
+        $this->assertDatabaseMissing('commission_sessions', ['id' => $session->id]);
+        $this->assertDatabaseMissing('commission_tasks', ['id' => $task->id]);
         Storage::disk('public')->assertExists($paths);
     }
 
