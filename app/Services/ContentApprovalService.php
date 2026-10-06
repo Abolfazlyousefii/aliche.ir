@@ -293,12 +293,20 @@ class ContentApprovalService
 
     public function publish(Model $model, User $user): Model
     {
-        return $this->updateStatus($model, [
+        $attributes = [
             'status' => 'published',
             'approved_by' => $user->id,
             'published_at' => $model->getAttribute('published_at') ?: now(),
             'rejected_reason' => null,
-        ]);
+        ];
+
+        // A published announcement without a start date is excluded from public pages.
+        // Match the direct publish action while preserving scheduled start dates.
+        if ($model instanceof Announcement && ! $model->starts_at) {
+            $attributes['starts_at'] = now();
+        }
+
+        return $this->updateStatus($model, $attributes);
     }
 
     public function archive(Model $model, User $user): Model

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\Announcement;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -69,6 +70,108 @@ class AdminPhaseOneModerationTest extends TestCase
             ->assertSee($post->title)
             ->assertSee('admin/pending-approvals/posts/'.$post->id.'/publish', false)
             ->assertDontSee('admin/pending-approvals/posts/'.$post->id.'/reject', false);
+    }
+
+
+    public function test_publishing_announcement_from_queue_starts_immediately_and_shows_jalali_date(): void
+    {
+        $this->travelTo(now()->startOfMinute());
+        $user = $this->withPermissions(['announcements.publish']);
+        $announcement = Announcement::query()->create([
+            'title' => 'اطلاعیه انتشار فوری',
+            'slug' => 'announcement-queue-immediate',
+            'status' => 'pending',
+            'visibility' => 'public',
+            'is_active' => true,
+            'show_on_home' => true,
+            'starts_at' => null,
+            'published_at' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->patch(route('admin.pending_approvals.publish', ['announcements', $announcement->id]))
+            ->assertRedirect();
+
+        $announcement->refresh();
+        $this->assertSame('published', $announcement->status);
+        $this->assertSame(now()->format('Y-m-d H:i:s'), $announcement->starts_at->format('Y-m-d H:i:s'));
+        $this->assertSame(now()->format('Y-m-d H:i:s'), $announcement->published_at->format('Y-m-d H:i:s'));
+
+        $this->get(route('announcements.index'))
+            ->assertOk()
+            ->assertSee($announcement->title);
+
+        $this->get(route('announcements.show', $announcement->slug))
+            ->assertOk()
+            ->assertSee(jalali_date($announcement->published_at))
+            ->assertSee(jalali_datetime($announcement->starts_at));
+    }
+
+    public function test_jalali_schedule_is_saved_and_preserved_when_published_from_queue(): void
+    {
+        $this->travelTo(now()->startOfMinute());
+        $user = $this->withPermissions(['announcements.create', 'announcements.view', 'announcements.publish']);
+        $start = now()->addDays(2)->startOfMinute();
+        $jalaliStart = jalali_datetime($start);
+
+        $this->actingAs($user)->post(route('admin.announcements.store'), [
+            'title' => 'اطلاعیه زمان‌بندی‌شده',
+            'slug' => 'announcement-jalali-scheduled',
+            'body' => 'متن اطلاعیه با تاریخ شمسی',
+            'starts_at' => $jalaliStart,
+            'status' => 'pending',
+            'visibility' => 'public',
+            'show_on_home' => '1',
+            'is_important' => '0',
+            'is_active' => '1',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $announcement = Announcement::query()->where('slug', 'announcement-jalali-scheduled')->firstOrFail();
+        $this->assertSame($start->format('Y-m-d H:i:s'), $announcement->starts_at->format('Y-m-d H:i:s'));
+
+        $this->get(route('admin.announcements.edit', $announcement))
+            ->assertOk()
+            ->assertSee($jalaliStart);
+
+        $this->patch(route('admin.pending_approvals.publish', ['announcements', $announcement->id]))
+            ->assertRedirect();
+
+        $announcement->refresh();
+        $this->assertSame('published', $announcement->status);
+        $this->assertSame($start->format('Y-m-d H:i:s'), $announcement->starts_at->format('Y-m-d H:i:s'));
+
+        $this->get(route('announcements.index'))
+            ->assertOk()
+            ->assertDontSee($announcement->title);
+
+        $this->travelTo($start->copy()->addMinute());
+
+        $this->get(route('announcements.index'))
+            ->assertOk()
+            ->assertSee($announcement->title);
+    }
+
+    public function test_direct_publish_still_fills_missing_announcement_start_date(): void
+    {
+        $this->travelTo(now()->startOfMinute());
+        $user = $this->withPermissions(['announcements.publish']);
+        $announcement = Announcement::query()->create([
+            'title' => 'اطلاعیه انتشار مستقیم',
+            'slug' => 'announcement-direct-immediate',
+            'status' => 'approved',
+            'visibility' => 'public',
+            'is_active' => true,
+            'starts_at' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->patch(route('admin.announcements.publish', $announcement))
+            ->assertRedirect();
+
+        $this->assertSame(
+            now()->format('Y-m-d H:i:s'),
+            $announcement->fresh()->starts_at->format('Y-m-d H:i:s')
+        );
     }
 
     private function withPermissions(array $permissions): User

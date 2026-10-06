@@ -50,15 +50,16 @@
             <small class="text-muted">خصوصی فقط در پنل کاربران نمایش داده می‌شود.</small>
         </div>
         <div class="col-md-3">
-            <label class="form-label" for="starts_at">شروع نمایش</label>
+            <label class="form-label" for="starts_at">شروع نمایش (شمسی)</label>
             <input class="form-control" id="starts_at" name="starts_at" type="text" data-jalali-datepicker value="{{ jalali_input_datetime(old('starts_at', $announcement?->starts_at)) }}">
+            <small class="text-muted d-block mt-1">در صورت خالی‌بودن، نمایش هنگام انتشار شروع می‌شود. برای انتشار زمان‌بندی‌شده، تاریخ و ساعت شمسی وارد کنید.</small>
         </div>
         <div class="col-md-3">
-            <label class="form-label" for="expires_at">تاریخ انقضا</label>
+            <label class="form-label" for="expires_at">تاریخ انقضا (شمسی)</label>
             <input class="form-control" id="expires_at" name="expires_at" type="text" data-jalali-datepicker value="{{ jalali_input_datetime(old('expires_at', $announcement?->expires_at)) }}">
         </div>
         <div class="col-md-3">
-            <label class="form-label" for="published_at">تاریخ انتشار</label>
+            <label class="form-label" for="published_at">تاریخ انتشار (شمسی)</label>
             <input class="form-control" id="published_at" name="published_at" type="text" data-jalali-datepicker value="{{ jalali_input_datetime(old('published_at', $announcement?->published_at)) }}">
         </div>
         <div class="col-md-3">
