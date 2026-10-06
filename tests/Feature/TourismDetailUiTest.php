@@ -71,6 +71,32 @@ class TourismDetailUiTest extends TestCase
             ->assertDontSee('tourism-detail-v2__facts', false);
     }
 
+    public function test_detail_renders_long_address_safely_without_a_location(): void
+    {
+        $place = $this->place([
+            'location' => null,
+            'address' => str_repeat('آدرس گردشگری ', 8),
+        ]);
+
+        $this->get(route('tourism.show', $place->slug))
+            ->assertOk()
+            ->assertSee('tourism-detail-v2__hero-meta', false)
+            ->assertSee('آدرس گردشگری');
+    }
+
+    public function test_detail_sanitizes_legacy_rich_text_on_output(): void
+    {
+        $place = $this->place([
+            'description' => '<p onclick="alert(1)">محتوای گردشگری</p><script>window.unsafe=true</script>',
+        ]);
+
+        $this->get(route('tourism.show', $place->slug))
+            ->assertOk()
+            ->assertSee('محتوای گردشگری')
+            ->assertDontSee('onclick=', false)
+            ->assertDontSee('window.unsafe', false);
+    }
+
     private function place(array $overrides = []): TourismPlace
     {
         return TourismPlace::query()->create(array_replace([
