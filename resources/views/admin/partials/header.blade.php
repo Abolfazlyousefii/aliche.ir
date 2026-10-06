@@ -12,7 +12,9 @@
     </div>
 
     <div class="admin-header-end">
-        @php($adminQuickLinks = \App\Support\AdminNavigation::searchableLinks(request()->user()))
+        @php
+            $adminQuickLinks = \App\Support\AdminNavigation::searchableLinks(request()->user());
+        @endphp
         <button class="admin-search-mobile-toggle" type="button" data-admin-search-toggle aria-label="جستجوی بخش‌های پنل" aria-controls="adminQuickNavSearch" aria-expanded="false">
             @include('admin.components.icon', ['name' => 'search'])
         </button>
