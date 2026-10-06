@@ -17,7 +17,6 @@
         return (str_starts_with($normalized, '+') ? '+' : '').str_replace('+', '', $normalized);
     };
 
-    $posts = collect($unionNews?->items() ?? []);
     $articles = $union->posts->where('type', 'article')->values();
     $socialLinks = collect($union->social_link_items);
     $presidentButtons = collect($union->active_president_buttons);
