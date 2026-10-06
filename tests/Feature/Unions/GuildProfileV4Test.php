@@ -46,7 +46,7 @@ class GuildProfileV4Test extends TestCase
             ->assertDontSee('guild-profile-person--executive', false);
     }
 
-    public function test_latest_related_news_is_featured_and_exactly_six_more_are_shown(): void
+    public function test_latest_related_news_is_featured_and_only_five_more_are_shown(): void
     {
         $union = $this->union([
             'slug' => 'guild-seven-news',
@@ -76,17 +76,18 @@ class GuildProfileV4Test extends TestCase
 
         $response->assertOk()
             ->assertSee('guild-profile-news-feature', false)
-            ->assertSee('guild-profile-news-grid', false)
+            ->assertSee('guild-profile-news-rows', false)
             ->assertSeeInOrder([
                 'خبر مرتبط شماره 0',
                 'خبر مرتبط شماره 1',
-                'خبر مرتبط شماره 6',
+                'خبر مرتبط شماره 5',
             ])
+            ->assertDontSee('خبر مرتبط شماره 6')
             ->assertDontSee('خبر مرتبط شماره 7')
             ->assertDontSee('خبر مرتبط شماره 8')
             ->assertDontSee('خبر اتحادیه دیگر');
 
-        $this->assertSame(6, substr_count($response->getContent(), 'class="guild-profile-news-card"'));
+        $this->assertSame(5, substr_count($response->getContent(), 'class="latest-news-card"'));
     }
 
     public function test_news_precedes_commissions_and_other_sections(): void
