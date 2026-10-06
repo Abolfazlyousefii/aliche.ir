@@ -20,6 +20,7 @@ use App\Support\UnionIcon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class UnionController extends Controller
@@ -55,7 +56,7 @@ class UnionController extends Controller
         return view('admin.unions.create', [
             'union' => null,
             'unionTypes' => $this->unionTypes(),
-            'selectablePosts' => $this->selectablePosts(),
+            'selectablePosts' => $this->selectablePosts(null),
             'mediaItems' => $this->mediaItems(),
             'currentMediaIds' => [],
         ]);
@@ -72,9 +73,13 @@ class UnionController extends Controller
         $data['executive_image'] = $this->storeImage($request, 'executive_image', 'unions/executives');
         $data['price_list_image'] = $this->storeImage($request, 'price_list_image', 'unions/price-lists');
 
-        $union = GuildUnion::create($data);
-        $this->syncPageSections($union, $request->validated('related', []));
-        $this->syncSelectedPosts($union, $request->validated('selected_posts', []));
+        $union = DB::transaction(function () use ($data, $request): GuildUnion {
+            $union = GuildUnion::create($data);
+            $this->syncPageSections($union, $request->validated('related', []));
+            $this->syncSelectedPosts($union, $request->validated('selected_posts', []));
+
+            return $union;
+        });
         $this->flushFrontendCache();
 
         return redirect()->route('admin.unions.show', $union)->with('success', 'اتحادیه با موفقیت ایجاد شد.');
@@ -97,7 +102,7 @@ class UnionController extends Controller
         return view('admin.unions.edit', [
             'union' => $union->load(['commissions.tasks', 'rules', 'minutes', 'educations', 'prices', 'selectedPosts']),
             'unionTypes' => $this->unionTypes(),
-            'selectablePosts' => $this->selectablePosts(),
+            'selectablePosts' => $this->selectablePosts($union),
             'mediaItems' => $this->mediaItems(),
             'currentMediaIds' => [
                 'cover_image' => Media::query()->where('path', $union->cover_image)->value('id'),
@@ -128,9 +133,11 @@ class UnionController extends Controller
             $data['executive_image'] = null;
         }
 
-        $union->update($data);
-        $this->syncPageSections($union, $request->validated('related', []));
-        $this->syncSelectedPosts($union, $request->validated('selected_posts', []));
+        DB::transaction(function () use ($union, $data, $request): void {
+            $union->update($data);
+            $this->syncPageSections($union, $request->validated('related', []));
+            $this->syncSelectedPosts($union, $request->validated('selected_posts', []));
+        });
         $this->flushFrontendCache();
 
         return redirect()->route('admin.unions.show', $union)->with('success', 'اتحادیه با موفقیت ویرایش شد.');
@@ -244,16 +251,39 @@ class UnionController extends Controller
     /** @param array<int, mixed> $selectedPosts */
     private function syncSelectedPosts(GuildUnion $union, array $selectedPosts): void
     {
+        // Keep the previous manual selection when an editor temporarily
+        // switches to automatic or disabled display.
         if (($union->news_mode ?? 'auto') !== 'manual') {
-            $union->selectedPosts()->sync([]);
             return;
         }
 
+        // Only posts belonging to this union can be selected for its news.
+        // Keep legacy foreign associations untouched, but never render them.
+        $allowedIds = Post::query()
+            ->where('union_id', $union->id)
+            ->whereKey($selectedPosts)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $allowed = array_flip($allowedIds);
         $sync = [];
         foreach (array_values($selectedPosts) as $index => $postId) {
-            if ($postId) {
-                $sync[(int) $postId] = ['sort_order' => ($index + 1) * 10];
+            $postId = (int) $postId;
+            if ($postId > 0 && isset($allowed[$postId])) {
+                $sync[$postId] = ['sort_order' => ($index + 1) * 10];
             }
+        }
+
+        $legacyForeign = $union->selectedPosts()
+            ->where(function ($query) use ($union) {
+                $query->whereNull('posts.union_id')
+                    ->orWhere('posts.union_id', '!=', $union->id);
+            })
+            ->get(['posts.id']);
+
+        foreach ($legacyForeign as $post) {
+            $sync[$post->id] = ['sort_order' => (int) ($post->pivot?->sort_order ?? 0)];
         }
 
         $union->selectedPosts()->sync($sync);
@@ -383,9 +413,25 @@ class UnionController extends Controller
         return UnionType::query()->orderBy('sort_order')->orderBy('title')->get();
     }
 
-    private function selectablePosts()
+    private function selectablePosts(?GuildUnion $union)
     {
-        return Post::query()->published()->editorial()->orderByDesc('published_at')->orderBy('title')->take(200)->get(['id', 'title', 'published_at']);
+        if (! $union) {
+            return collect();
+        }
+
+        $available = Post::query()
+            ->where('union_id', $union->id)
+            ->published()
+            ->editorial()
+            ->orderByDesc('published_at')
+            ->take(200)
+            ->get(['id', 'title', 'published_at', 'union_id']);
+
+        // Retain already selected posts outside the first 200 or currently
+        // unpublished, so saving unrelated fields never silently loses them.
+        return $available->concat(
+            $union->selectedPosts->where('union_id', $union->id)
+        )->unique('id')->values();
     }
 
     private function mediaItems()
