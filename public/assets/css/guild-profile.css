@@ -2553,6 +2553,17 @@ a.guild-profile-contact-card:focus-visible {
   -webkit-line-clamp: 2;
 }
 
+.guild-profile-page--v4 .guild-profile-news-mini__excerpt {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #688092;
+  font-size: 10.5px;
+  line-height: 1.75;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .guild-profile-page--v4 .guild-profile-news-mini__body > span {
   margin-top: auto;
   color: var(--gp-v4-blue);
@@ -2684,7 +2695,8 @@ a.guild-profile-contact-card:focus-visible {
     font-size: 11.5px;
   }
 
-  .guild-profile-page--v4 .guild-profile-news-mini__body > span {
+  .guild-profile-page--v4 .guild-profile-news-mini__body > span,
+  .guild-profile-page--v4 .guild-profile-news-mini__excerpt {
     display: none;
   }
 
