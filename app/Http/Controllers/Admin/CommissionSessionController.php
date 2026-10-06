@@ -14,11 +14,16 @@ use Illuminate\View\View;
 
 class CommissionSessionController extends Controller
 {
-    public function index(Commission $commission): View
+    public function index(Request $request, Commission $commission): View
     {
-        $sessions = $commission->sessions()->paginate(15)->withQueryString();
+        $search = trim((string) $request->query('search', ''));
+        $status = (string) $request->query('status', '');
+        $sessions = $commission->sessions()
+            ->when($search !== '', fn ($query) => $query->where('title', 'like', "%{$search}%"))
+            ->when(in_array($status, CommissionSession::STATUSES, true), fn ($query) => $query->where('status', $status))
+            ->paginate(15)->withQueryString();
 
-        return view('admin.commission_sessions.index', compact('commission', 'sessions'));
+        return view('admin.commission_sessions.index', compact('commission', 'sessions', 'search', 'status'));
     }
 
     public function create(Commission $commission): View

@@ -27,8 +27,8 @@
         <h3 class="h5 mb-0">آخرین پیامک‌ها</h3>
         @if (request()->user()->hasPermission('sms.logs'))<a href="{{ route('admin.sms.logs') }}">مشاهده همه</a>@endif
     </div>
-    <div class="table-responsive">
-        <table class="table admin-table align-middle">
+    <div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="آخرین گزارش‌های پیامک">
+        <table class="table admin-table admin-list-table align-middle" data-admin-list-table>
             <thead><tr><th>متن</th><th>نوع ارسال</th><th>تعداد گیرندگان</th><th>وضعیت</th><th>ارسال‌کننده</th><th>زمان</th><th>عملیات</th></tr></thead>
             <tbody>
                 @forelse ($recentLogs as $log)

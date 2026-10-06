@@ -16,12 +16,16 @@ class CategoryController extends Controller
     public function index(Request $request): View
     {
         $type = (string) $request->query('type', '');
+        $search = trim((string) $request->query('search', ''));
         $allowed = AdminCategoryAccess::allowedTypes($request->user(), 'view');
         abort_if($allowed === [] || ($type !== '' && ! in_array($type, $allowed, true)), 403);
 
         $categories = Category::query()
             ->whereIn('type', $allowed)
             ->when($type !== '', fn ($query) => $query->where('type', $type))
+            ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
+                ->where('title', 'like', "%{$search}%")
+                ->orWhere('slug', 'like', "%{$search}%")))
             ->orderBy('type')
             ->orderBy('sort_order')
             ->orderBy('title')
@@ -30,6 +34,7 @@ class CategoryController extends Controller
 
         return view('admin.categories.index', [
             'categories' => $categories,
+            'search' => $search,
             'types' => array_intersect_key($this->typeLabels(), array_flip($allowed)),
             'type' => $type,
             'createTypes' => AdminCategoryAccess::allowedTypes($request->user(), 'create'),

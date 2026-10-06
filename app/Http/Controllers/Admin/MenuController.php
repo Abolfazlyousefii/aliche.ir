@@ -11,11 +11,18 @@ use Illuminate\View\View;
 
 class MenuController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $menus = Menu::withCount('items')->latest()->paginate(15)->withQueryString();
+        $search = trim((string) $request->query('search', ''));
+        $status = (string) $request->query('status', '');
+        $menus = Menu::query()->withCount('items')
+            ->when($search !== '', fn ($query) => $query->where(fn ($query) => $query
+                ->where('title', 'like', "%{$search}%")
+                ->orWhere('location', 'like', "%{$search}%")))
+            ->when(in_array($status, ['active', 'inactive'], true), fn ($query) => $query->where('is_active', $status === 'active'))
+            ->latest()->paginate(15)->withQueryString();
 
-        return view('admin.menus.index', compact('menus'));
+        return view('admin.menus.index', compact('menus', 'search', 'status'));
     }
 
     public function create(): View

@@ -48,7 +48,17 @@
         'admin.commissions.index',
         'admin.congratulation_messages.index',
         'admin.chamber_members.index',
-        'admin.media.index'
+        'admin.media.index',
+        'admin.categories.index',
+        'admin.union-types.index',
+        'admin.menus.index',
+        'admin.commissions.sessions.index',
+        'admin.messages.index',
+        'admin.messages.inbox',
+        'admin.messages.sent',
+        'admin.pending_approvals.index',
+        'admin.sms.index',
+        'admin.home_sections.index'
     ))
         @php
             $adminListCss = base_path('public/assets/admin/css/list-workspace.css');
@@ -132,7 +142,17 @@
         'admin.commissions.index',
         'admin.congratulation_messages.index',
         'admin.chamber_members.index',
-        'admin.media.index'
+        'admin.media.index',
+        'admin.categories.index',
+        'admin.union-types.index',
+        'admin.menus.index',
+        'admin.commissions.sessions.index',
+        'admin.messages.index',
+        'admin.messages.inbox',
+        'admin.messages.sent',
+        'admin.pending_approvals.index',
+        'admin.sms.index',
+        'admin.home_sections.index'
     ))
         @php
             $adminListJs = base_path('public/assets/admin/js/list-workspace.js');

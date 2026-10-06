@@ -1,6 +1,7 @@
 @php
     // Configured per-page: preserve existing server-side query names and GET behavior.
     $listConfiguredFilters = $listFilters ?? [];
+    $listRouteParams = $listRouteParams ?? [];
     $listHasSearch = trim((string) ($listSearch ?? '')) !== '';
     $listActiveExtra = collect($listConfiguredFilters)->filter(
         fn (array $filter) => filled($filter['value'] ?? null)
@@ -24,7 +25,7 @@
         </div>
     </div>
 
-    <form id="{{ $listFilterFormId }}" class="admin-list-filter-form" action="{{ route($listRoute) }}" method="GET" role="search">
+    <form id="{{ $listFilterFormId }}" class="admin-list-filter-form" action="{{ route($listRoute, $listRouteParams) }}" method="GET" role="search">
         <div class="admin-list-primary-search">
             <div class="admin-list-primary-search__field">
                 <label for="{{ $listFilterFormId }}-input">{{ $listSearchLabel ?? 'جستجو در فهرست' }}</label>
@@ -33,7 +34,7 @@
             </div>
             <button type="submit" class="admin-primary-btn">جستجو</button>
             @if($listActiveCount > 0)
-                <a class="admin-secondary-btn" href="{{ route($listRoute) }}">پاک‌کردن فیلترها</a>
+                <a class="admin-secondary-btn" href="{{ route($listRoute, $listRouteParams) }}">پاک‌کردن فیلترها</a>
             @endif
         </div>
 

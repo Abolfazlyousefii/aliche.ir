@@ -10,11 +10,29 @@ use Illuminate\View\View;
 
 class PendingApprovalController extends Controller
 {
-    public function index(ContentApprovalService $approvalService): View
+    public function index(Request $request, ContentApprovalService $approvalService): View
     {
+        $allVisibleItems = $approvalService->pendingItems(null, $request->user());
+        $search = trim((string) $request->query('search', ''));
+        $type = (string) $request->query('type', '');
+        $typeOptions = $allVisibleItems->pluck('label', 'type')->unique();
+
+        // Filter only the already permission-scoped queue; never query
+        // another content module to fulfill a search request.
+        $items = $allVisibleItems
+            ->when($type !== '', fn ($items) => $items->where('type', $type))
+            ->when($search !== '', fn ($items) => $items->filter(
+                fn (array $item): bool => mb_stripos((string) ($item['title'] ?? ''), $search) !== false
+                    || mb_stripos((string) ($item['summary'] ?? ''), $search) !== false
+            ))
+            ->values();
+
         return view('admin.pending_approvals.index', [
-            'items' => $approvalService->pendingItems(null, request()->user()),
-            'statusLabels' => ContentApprovalService::statusLabels(),
+            'items' => $items,
+            'totalVisibleItems' => $allVisibleItems->count(),
+            'typeOptions' => $typeOptions,
+            'search' => $search,
+            'type' => $type,
         ]);
     }
 
