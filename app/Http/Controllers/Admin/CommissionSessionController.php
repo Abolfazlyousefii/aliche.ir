@@ -9,7 +9,6 @@ use App\Rules\SafeImageUpload;
 use App\Support\PublicStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -71,9 +70,7 @@ class CommissionSessionController extends Controller
         $data = $this->sessionData($validated);
 
         if ($request->hasFile('minutes_file')) {
-            if ($session->minutes_file) {
-                Storage::disk('public')->delete($session->minutes_file);
-            }
+            // Retain the previous file: it may be referenced elsewhere.
             $data['minutes_file'] = $request->file('minutes_file')->store('commission-sessions/minutes', 'public');
         }
 
@@ -87,12 +84,8 @@ class CommissionSessionController extends Controller
     public function destroy(Commission $commission, CommissionSession $session): RedirectResponse
     {
         $this->ensureSessionBelongsToCommission($commission, $session);
-        if ($session->minutes_file) {
-            Storage::disk('public')->delete($session->minutes_file);
-        }
-        foreach (array_merge($session->attachments ?? [], $session->images ?? []) as $file) {
-            Storage::disk('public')->delete($file['path'] ?? '');
-        }
+        // Keep files on disk even after the session is removed: shared
+        // references cannot safely be ruled out here.
         $session->delete();
 
         return redirect()->route('admin.commissions.sessions.index', $commission)->with('success', 'جلسه کمیسیون با موفقیت حذف شد.');
@@ -153,8 +146,7 @@ class CommissionSessionController extends Controller
             $file['delete'] = ($payload['delete'] ?? null) === '1';
             return $file;
         });
-        $existing->where('delete', true)->each(fn ($file) => Storage::disk('public')->delete($file['path'] ?? ''));
-
+        // Remove references, not physical files, until usage is audited.
         return $existing->reject(fn ($file) => $file['delete'])->map(fn ($file) => collect($file)->except('delete')->all())->values()
             ->merge($this->storeFiles($request, $field, $directory))->all();
     }

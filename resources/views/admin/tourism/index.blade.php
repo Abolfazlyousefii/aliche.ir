@@ -26,6 +26,12 @@
                 <option value="{{ $category->id }}" @selected((string) $categoryId === (string) $category->id)>{{ $category->title }}</option>
             @endforeach
         </select>
+        <select class="form-control" name="tourism_type" aria-label="فیلتر نوع گردشگری">
+            <option value="">همه انواع گردشگری</option>
+            @foreach ($typeLabels as $value => $label)
+                <option value="{{ $value }}" @selected($tourismType === $value)>{{ $label }}</option>
+            @endforeach
+        </select>
         <button class="admin-primary-btn" type="submit">اعمال فیلتر</button>
         <a class="admin-secondary-btn" href="{{ route('admin.tourism.index') }}">حذف فیلتر</a>
     </form>

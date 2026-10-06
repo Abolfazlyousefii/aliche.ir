@@ -12,6 +12,115 @@ class TourismBackendRegressionTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_admin_forms_expose_tourism_media_library_controls(): void
+    {
+        $this->signInAsSuperAdmin();
+
+        $place = TourismPlace::query()->create([
+            'title' => 'مکان برای فرم',
+            'slug' => 'tourism-media-form',
+            'tourism_type' => 'nature',
+            'type' => 'nature',
+            'status' => 'draft',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+
+        foreach ([route('admin.tourism.create'), route('admin.tourism.edit', $place)] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertSee('data-media-select-target="image_media_id"', false)
+                ->assertSee('data-media-select-target="featured_image_media_id"', false)
+                ->assertSee('data-media-select-target="gallery_images_media_ids"', false)
+                ->assertSee('data-media-select-multiple="true"', false);
+        }
+    }
+
+    public function test_admin_update_persists_selected_card_featured_and_gallery_media(): void
+    {
+        $this->signInAsSuperAdmin();
+
+        $place = TourismPlace::query()->create([
+            'title' => 'مکان قابل ویرایش',
+            'slug' => 'tourism-media-update',
+            'tourism_type' => 'nature',
+            'type' => 'nature',
+            'gallery' => [],
+            'status' => 'draft',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+
+        $card = $this->image('media/update-card.jpg');
+        $featured = $this->image('media/update-featured.jpg');
+        $gallery = $this->image('media/update-gallery.jpg');
+
+        $this->put(route('admin.tourism.update', $place), $this->payload([
+            'title' => $place->title,
+            'slug' => $place->slug,
+            'image_media_id' => $card->id,
+            'featured_image_media_id' => $featured->id,
+            'gallery_images_media_ids' => [$gallery->id],
+        ]))->assertSessionHasNoErrors();
+
+        $place->refresh();
+
+        $this->assertSame($card->path, $place->image);
+        $this->assertSame($featured->path, $place->featured_image);
+        $this->assertSame($gallery->path, $place->gallery[0]['path'] ?? null);
+    }
+
+    public function test_admin_index_filters_by_tourism_type(): void
+    {
+        $this->signInAsSuperAdmin();
+
+        TourismPlace::query()->create([
+            'title' => 'جاذبه طبیعی',
+            'slug' => 'tourism-filter-nature',
+            'tourism_type' => 'nature',
+            'type' => 'nature',
+            'status' => 'draft',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+
+        TourismPlace::query()->create([
+            'title' => 'رستوران گردشگری',
+            'slug' => 'tourism-filter-restaurant',
+            'tourism_type' => 'restaurant',
+            'type' => 'restaurant',
+            'status' => 'draft',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+
+        $this->get(route('admin.tourism.index', ['tourism_type' => 'restaurant']))
+            ->assertOk()
+            ->assertSee('رستوران گردشگری')
+            ->assertDontSee('جاذبه طبیعی');
+    }
+
+    public function test_gallery_media_selection_preserves_order_and_removes_duplicates(): void
+    {
+        $this->signInAsSuperAdmin();
+
+        $first = $this->image('media/gallery-first.jpg');
+        $second = $this->image('media/gallery-second.jpg');
+        $third = $this->image('media/gallery-third.jpg');
+
+        $this->post(route('admin.tourism.store'), $this->payload([
+            'slug' => 'tourism-gallery-order',
+            'gallery_images_media_ids' => [$third->id, $first->id, $third->id, $second->id],
+        ]))->assertSessionHasNoErrors();
+
+        $place = TourismPlace::query()->where('slug', 'tourism-gallery-order')->firstOrFail();
+
+        $this->assertSame(
+            [$third->path, $first->path, $second->path],
+            collect($place->gallery)->pluck('path')->all()
+        );
+    }
+
     public function test_admin_rejects_non_tourism_category(): void
     {
         $this->signInAsSuperAdmin();

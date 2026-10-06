@@ -13085,6 +13085,383 @@ a.guild-profile-contact-card:active {
   }
 }
 
+
+/* ========================================================================
+   Commission detail v3 — compact dynamic public profile
+   Deploy source: laravel/public_html/assets/css/styles.css
+   ======================================================================== */
+.commission-profile-v3 {
+  --cp-line: rgba(15, 35, 52, .10);
+  --cp-blue: #0c74b9;
+  --cp-navy: #16384f;
+  --cp-text: #284151;
+  --cp-muted: #6c7c87;
+  background: #f6f8fa;
+  color: var(--cp-text);
+  font-family: inherit;
+}
+.commission-profile-v3 *,
+.commission-profile-v3 *::before,
+.commission-profile-v3 *::after { box-sizing: border-box; }
+.commission-profile-v3 a { text-decoration: none; }
+.commission-profile-v3__header {
+  background: linear-gradient(180deg, #fbfdff, #f2f7fa);
+  border-bottom: 1px solid var(--cp-line);
+  padding-block: 23px 26px;
+}
+.commission-profile-v3__breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 14px;
+  color: #8b98a2;
+  font-size: 10px;
+  line-height: 1.8;
+}
+.commission-profile-v3__breadcrumb a { color: #637987; }
+.commission-profile-v3__breadcrumb a:hover { color: var(--cp-blue); }
+.commission-profile-v3__breadcrumb [aria-current="page"] {
+  max-width: min(440px, 85vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.commission-profile-v3__eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--cp-blue);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.commission-profile-v3__header h1 {
+  margin: 0;
+  color: #102f47;
+  font-size: clamp(22px, 2.3vw, 30px);
+  font-weight: 750;
+  line-height: 1.6;
+}
+.commission-profile-v3__header p {
+  margin: 5px 0 0;
+  color: var(--cp-muted);
+  font-size: 11.5px;
+  line-height: 1.9;
+}
+.commission-profile-v3__body { padding-block: 25px 54px; }
+.commission-profile-v3__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 18px;
+  align-items: start;
+}
+.commission-profile-v3__main,
+.commission-profile-v3__sidebar { min-width: 0; }
+.commission-profile-v3__main { display: grid; gap: 16px; }
+.commission-profile-v3__sidebar { display: grid; gap: 14px; }
+.commission-profile-v3__overview,
+.commission-profile-v3__section,
+.commission-profile-v3__side-card {
+  min-width: 0;
+  border: 1px solid var(--cp-line);
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(15, 35, 52, .03);
+}
+.commission-profile-v3__overview {
+  display: flex;
+  align-items: flex-start;
+  gap: 21px;
+  padding: 21px;
+}
+.commission-profile-v3__overview-content { flex: 1 1 auto; min-width: 0; }
+.commission-profile-v3__section-title { margin-bottom: 11px; }
+.commission-profile-v3__section-title h2,
+.commission-profile-v3__section-head h2 {
+  margin: 0;
+  color: #173a52;
+  font-size: 17px;
+  font-weight: 710;
+  line-height: 1.6;
+}
+.commission-profile-v3__thumbnail {
+  width: 154px;
+  height: 116px;
+  flex: 0 0 154px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(15, 35, 52, .08);
+  border-radius: 9px;
+  background: #f2f6f8;
+}
+.commission-profile-v3__thumbnail img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.commission-profile-v3__rich-text {
+  overflow-wrap: anywhere;
+  color: #536672;
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 2.05;
+}
+.commission-profile-v3__rich-text > :first-child { margin-top: 0; }
+.commission-profile-v3__rich-text > :last-child { margin-bottom: 0; }
+.commission-profile-v3__rich-text p { margin: 0 0 10px; }
+.commission-profile-v3__rich-text h2,
+.commission-profile-v3__rich-text h3,
+.commission-profile-v3__rich-text h4 {
+  margin: 18px 0 8px;
+  color: #1a3b50;
+  font-size: 14px;
+  font-weight: 700;
+}
+.commission-profile-v3__rich-text ul,
+.commission-profile-v3__rich-text ol { padding-inline-start: 22px; margin: 8px 0 12px; }
+.commission-profile-v3__rich-text a { color: var(--cp-blue); text-decoration: underline; }
+.commission-profile-v3__rich-text table {
+  max-width: 100%;
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+.commission-profile-v3__rich-text th,
+.commission-profile-v3__rich-text td {
+  border: 1px solid var(--cp-line);
+  padding: 8px;
+}
+.commission-profile-v3__rich-text img { max-width: 100%; height: auto; }
+.commission-profile-v3__muted {
+  margin: 0;
+  color: var(--cp-muted);
+  font-size: 12px;
+  line-height: 1.9;
+}
+.commission-profile-v3__section { padding: 19px 21px 21px; }
+.commission-profile-v3__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 15px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--cp-line);
+}
+.commission-profile-v3__count {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 7px;
+  background: #edf6fb;
+  color: #24668e;
+  font-size: 10px;
+  font-weight: 700;
+}
+.commission-profile-v3__tasks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.commission-profile-v3__task {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 13px;
+  border: 1px solid var(--cp-line);
+  border-radius: 9px;
+  background: #fbfcfd;
+}
+.commission-profile-v3__task-icon {
+  width: 27px;
+  height: 27px;
+  flex: 0 0 27px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: #eef7fb;
+  color: var(--cp-blue);
+}
+.commission-profile-v3__task-icon svg,
+.commission-profile-v3__attachments svg,
+.commission-profile-v3__back svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.commission-profile-v3__task h3,
+.commission-profile-v3__session h3 {
+  margin: 0;
+  color: #203f53;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.8;
+}
+.commission-profile-v3__task .commission-profile-v3__rich-text { margin-top: 4px; font-size: 11.5px; }
+.commission-profile-v3__sessions { display: grid; gap: 10px; }
+.commission-profile-v3__session {
+  padding: 14px;
+  border: 1px solid var(--cp-line);
+  border-radius: 9px;
+  background: #fbfcfd;
+}
+.commission-profile-v3__session-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.commission-profile-v3__session time {
+  color: var(--cp-muted);
+  font-size: 10.5px;
+}
+.commission-profile-v3__session > p {
+  margin: 7px 0 0;
+  color: #637582;
+  font-size: 11.5px;
+  line-height: 1.95;
+}
+.commission-profile-v3__files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+.commission-profile-v3__files a {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 7px;
+  border: 1px solid rgba(12, 116, 185, .12);
+  background: #eef7fb;
+  color: #0b669e;
+  font-size: 10.5px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.commission-profile-v3__files a:hover { background: #e2f2fa; }
+.commission-profile-v3__session-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 11px;
+}
+.commission-profile-v3__session-images a {
+  width: 76px;
+  height: 61px;
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--cp-line);
+  border-radius: 7px;
+}
+.commission-profile-v3__session-images img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.commission-profile-v3__side-card { padding: 17px; }
+.commission-profile-v3__side-card h2 {
+  margin: 0 0 12px;
+  color: #213c4f;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+.commission-profile-v3__stats { margin: 0; }
+.commission-profile-v3__stats > div {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(15, 35, 52, .07);
+}
+.commission-profile-v3__stats dt { color: var(--cp-muted); font-size: 11px; font-weight: 400; }
+.commission-profile-v3__stats dd { margin: 0; color: #155d8b; font-size: 12px; font-weight: 750; }
+.commission-profile-v3__back {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 37px;
+  margin-top: 13px;
+  padding-inline: 11px;
+  border: 1px solid rgba(12, 116, 185, .13);
+  border-radius: 8px;
+  background: #f1f8fc;
+  color: #17678d;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.commission-profile-v3__back:hover { background: #e8f4fb; color: #095d8f; }
+.commission-profile-v3__members {
+  display: grid;
+  gap: 7px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.commission-profile-v3__members li {
+  padding: 8px 10px;
+  border: 1px solid rgba(15, 35, 52, .07);
+  border-radius: 7px;
+  background: #f9fbfc;
+  color: #345165;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.commission-profile-v3__attachments { display: grid; gap: 8px; }
+.commission-profile-v3__attachments a {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 9px;
+  border-radius: 7px;
+  background: #f2f7fa;
+  color: #17678d;
+  font-size: 10.5px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.commission-profile-v3__attachments svg { flex: 0 0 16px; margin-top: 2px; }
+.commission-profile-v3__attachments a:hover { background: #e8f4fb; }
+.commission-profile-v3 a:focus-visible {
+  outline: 3px solid rgba(12, 116, 185, .23);
+  outline-offset: 2px;
+}
+
+@media (max-width: 899.98px) {
+  .commission-profile-v3__layout { grid-template-columns: minmax(0, 1fr) 235px; gap: 13px; }
+  .commission-profile-v3__overview { gap: 13px; padding: 16px; }
+  .commission-profile-v3__thumbnail { width: 118px; height: 90px; flex-basis: 118px; }
+  .commission-profile-v3__tasks { grid-template-columns: 1fr; }
+}
+@media (max-width: 699.98px) {
+  .commission-profile-v3__header { padding-block: 18px 21px; }
+  .commission-profile-v3__header h1 { font-size: 23px; }
+  .commission-profile-v3__body { padding-block: 16px 40px; }
+  .commission-profile-v3__layout { grid-template-columns: 1fr; gap: 14px; }
+  .commission-profile-v3__overview { padding: 16px; }
+  .commission-profile-v3__sidebar { grid-row: 2; }
+  .commission-profile-v3__section { padding: 15px; }
+  .commission-profile-v3__section-title h2,
+  .commission-profile-v3__section-head h2 { font-size: 15.5px; }
+  .commission-profile-v3__side-card { padding: 15px; }
+}
+@media (max-width: 389.98px) {
+  .commission-profile-v3__overview { flex-direction: column-reverse; align-items: stretch; }
+  .commission-profile-v3__thumbnail { width: 100%; max-width: 164px; height: 100px; flex-basis: auto; }
+  .commission-profile-v3__files a { width: 100%; }
+}
+
 /* ==========================================================================
    Tourism detail v2 — compact dynamic single-place page
    ========================================================================== */

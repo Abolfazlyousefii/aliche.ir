@@ -10,9 +10,9 @@ use App\Rules\SafeImageUpload;
 use App\Services\ContentApprovalService;
 use App\Services\SlugService;
 use App\Support\PublicStorage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -102,18 +102,14 @@ class CommissionController extends Controller
 
     public function destroy(Commission $commission): RedirectResponse
     {
-        foreach ($commission->attachments ?? [] as $file) {
-            Storage::disk('public')->delete($file['path'] ?? '');
-        }
-        foreach ($commission->sessions as $session) {
-            if ($session->minutes_file) {
-                Storage::disk('public')->delete($session->minutes_file);
-            }
-            foreach (array_merge($session->attachments ?? [], $session->images ?? []) as $file) {
-                Storage::disk('public')->delete($file['path'] ?? '');
-            }
-        }
-        $commission->delete();
+        // The production schema may not enforce the cascading foreign keys from
+        // our migrations, so remove child records explicitly and atomically.
+        // Preserve physical media: files may be referenced by other content.
+        DB::transaction(function () use ($commission): void {
+            $commission->sessions()->delete();
+            $commission->tasks()->delete();
+            $commission->delete();
+        });
 
         return redirect()->route('admin.commissions.index')->with('success', 'کمیسیون با موفقیت حذف شد.');
     }
@@ -184,8 +180,8 @@ class CommissionController extends Controller
 
             return $file;
         });
-        $existing->where('delete', true)->each(fn ($file) => Storage::disk('public')->delete($file['path'] ?? ''));
-
+        // Unlink selected attachments only; physical media cleanup needs
+        // a separate reference-aware operation.
         return $existing->reject(fn ($file) => $file['delete'])->map(fn ($file) => collect($file)->except('delete')->all())->values()
             ->merge($this->storeFiles($request, 'attachments', 'commissions/attachments'))->all();
     }
