@@ -33,10 +33,8 @@ class GuildAjaxNewsPaginationTest extends TestCase
             'published_at' => now(),
         ]);
 
-        // Even when an editor selects this article manually, it must not leak
-        // onto another union's own news pagination.
+        // An unrelated legacy selection must not affect automatic news.
         $union->selectedPosts()->attach($external->id, ['sort_order' => 10]);
-        $union->update(['news_mode' => 'manual']);
 
         $response = $this->get(route('guilds.show', $union->slug));
         $response->assertOk()
@@ -47,6 +45,54 @@ class GuildAjaxNewsPaginationTest extends TestCase
             ->assertSee('news_page=2');
 
         $this->assertSame(5, substr_count($response->getContent(), 'class="latest-news-card"'));
+    }
+
+    public function test_manual_mode_shows_only_selected_own_news_in_admin_order_with_ajax_pagination(): void
+    {
+        $union = $this->union(['slug' => 'guild-news-manual', 'news_mode' => 'manual']);
+        $otherUnion = $this->union(['slug' => 'guild-news-manual-other']);
+        $posts = [];
+
+        for ($index = 0; $index < 8; $index++) {
+            $posts[] = $this->publishedPost([
+                'union_id' => $union->id,
+                'slug' => 'manual-article-'.$index,
+                'title' => 'خبر دستی شماره '.$index,
+                'published_at' => now()->subMinutes($index + 1),
+            ]);
+        }
+
+        $foreign = $this->publishedPost([
+            'union_id' => $otherUnion->id,
+            'slug' => 'manual-foreign-article',
+            'title' => 'خبر دستی غیرمرتبط',
+        ]);
+        $union->selectedPosts()->attach($foreign->id, ['sort_order' => 1]);
+
+        foreach (array_reverse($posts) as $index => $post) {
+            $union->selectedPosts()->attach($post->id, ['sort_order' => ($index + 1) * 10]);
+        }
+
+        $first = $this->get(route('guilds.show', $union->slug));
+        $first->assertOk()
+            ->assertSeeInOrder(['خبر دستی شماره 7', 'خبر دستی شماره 6', 'خبر دستی شماره 2'])
+            ->assertDontSee('خبر دستی شماره 1')
+            ->assertDontSee('خبر دستی غیرمرتبط')
+            ->assertSee('news_page=2');
+
+        $this->assertSame($posts[7]->id, $union->fresh()->latest_published_news?->id);
+
+        $second = $this->withHeaders([
+            'X-Requested-With' => 'XMLHttpRequest',
+            'Accept' => 'application/json',
+        ])->get(route('guilds.show', ['union' => $union->slug, 'news_page' => 2]));
+
+        $second->assertOk()->assertJsonPath('total', 8)->assertJsonPath('current_page', 2);
+        $html = $second->json('html');
+        $this->assertStringContainsString('خبر دستی شماره 1', $html);
+        $this->assertStringContainsString('خبر دستی شماره 0', $html);
+        $this->assertStringNotContainsString('خبر دستی شماره 7', $html);
+        $this->assertStringNotContainsString('خبر دستی غیرمرتبط', $html);
     }
 
     public function test_ajax_returns_only_news_partial_and_correct_second_page(): void
