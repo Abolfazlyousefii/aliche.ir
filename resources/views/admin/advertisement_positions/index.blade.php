@@ -10,23 +10,21 @@
     @endif
 </div>
 
-<div class="admin-panel-card mb-3">
-    <form class="admin-search-form" action="{{ route('admin.advertisement_positions.index') }}" method="GET">
-        <label class="form-label mb-0" for="search">جستجو</label>
-        <input class="form-control" id="search" name="search" value="{{ $search }}" placeholder="عنوان، کلید یا توضیحات...">
-        <select class="form-control" name="status" aria-label="فیلتر وضعیت">
-            <option value="">همه وضعیت‌ها</option>
-            <option value="active" @selected($status === 'active')>فعال</option>
-            <option value="inactive" @selected($status === 'inactive')>غیرفعال</option>
-        </select>
-        <button class="admin-primary-btn" type="submit">اعمال فیلتر</button>
-        <a class="admin-secondary-btn" href="{{ route('admin.advertisement_positions.index') }}">حذف فیلتر</a>
-    </form>
-</div>
+@include('admin.partials.list-filters', [
+    'listRoute' => 'admin.advertisement_positions.index',
+    'listTitle' => 'فیلتر جایگاه‌های تبلیغاتی',
+    'listDescription' => 'جستجوی عنوان، کلید جایگاه و وضعیت فعال بودن',
+    'listSearch' => $search,
+    'listPlaceholder' => 'عنوان یا کلید جایگاه...',
+    'listPaginator' => $positions,
+    'listFilters' => [
+            ['name' => 'status', 'label' => 'وضعیت', 'value' => $status, 'options' => ['active' => 'فعال', 'inactive' => 'غیرفعال'], 'empty' => 'همه وضعیت‌ها'],
+    ],
+])
 
 <div class="admin-panel-card">
-    <div class="table-responsive">
-        <table class="admin-table">
+    <div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="فیلتر جایگاه‌های تبلیغاتی">
+        <table class="admin-table admin-list-table" data-admin-list-table>
             <thead><tr><th>عنوان</th><th>کلید</th><th>ابعاد</th><th>تعداد تبلیغ</th><th>وضعیت</th><th>عملیات</th></tr></thead>
             <tbody>
             @forelse ($positions as $position)
