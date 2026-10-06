@@ -5,26 +5,26 @@
 @section('content')
 <div class="admin-page-toolbar">
     <div><p class="admin-eyebrow">مدیریت اتحادیه‌ها</p><h2>اتحادیه‌های صنفی</h2></div>
-    <a class="admin-primary-btn" href="{{ route('admin.unions.create') }}">ایجاد اتحادیه جدید</a>
+    @if(request()->user()->hasPermission('unions.create'))
+        <a class="admin-primary-btn" href="{{ route('admin.unions.create') }}">ایجاد اتحادیه جدید</a>
+    @endif
 </div>
 
-<div class="admin-panel-card mb-3">
-    <form class="admin-search-form" action="{{ route('admin.unions.index') }}" method="GET">
-        <label class="form-label mb-0" for="search">جستجو</label>
-        <input class="form-control" id="search" name="search" value="{{ $search }}" placeholder="عنوان، مدیر، تلفن یا ایمیل...">
-        <select class="form-control" name="status" aria-label="فیلتر وضعیت">
-            <option value="">همه وضعیت‌ها</option>
-            <option value="active" @selected($status === 'active')>فعال</option>
-            <option value="inactive" @selected($status === 'inactive')>غیرفعال</option>
-        </select>
-        <button class="admin-primary-btn" type="submit">اعمال فیلتر</button>
-        @if ($search !== '' || $status !== '')<a class="admin-secondary-btn" href="{{ route('admin.unions.index') }}">حذف فیلتر</a>@endif
-    </form>
-</div>
+@include('admin.partials.list-filters', [
+    'listRoute' => 'admin.unions.index',
+    'listTitle' => 'فیلتر اتحادیه‌ها',
+    'listDescription' => 'جستجو بر اساس نام، اطلاعات مدیر و راه‌های تماس',
+    'listSearch' => $search,
+    'listPlaceholder' => 'نام اتحادیه، رئیس، تلفن یا ایمیل...',
+    'listPaginator' => $unions,
+    'listFilters' => [
+            ['name' => 'status', 'label' => 'وضعیت', 'value' => $status, 'options' => ['active' => 'فعال', 'inactive' => 'غیرفعال'], 'empty' => 'همه وضعیت‌ها'],
+    ],
+])
 
 <div class="admin-panel-card">
-    <div class="table-responsive">
-        <table class="table admin-table align-middle">
+    <div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="فیلتر اتحادیه‌ها">
+        <table class="table admin-table align-middle admin-list-table" data-admin-list-table>
             <thead><tr><th>عنوان</th><th>لوگو</th><th>مدیر</th><th>شماره تماس</th><th>وضعیت</th><th>ترتیب نمایش</th><th>عملیات</th></tr></thead>
             <tbody>
                 @forelse ($unions as $union)
@@ -44,8 +44,8 @@
                         <td>
                             <div class="admin-actions">
                                 <a href="{{ route('admin.unions.show', $union) }}">مشاهده</a>
-                                <a href="{{ route('admin.unions.edit', $union) }}">ویرایش</a>
-                                <form action="{{ route('admin.unions.destroy', $union) }}" method="POST">@csrf @method('DELETE')<button type="submit">حذف</button></form>
+                                @if(request()->user()->hasPermission('unions.edit'))<a href="{{ route('admin.unions.edit', $union) }}">ویرایش</a>@endif
+                                @if(request()->user()->hasPermission('unions.delete'))<form action="{{ route('admin.unions.destroy', $union) }}" method="POST">@csrf @method('DELETE')<button type="submit">حذف</button></form>@endif
                             </div>
                         </td>
                     </tr>
