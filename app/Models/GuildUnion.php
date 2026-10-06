@@ -307,7 +307,10 @@ class GuildUnion extends Model
                 );
             }
 
-            return $this->getRelation('selectedPublishedPosts')->first();
+            // A historical manual selection may refer to another union.
+            // Never surface that item in union previews or the homepage.
+            return $this->getRelation('selectedPublishedPosts')
+                ->first(fn (Post $post) => (int) $post->union_id === (int) $this->id);
         }
 
         if ($this->relationLoaded('latestPublishedNews')) {
