@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Support\AdminCategoryAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -15,8 +16,11 @@ class CategoryController extends Controller
     public function index(Request $request): View
     {
         $type = (string) $request->query('type', '');
+        $allowed = AdminCategoryAccess::allowedTypes($request->user(), 'view');
+        abort_if($allowed === [] || ($type !== '' && ! in_array($type, $allowed, true)), 403);
 
         $categories = Category::query()
+            ->whereIn('type', $allowed)
             ->when($type !== '', fn ($query) => $query->where('type', $type))
             ->orderBy('type')
             ->orderBy('sort_order')
@@ -26,37 +30,60 @@ class CategoryController extends Controller
 
         return view('admin.categories.index', [
             'categories' => $categories,
-            'types' => $this->typeLabels(),
+            'types' => array_intersect_key($this->typeLabels(), array_flip($allowed)),
             'type' => $type,
+            'createTypes' => AdminCategoryAccess::allowedTypes($request->user(), 'create'),
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('admin.categories.create', ['category' => null, 'types' => $this->typeLabels(), 'icons' => $this->iconOptions()]);
+        $allowed = AdminCategoryAccess::allowedTypes($request->user(), 'create');
+        $type = (string) $request->query('type', '');
+        abort_if($allowed === [] || ($type !== '' && ! in_array($type, $allowed, true)), 403);
+
+        return view('admin.categories.create', [
+            'category' => null,
+            'types' => array_intersect_key($this->typeLabels(), array_flip($allowed)),
+            'icons' => $this->iconOptions(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        abort_unless(AdminCategoryAccess::can($request->user(), (string) $request->input('type'), 'create'), 403);
+
         Category::create($this->validatedData($request));
 
         return redirect()->route('admin.categories.index')->with('success', 'دسته‌بندی با موفقیت ایجاد شد.');
     }
 
-    public function edit(Category $category): View
+    public function edit(Request $request, Category $category): View
     {
-        return view('admin.categories.edit', ['category' => $category, 'types' => $this->typeLabels(), 'icons' => $this->iconOptions()]);
+        abort_unless(AdminCategoryAccess::can($request->user(), $category->type, 'edit'), 403);
+        $allowed = AdminCategoryAccess::allowedTypes($request->user(), 'edit');
+
+        return view('admin.categories.edit', [
+            'category' => $category,
+            'types' => array_intersect_key($this->typeLabels(), array_flip($allowed)),
+            'icons' => $this->iconOptions(),
+        ]);
     }
 
     public function update(Request $request, Category $category): RedirectResponse
     {
+        abort_unless(AdminCategoryAccess::can($request->user(), $category->type, 'edit')
+            && AdminCategoryAccess::can($request->user(), (string) $request->input('type'), 'edit'), 403);
+
         $category->update($this->validatedData($request, $category));
 
         return redirect()->route('admin.categories.index')->with('success', 'دسته‌بندی با موفقیت ویرایش شد.');
     }
 
-    public function destroy(Category $category): RedirectResponse
+    public function destroy(Request $request, Category $category): RedirectResponse
     {
+        abort_unless(AdminCategoryAccess::can($request->user(), $category->type, 'delete'), 403);
+
         $category->delete();
 
         return redirect()->route('admin.categories.index')->with('success', 'دسته‌بندی حذف شد.');
