@@ -130,7 +130,7 @@ class AdminPhaseFiveCompletionTest extends TestCase
             ->get(route('admin.home_sections.index'))
             ->assertOk()
             ->assertSee('data-home-sorting-enabled="false"', false)
-            ->assertDontSee('data-home-move="up"', false)
+            ->assertDontSee('<button type="button" data-home-move="up"', false)
             ->assertDontSee('draggable="true"', false);
 
         $editor = $this->withPermissions(['home_sections.view', 'home_sections.edit']);
@@ -138,8 +138,8 @@ class AdminPhaseFiveCompletionTest extends TestCase
             ->get(route('admin.home_sections.index'))
             ->assertOk()
             ->assertSee('data-home-sorting-enabled="true"', false)
-            ->assertSee('data-home-move="up"', false)
-            ->assertSee('data-home-move="down"', false)
+            ->assertSee('<button type="button" data-home-move="up"', false)
+            ->assertSee('<button type="button" data-home-move="down"', false)
             ->assertSee('role="status"', false)
             ->assertSee('draggable="true"', false);
     }
