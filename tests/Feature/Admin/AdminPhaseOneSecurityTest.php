@@ -23,7 +23,7 @@ class AdminPhaseOneSecurityTest extends TestCase
         $user = User::factory()->create(['is_active' => true]);
         $category = Category::create(['title' => 'دسته خبر', 'slug' => 'secure-news', 'type' => 'news', 'is_active' => true]);
         $unionType = UnionType::create(['title' => 'نوع اتحادیه تست', 'slug' => 'secure-union-type', 'is_active' => true]);
-        $member = ChamberMember::create(['full_name' => 'عضو تست', 'is_active' => true]);
+        $member = ChamberMember::create(['first_name' => 'عضو', 'last_name' => 'تست', 'position' => 'عضو', 'is_active' => true]);
 
         $this->actingAs($user);
         $this->get(route('admin.categories.index'))->assertForbidden();
