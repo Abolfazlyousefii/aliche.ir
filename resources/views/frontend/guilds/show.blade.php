@@ -28,6 +28,11 @@
 
     $showManager = $union->isSectionEnabled('show_manager', true) && filled($union->manager_name);
     $showExecutive = filled($union->executive_name);
+    // Rich descriptions are sanitized again on output for legacy records.
+    $fullIntroduction = app(\App\Services\RichTextSanitizer::class)->sanitize($union->description);
+    $showFullIntroduction = filled(plain_text($fullIntroduction));
+    $showPresidentBiography = $showManager && filled($union->manager_description);
+    $showAbout = $showFullIntroduction || $showPresidentBiography;
     $showMembers = $union->members_enabled && $union->isSectionEnabled('show_board_members', true) && $union->members->isNotEmpty();
     $showCommissions = $union->isSectionEnabled('show_commissions', true) && $union->commissions->isNotEmpty();
     $showRules = $union->isSectionEnabled('show_rules', true) && $union->rules->isNotEmpty();
@@ -55,6 +60,7 @@
         ['visible' => $showMembers, 'id' => 'guild-board', 'title' => 'اعضای هیئت‌مدیره', 'description' => 'معرفی اعضا و مسئولیت‌های سازمانی', 'icon' => 'members'],
         ['visible' => $showCommissions, 'id' => 'guild-commissions', 'title' => 'کمیسیون‌های اتحادیه', 'description' => 'کمیسیون‌ها و وظایف ثبت‌شده', 'icon' => 'commission'],
         ['visible' => $showRules, 'id' => 'guild-rules', 'title' => 'قوانین و دستورالعمل‌ها', 'description' => 'آیین‌نامه‌ها و فایل‌های قابل دریافت', 'icon' => 'rules'],
+        ['visible' => $showAbout, 'id' => 'guild-about', 'title' => 'معرفی اتحادیه', 'description' => 'آشنایی با اتحادیه و مدیریت آن', 'icon' => 'education'],
         ['visible' => $showNews, 'id' => 'guild-news', 'title' => 'اخبار اتحادیه', 'description' => 'آخرین خبرهای مرتبط با اتحادیه', 'icon' => 'news'],
         ['visible' => $showArticles || $showEducation, 'id' => $showArticles ? 'guild-articles' : 'guild-education', 'title' => 'آموزش‌های صنفی', 'description' => 'مقاله‌ها و محتوای آموزشی', 'icon' => 'education'],
         ['visible' => $showAnnouncements, 'id' => 'guild-announcements', 'title' => 'اطلاعیه‌ها و بخشنامه‌ها', 'description' => 'آخرین ابلاغیه‌ها و اطلاع‌رسانی‌ها', 'icon' => 'announcement'],
@@ -261,6 +267,23 @@
                 </section>
             @endif
 
+            @if($showAbout)
+                <section class="guild-profile-section guild-profile-about-section" id="guild-about" data-guild-profile-section>
+                    <header class="guild-profile-section__head">
+                        <div><span>معرفی و اطلاعات</span><h2>درباره اتحادیه</h2></div>
+                    </header>
+                    @if($showFullIntroduction)
+                        <div class="guild-profile-about__rich">{!! $fullIntroduction !!}</div>
+                    @endif
+                    @if($showPresidentBiography)
+                        <div class="guild-profile-about__president">
+                            <h3>معرفی رئیس اتحادیه: {{ $union->manager_name }}</h3>
+                            <p>{{ $union->manager_description }}</p>
+                        </div>
+                    @endif
+                </section>
+            @endif
+
             @if($showRules)
                 <section class="guild-profile-section" id="guild-rules" data-guild-profile-section>
                     <header class="guild-profile-section__head"><div><span>اسناد و مقررات</span><h2>قوانین و دستورالعمل‌ها</h2></div></header>
@@ -293,7 +316,7 @@
                     @if(($union->price_list_mode ?? 'table') === 'image' && $union->price_list_image)
                         <a class="guild-profile-price-image" href="{{ $assetImage($union->price_list_image, '') }}" target="_blank" rel="noopener noreferrer"><img src="{{ $assetImage($union->price_list_image, '') }}" alt="نرخ‌نامه {{ $union->display_title }}" loading="lazy" decoding="async"></a>
                     @else
-                        <div class="guild-profile-table-wrap"><table class="guild-profile-table"><thead><tr><th>عنوان</th><th>نوع</th><th>قیمت</th><th>بروزرسانی</th></tr></thead><tbody>@foreach($union->prices as $price)<tr><td>{{ $price->title }}</td><td>{{ $price->type ?: 'عمومی' }}</td><td>{{ $price->price ? fa_number(number_format((float)$price->price)).' '.$price->currency : 'اعلام نشده' }}</td><td>{{ $price->updated_on ? jalali_date($price->updated_on) : '—' }}</td></tr>@endforeach</tbody></table></div>
+                        <div class="guild-profile-table-wrap"><table class="guild-profile-table"><thead><tr><th>عنوان</th><th>نوع</th><th>قیمت</th><th>بروزرسانی</th></tr></thead><tbody>@foreach($union->prices as $price)<tr><td>{{ $price->title }}</td><td>{{ $price->type ?: 'عمومی' }}</td><td>{{ $price->price !== null ? fa_number(number_format((float) $price->price)).' '.$price->currency : 'اعلام نشده' }}</td><td>{{ $price->updated_on ? jalali_date($price->updated_on) : '—' }}</td></tr>@endforeach</tbody></table></div>
                     @endif
                 </section>
             @endif

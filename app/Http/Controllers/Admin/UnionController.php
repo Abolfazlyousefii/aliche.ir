@@ -20,6 +20,7 @@ use App\Support\UnionIcon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class UnionController extends Controller
@@ -55,7 +56,7 @@ class UnionController extends Controller
         return view('admin.unions.create', [
             'union' => null,
             'unionTypes' => $this->unionTypes(),
-            'selectablePosts' => $this->selectablePosts(),
+            'selectablePosts' => $this->selectablePosts(null),
             'mediaItems' => $this->mediaItems(),
             'currentMediaIds' => [],
         ]);
@@ -66,15 +67,26 @@ class UnionController extends Controller
         $this->authorizeCreate($request);
 
         $data = $this->unionData($request->validated());
-        $data['logo'] = $this->storeImage($request, 'logo', 'unions/logos');
-        $data['cover_image'] = $this->storeImage($request, 'cover_image', 'unions/covers');
-        $data['manager_image'] = $this->storeImage($request, 'manager_image', 'unions/managers');
-        $data['executive_image'] = $this->storeImage($request, 'executive_image', 'unions/executives');
-        $data['price_list_image'] = $this->storeImage($request, 'price_list_image', 'unions/price-lists');
 
-        $union = GuildUnion::create($data);
-        $this->syncPageSections($union, $request->validated('related', []));
-        $this->syncSelectedPosts($union, $request->validated('selected_posts', []));
+        $union = DB::transaction(function () use ($data, $request): GuildUnion {
+            // Store media metadata and union-related rows in the same database
+            // transaction. Uploaded files themselves are filesystem resources.
+            foreach ([
+                'logo' => 'unions/logos',
+                'cover_image' => 'unions/covers',
+                'manager_image' => 'unions/managers',
+                'executive_image' => 'unions/executives',
+                'price_list_image' => 'unions/price-lists',
+            ] as $field => $directory) {
+                $data[$field] = $this->storeImage($request, $field, $directory);
+            }
+
+            $union = GuildUnion::create($data);
+            $this->syncPageSections($union, $request->validated('related', []));
+            $this->syncSelectedPosts($union, $request->validated('selected_posts', []));
+
+            return $union;
+        });
         $this->flushFrontendCache();
 
         return redirect()->route('admin.unions.show', $union)->with('success', 'اتحادیه با موفقیت ایجاد شد.');
@@ -97,7 +109,7 @@ class UnionController extends Controller
         return view('admin.unions.edit', [
             'union' => $union->load(['commissions.tasks', 'rules', 'minutes', 'educations', 'prices', 'selectedPosts']),
             'unionTypes' => $this->unionTypes(),
-            'selectablePosts' => $this->selectablePosts(),
+            'selectablePosts' => $this->selectablePosts($union),
             'mediaItems' => $this->mediaItems(),
             'currentMediaIds' => [
                 'cover_image' => Media::query()->where('path', $union->cover_image)->value('id'),
@@ -115,22 +127,30 @@ class UnionController extends Controller
 
         $data = $this->unionData($request->validated(), $union);
 
-        foreach (['logo' => 'unions/logos', 'cover_image' => 'unions/covers', 'manager_image' => 'unions/managers', 'executive_image' => 'unions/executives', 'price_list_image' => 'unions/price-lists'] as $field => $directory) {
-            if ($path = $this->storeImage($request, $field, $directory)) {
-                $data[$field] = $path;
+        DB::transaction(function () use ($union, $data, $request): void {
+            foreach ([
+                'logo' => 'unions/logos',
+                'cover_image' => 'unions/covers',
+                'manager_image' => 'unions/managers',
+                'executive_image' => 'unions/executives',
+                'price_list_image' => 'unions/price-lists',
+            ] as $field => $directory) {
+                if ($path = $this->storeImage($request, $field, $directory)) {
+                    $data[$field] = $path;
+                }
             }
-        }
 
-        if ($request->boolean('remove_executive_image')
-            && ! $request->hasFile('executive_image')
-            && ! $request->filled('executive_image_media_id')) {
-            // Unlink the photo without deleting potentially shared media.
-            $data['executive_image'] = null;
-        }
+            if ($request->boolean('remove_executive_image')
+                && ! $request->hasFile('executive_image')
+                && ! $request->filled('executive_image_media_id')) {
+                // Unlink without deleting potentially shared media.
+                $data['executive_image'] = null;
+            }
 
-        $union->update($data);
-        $this->syncPageSections($union, $request->validated('related', []));
-        $this->syncSelectedPosts($union, $request->validated('selected_posts', []));
+            $union->update($data);
+            $this->syncPageSections($union, $request->validated('related', []));
+            $this->syncSelectedPosts($union, $request->validated('selected_posts', []));
+        });
         $this->flushFrontendCache();
 
         return redirect()->route('admin.unions.show', $union)->with('success', 'اتحادیه با موفقیت ویرایش شد.');
@@ -244,16 +264,39 @@ class UnionController extends Controller
     /** @param array<int, mixed> $selectedPosts */
     private function syncSelectedPosts(GuildUnion $union, array $selectedPosts): void
     {
+        // Keep the previous manual selection when an editor temporarily
+        // switches to automatic or disabled display.
         if (($union->news_mode ?? 'auto') !== 'manual') {
-            $union->selectedPosts()->sync([]);
             return;
         }
 
+        // Only posts belonging to this union can be selected for its news.
+        // Keep legacy foreign associations untouched, but never render them.
+        $allowedIds = Post::query()
+            ->where('union_id', $union->id)
+            ->whereKey($selectedPosts)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $allowed = array_flip($allowedIds);
         $sync = [];
         foreach (array_values($selectedPosts) as $index => $postId) {
-            if ($postId) {
-                $sync[(int) $postId] = ['sort_order' => ($index + 1) * 10];
+            $postId = (int) $postId;
+            if ($postId > 0 && isset($allowed[$postId])) {
+                $sync[$postId] = ['sort_order' => ($index + 1) * 10];
             }
+        }
+
+        $legacyForeign = $union->selectedPosts()
+            ->where(function ($query) use ($union) {
+                $query->whereNull('posts.union_id')
+                    ->orWhere('posts.union_id', '!=', $union->id);
+            })
+            ->get(['posts.id']);
+
+        foreach ($legacyForeign as $post) {
+            $sync[$post->id] = ['sort_order' => (int) ($post->pivot?->sort_order ?? 0)];
         }
 
         $union->selectedPosts()->sync($sync);
@@ -383,9 +426,28 @@ class UnionController extends Controller
         return UnionType::query()->orderBy('sort_order')->orderBy('title')->get();
     }
 
-    private function selectablePosts()
+    private function selectablePosts(?GuildUnion $union)
     {
-        return Post::query()->published()->editorial()->orderByDesc('published_at')->orderBy('title')->take(200)->get(['id', 'title', 'published_at']);
+        if (! $union) {
+            return collect();
+        }
+
+        $available = Post::query()
+            ->where('union_id', $union->id)
+            ->published()
+            ->editorial()
+            ->orderByDesc('published_at')
+            ->take(200)
+            ->get(['id', 'title', 'published_at', 'union_id']);
+
+        // Place existing selections first in saved pivot order; otherwise,
+        // a simple admin form save would silently reorder manual news by date.
+        // Include older/unpublished selections to avoid losing them.
+        return $union->selectedPosts
+            ->where('union_id', $union->id)
+            ->concat($available)
+            ->unique('id')
+            ->values();
     }
 
     private function mediaItems()

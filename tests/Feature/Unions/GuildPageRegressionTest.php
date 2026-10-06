@@ -167,6 +167,36 @@ class GuildPageRegressionTest extends TestCase
             ], false);
     }
 
+    public function test_full_rich_union_introduction_and_president_bio_render_safely_with_zero_price(): void
+    {
+        $union = $this->union([
+            'slug' => 'guild-full-introduction',
+            'manager_name' => 'رئیس نمونه اتحادیه',
+            'manager_description' => 'معرفی کامل و بدون کوتاه‌شدن رئیس اتحادیه برای اعضای صنفی',
+            'description' => '<p><strong>توضیحات کامل و اختصاصی اتحادیه</strong></p><script>alert("unsafe")</script>',
+            'price_list_mode' => 'table',
+            'settings' => ['show_manager' => true, 'show_prices' => true],
+        ]);
+
+        $union->prices()->create([
+            'title' => 'خدمات بدون هزینه',
+            'price' => 0,
+            'currency' => 'ریال',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+
+        $this->get(route('guilds.show', $union->slug))
+            ->assertOk()
+            ->assertSee('id="guild-about"', false)
+            ->assertSee('<strong>توضیحات کامل و اختصاصی اتحادیه</strong>', false)
+            ->assertSee('معرفی کامل و بدون کوتاه‌شدن رئیس اتحادیه برای اعضای صنفی')
+            ->assertSee('خدمات بدون هزینه')
+            ->assertSee('۰ ریال')
+            ->assertDontSee('alert("unsafe")', false)
+            ->assertDontSee('<script>', false);
+    }
+
     private function union(array $overrides = []): GuildUnion
     {
         return GuildUnion::query()->create(array_replace([
