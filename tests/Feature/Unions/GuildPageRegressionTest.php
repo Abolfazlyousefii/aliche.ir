@@ -13,7 +13,7 @@ class GuildPageRegressionTest extends TestCase
     use BuildsAdminPayloads;
     use RefreshDatabase;
 
-    public function test_related_editorial_content_uses_featured_news_and_responsive_news_grid(): void
+    public function test_related_editorial_content_uses_featured_news_and_homepage_style_rows(): void
     {
         $union = $this->union([
             'slug' => 'guild-with-news',
@@ -39,7 +39,7 @@ class GuildPageRegressionTest extends TestCase
             ->assertOk()
             ->assertSee('id="guild-news"', false)
             ->assertSee('guild-profile-news-feature', false)
-            ->assertSee('guild-profile-news-grid', false)
+            ->assertSee('guild-profile-news-rows', false)
             ->assertSee($latestPost->title)
             ->assertSee($olderPost->title)
             ->assertDontSee('guild-profile-hero-news', false);
