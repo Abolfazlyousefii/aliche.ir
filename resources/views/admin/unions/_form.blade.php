@@ -263,6 +263,17 @@
 
 @push('scripts')
 <script>
+const renderUnionImagePreview = (preview, url, fit, position) => {
+    preview.replaceChildren();
+    if (!url) return null;
+    const image = document.createElement('img');
+    image.src = url;
+    image.alt = 'پیش‌نمایش تصویر انتخاب‌شده';
+    image.className = 'img-fluid rounded';
+    image.style.cssText = 'width:100%;max-width:360px;height:180px;object-fit:' + fit + ';object-position:' + position;
+    preview.appendChild(image);
+    return image;
+};
 document.querySelectorAll('input[type="file"][accept^="image/"]').forEach((input) => {
     const preview = document.querySelector(`[data-image-preview="${input.id}"]`);
     if (!preview) return;
@@ -274,8 +285,9 @@ document.querySelectorAll('input[type="file"][accept^="image/"]').forEach((input
         const url = URL.createObjectURL(file);
         const fit = input.id === 'logo' || input.id === 'price_list_image' ? 'contain' : 'cover';
         const position = input.id === 'manager_image' ? 'center 20%' : 'center';
-        preview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر انتخاب‌شده" class="img-fluid rounded" style="width:100%;max-width:360px;height:180px;object-fit:${fit};object-position:${position}">`;
-        preview.querySelector('img')?.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+        const image = renderUnionImagePreview(preview, url, fit, position);
+        image?.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+        image?.addEventListener('error', () => URL.revokeObjectURL(url), { once: true });
     });
 });
 
@@ -291,7 +303,7 @@ document.querySelectorAll('[data-union-media-select]').forEach((select) => {
 
         const fit = previewKey === 'logo' || previewKey === 'price_list_image' ? 'contain' : 'cover';
         const position = previewKey === 'manager_image' ? 'center 20%' : 'center';
-        preview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر انتخاب‌شده" class="img-fluid rounded" style="width:100%;max-width:360px;height:180px;object-fit:${fit};object-position:${position}">`;
+        renderUnionImagePreview(preview, url, fit, position);
     };
 
     select.addEventListener('change', renderSelectedMedia);
