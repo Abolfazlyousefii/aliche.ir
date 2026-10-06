@@ -121,6 +121,13 @@ class UnionController extends Controller
             }
         }
 
+        if ($request->boolean('remove_executive_image')
+            && ! $request->hasFile('executive_image')
+            && ! $request->filled('executive_image_media_id')) {
+            // Unlink the photo without deleting potentially shared media.
+            $data['executive_image'] = null;
+        }
+
         $union->update($data);
         $this->syncPageSections($union, $request->validated('related', []));
         $this->syncSelectedPosts($union, $request->validated('selected_posts', []));
