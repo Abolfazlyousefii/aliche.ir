@@ -33,4 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
             table.classList.add('admin-list-cards-ready');
         }
     });
+
+    // Media library view controls were previously decorative. Reuse this
+    // script only on its index route so the grid/list toggle is functional.
+    const mediaGrid = document.querySelector('[data-admin-media-grid]');
+    const mediaButtons = Array.from(document.querySelectorAll('[data-admin-media-view]'));
+
+    if (mediaGrid && mediaButtons.length) {
+        const setMediaView = mode => {
+            const listMode = mode === 'list';
+            mediaGrid.classList.toggle('admin-media-list-mode', listMode);
+            mediaButtons.forEach(button => {
+                const active = button.dataset.adminMediaView === mode;
+                button.classList.toggle('is-active', active);
+                button.setAttribute('aria-pressed', String(active));
+            });
+        };
+        mediaButtons.forEach(button => {
+            button.addEventListener('click', () => setMediaView(button.dataset.adminMediaView));
+        });
+        setMediaView('grid');
+    }
 });
