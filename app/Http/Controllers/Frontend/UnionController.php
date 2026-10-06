@@ -142,17 +142,21 @@ class UnionController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        // Only editorial news directly associated with this union may appear here.
-        // The union-specific page uses its own page parameter to avoid interfering
-        // with the homepage and the global news archive.
-        $unionNews = Post::query()
-            ->where('union_id', $union->id)
-            ->published()
-            ->editorial()
+        // In manual mode use the admin's selected order. Both modes only
+        // expose published editorial posts belonging to this exact union.
+        // News remains independently paginated for full-page and AJAX visits.
+        $newsQuery = ($union->news_mode ?? 'auto') === 'manual'
+            ? $union->selectedPublishedPosts()->where('posts.union_id', $union->id)
+            : Post::query()
+                ->where('union_id', $union->id)
+                ->published()
+                ->editorial()
+                ->orderByDesc('published_at')
+                ->orderByDesc('id');
+
+        $unionNews = $newsQuery
             ->with(['category', 'featuredMedia'])
-            ->orderByDesc('published_at')
-            ->orderByDesc('id')
-            ->paginate(6, ['*'], 'news_page')
+            ->paginate(6, ['posts.*'], 'news_page')
             ->withPath(route('guilds.show', $union->slug));
 
         if ($request->ajax() || $request->expectsJson()) {
