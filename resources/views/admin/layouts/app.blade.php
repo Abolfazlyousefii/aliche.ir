@@ -24,15 +24,20 @@
         @endphp
         <link href="{{ asset('assets/admin/css/union-admin.css') }}?v={{ $unionAdminStylesVersion }}" rel="stylesheet">
     @endif
+    @php
+        $adminUiV2Css = base_path('public/assets/admin/css/admin-ui-v2.css');
+    @endphp
+    <link href="{{ asset('assets/admin/css/admin-ui-v2.css') }}?v={{ is_file($adminUiV2Css) ? filemtime($adminUiV2Css) : '1' }}" rel="stylesheet">
 </head>
-<body>
+<body class="admin-phase2">
+    <a class="admin-skip-link" href="#adminMainContent">رفتن به محتوای اصلی</a>
     <div class="admin-shell">
         @include('admin.partials.sidebar')
 
         <div class="admin-main">
             @include('admin.partials.header')
 
-            <main class="admin-content">
+            <main class="admin-content" id="adminMainContent" tabindex="-1">
                 @include('admin.partials.alerts')
                 @yield('content')
             </main>
