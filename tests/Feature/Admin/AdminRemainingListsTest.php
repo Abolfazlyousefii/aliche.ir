@@ -45,7 +45,7 @@ class AdminRemainingListsTest extends TestCase
             ['advertisements', ['status' => 'scheduled', 'search' => 'تست زمان‌بندی'], ['status', 'search']],
             ['advertisement_positions', ['status' => 'inactive'], ['status']],
             ['galleries', ['status' => 'draft'], ['status', 'union_id']],
-            ['videos', ['video_type' => 'file'], ['video_type', 'status', 'union_id']],
+            ['videos', ['video_type' => 'upload'], ['video_type', 'status', 'union_id']],
             ['systems', ['status' => 'draft'], ['status', 'category_id']],
             ['contact_messages', ['read_status' => 'unread'], ['read_status']],
             ['commissions', ['status' => 'draft'], ['status']],
