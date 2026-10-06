@@ -440,11 +440,14 @@ class UnionController extends Controller
             ->take(200)
             ->get(['id', 'title', 'published_at', 'union_id']);
 
-        // Retain already selected posts outside the first 200 or currently
-        // unpublished, so saving unrelated fields never silently loses them.
-        return $available->concat(
-            $union->selectedPosts->where('union_id', $union->id)
-        )->unique('id')->values();
+        // Place existing selections first in saved pivot order; otherwise,
+        // a simple admin form save would silently reorder manual news by date.
+        // Include older/unpublished selections to avoid losing them.
+        return $union->selectedPosts
+            ->where('union_id', $union->id)
+            ->concat($available)
+            ->unique('id')
+            ->values();
     }
 
     private function mediaItems()
