@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Commission;
 use App\Models\HomeSection;
 use App\Models\Menu;
+use App\Models\MenuItem;
 use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Role;
@@ -171,6 +172,61 @@ class AdminPhaseFiveCompletionTest extends TestCase
         $this->get(route('admin.pending_approvals.index', ['search' => 'عبارت ناموجود']))
             ->assertOk()
             ->assertDontSee('خبر آزمون رسیدگی پاییز');
+    }
+
+    public function test_readonly_menu_structure_does_not_show_sort_or_item_mutation_controls(): void
+    {
+        $menu = Menu::query()->create(['title' => 'منوی مشاهده فقط', 'location' => 'main', 'is_active' => true]);
+        $item = $menu->items()->create(['title' => 'خانه', 'type' => 'custom', 'url' => '/', 'target' => '_self', 'is_active' => true]);
+
+        $viewer = $this->withPermissions(['menus.view']);
+        $this->actingAs($viewer)
+            ->get(route('admin.menus.show', $menu))
+            ->assertOk()
+            ->assertSee('خانه')
+            ->assertDontSee('data-menu-save-sort', false)
+            ->assertDontSee('draggable="true"', false)
+            ->assertDontSee(route('admin.menus.items.create', $menu))
+            ->assertDontSee(route('admin.menus.items.edit', [$menu, $item]))
+            ->assertDontSee('action="'.route('admin.menus.items.destroy', [$menu, $item]).'"', false)
+            ->assertDontSee('action="'.route('admin.menus.items.toggle', [$menu, $item]).'"', false);
+    }
+
+    public function test_menu_sort_rejects_foreign_and_duplicate_items_without_any_write(): void
+    {
+        $this->signInAsSuperAdmin();
+
+        $menu = Menu::query()->create(['title' => 'منوی اول', 'location' => 'main', 'is_active' => true]);
+        $secondMenu = Menu::query()->create(['title' => 'منوی دوم', 'location' => 'footer', 'is_active' => true]);
+
+        $first = $menu->items()->create(['title' => 'اول', 'type' => 'custom', 'url' => '/first', 'sort_order' => 10, 'is_active' => true]);
+        $second = $menu->items()->create(['title' => 'دوم', 'type' => 'custom', 'url' => '/second', 'sort_order' => 20, 'is_active' => true]);
+        $foreign = $secondMenu->items()->create(['title' => 'غریبه', 'type' => 'custom', 'url' => '/foreign', 'sort_order' => 30, 'is_active' => true]);
+
+        $url = route('admin.menus.items.sort', $menu);
+
+        $this->postJson($url, ['items' => [
+            ['id' => $first->id, 'children' => [['id' => $foreign->id, 'children' => []]]],
+            ['id' => $second->id, 'children' => []],
+        ]])->assertUnprocessable();
+
+        $this->postJson($url, ['items' => [
+            ['id' => $first->id, 'children' => []],
+            ['id' => $first->id, 'children' => []],
+        ]])->assertUnprocessable();
+
+        $this->assertSame(10, $first->fresh()->sort_order);
+        $this->assertSame(20, $second->fresh()->sort_order);
+        $this->assertSame(30, $foreign->fresh()->sort_order);
+
+        $this->postJson($url, ['items' => [
+            ['id' => $second->id, 'children' => []],
+            ['id' => $first->id, 'children' => []],
+        ]])->assertOk();
+
+        $this->assertSame(1, $second->fresh()->sort_order);
+        $this->assertSame(2, $first->fresh()->sort_order);
+        $this->assertSame(30, $foreign->fresh()->sort_order);
     }
 
     private function withPermissions(array $abilities): User
