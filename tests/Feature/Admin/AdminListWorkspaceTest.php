@@ -92,7 +92,7 @@ class AdminListWorkspaceTest extends TestCase
             ->assertSee('اتحادیه فقط مطالعه')
             ->assertDontSee(route('admin.unions.create'))
             ->assertDontSee(route('admin.unions.edit', $union))
-            ->assertDontSee(route('admin.unions.destroy', $union))
+            ->assertDontSee('action="'.route('admin.unions.destroy', $union).'"', false)
             ->assertSee(route('admin.unions.show', $union));
     }
 
