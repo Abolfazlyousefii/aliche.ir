@@ -2,6 +2,10 @@
     $newsItems = $unionNews ? collect($unionNews->items()) : collect();
     $featured = $newsItems->first();
     $others = $newsItems->skip(1);
+    $current = $unionNews?->currentPage() ?? 1;
+    $last = $unionNews?->lastPage() ?? 1;
+    $start = max(1, min($current - 2, $last - 5));
+    $end = min($last, $start + 5);
 @endphp
 
 <div class="guild-profile-news-result" data-guild-news-result>
@@ -52,12 +56,6 @@
     @endif
 
     @if($unionNews && $unionNews->lastPage() > 1)
-        @php
-            $current = $unionNews->currentPage();
-            $last = $unionNews->lastPage();
-            $start = max(1, min($current - 2, $last - 5));
-            $end = min($last, $start + 5);
-        @endphp
         <nav class="guild-profile-news-pagination" aria-label="صفحه‌بندی اخبار اتحادیه" data-guild-news-pagination>
             @if($current > 1)
                 <a href="{{ $unionNews->url($current - 1) }}" data-guild-news-page rel="prev">قبلی</a>
