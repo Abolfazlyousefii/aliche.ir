@@ -8,6 +8,7 @@ use App\Models\MenuItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -64,7 +65,32 @@ class MenuItemController extends Controller
             'items.*.children' => ['nullable', 'array'],
         ]);
 
-        $this->syncSort($menu, $validated['items']);
+        // A client may submit a nested tree. Reject foreign IDs, duplicates
+        // and partial sets BEFORE any write, including IDs in child arrays.
+        $flatten = function (array $nodes) use (&$flatten): array {
+            $ids = [];
+
+            foreach ($nodes as $node) {
+                abort_unless(is_array($node) && filter_var($node['id'] ?? null, FILTER_VALIDATE_INT) !== false, 422);
+                $children = $node['children'] ?? [];
+                abort_unless(is_array($children), 422);
+
+                $ids[] = (int) $node['id'];
+                array_push($ids, ...$flatten($children));
+            }
+
+            return $ids;
+        };
+
+        $submittedIds = $flatten($validated['items']);
+        $expectedIds = $menu->items()->pluck('id')->map(fn ($id) => (int) $id)->all();
+        sort($submittedIds);
+        sort($expectedIds);
+        abort_unless($submittedIds === $expectedIds, 422, 'آیتم‌های ارسالی باید دقیقاً متعلق به همین منو باشند.');
+
+        DB::transaction(function () use ($menu, $validated): void {
+            $this->syncSort($menu, $validated['items']);
+        });
 
         return response()->json(['message' => 'ترتیب منو ذخیره شد.']);
     }
