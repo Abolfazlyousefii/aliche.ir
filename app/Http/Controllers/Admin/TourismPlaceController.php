@@ -26,6 +26,7 @@ class TourismPlaceController extends Controller
         $search = trim((string) $request->query('search'));
         $status = (string) $request->query('status', '');
         $categoryId = $request->query('category_id');
+        $tourismType = trim((string) $request->query('tourism_type'));
 
         $places = TourismPlace::query()
             ->with(['category', 'creator'])
@@ -36,6 +37,7 @@ class TourismPlaceController extends Controller
                 ->orWhere('address', 'like', "%{$search}%")))
             ->when($status !== '', fn ($query) => $query->where('status', $status))
             ->when($categoryId, fn ($query) => $query->where('category_id', $categoryId))
+            ->when(in_array($tourismType, TourismPlace::TYPES, true), fn ($query) => $query->where('tourism_type', $tourismType))
             ->orderBy('sort_order')
             ->latest()
             ->paginate(15)
@@ -46,6 +48,7 @@ class TourismPlaceController extends Controller
             'search' => $search,
             'status' => $status,
             'categoryId' => $categoryId,
+            'tourismType' => $tourismType,
             'categories' => $this->categories(),
             'statusLabels' => TourismPlace::statusLabels(),
             'typeLabels' => TourismPlace::typeLabels(),
@@ -55,10 +58,10 @@ class TourismPlaceController extends Controller
     public function create(): View
     {
         return view('admin.tourism.create', [
+            ...$this->formData(),
             'place' => null,
-            'categories' => $this->categories(),
-            'statusLabels' => TourismPlace::statusLabels(),
-            'typeLabels' => TourismPlace::typeLabels(),
+            'currentCardMediaId' => null,
+            'currentFeaturedMediaId' => null,
         ]);
     }
 
@@ -89,10 +92,10 @@ class TourismPlaceController extends Controller
     public function edit(TourismPlace $tourism): View
     {
         return view('admin.tourism.edit', [
+            ...$this->formData(),
             'place' => $tourism,
-            'categories' => $this->categories(),
-            'statusLabels' => TourismPlace::statusLabels(),
-            'typeLabels' => TourismPlace::typeLabels(),
+            'currentCardMediaId' => Media::query()->images()->where('path', $tourism->image)->value('id'),
+            'currentFeaturedMediaId' => Media::query()->images()->where('path', $tourism->featured_image)->value('id'),
         ]);
     }
 
@@ -274,10 +277,21 @@ class TourismPlaceController extends Controller
             : collect();
 
         $mediaStartOrder = $startOrder + ($uploaded->count() * 10);
-        $selected = Media::query()
-            ->whereIn('id', collect($request->input('gallery_images_media_ids', []))->filter()->unique()->values())
+        $selectedIds = collect($request->input('gallery_images_media_ids', []))
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        $selectedById = Media::query()
+            ->whereIn('id', $selectedIds)
             ->images()
             ->get()
+            ->keyBy('id');
+
+        $selected = $selectedIds
+            ->map(fn (int $id) => $selectedById->get($id))
+            ->filter()
             ->values()
             ->map(fn (Media $media, int $index) => [
                 'path' => $media->path,
@@ -285,7 +299,7 @@ class TourismPlaceController extends Controller
                 'sort_order' => $mediaStartOrder + (($index + 1) * 10),
             ]);
 
-        return $uploaded->merge($selected)->all();
+        return $uploaded->merge($selected)->unique('path')->values()->all();
     }
 
     private function updatedGallery(Request $request, TourismPlace $place): array
@@ -311,6 +325,8 @@ class TourismPlaceController extends Controller
 
         return $kept
             ->merge($this->storeGalleryImages($request, (int) $kept->max('sort_order')))
+            ->filter(fn ($image) => filled($image['path'] ?? null))
+            ->unique('path')
             ->sortBy('sort_order')
             ->values()
             ->all();
@@ -337,6 +353,16 @@ class TourismPlaceController extends Controller
         }
 
         return $slug;
+    }
+
+    private function formData(): array
+    {
+        return [
+            'categories' => $this->categories(),
+            'statusLabels' => TourismPlace::statusLabels(),
+            'typeLabels' => TourismPlace::typeLabels(),
+            'mediaItems' => Media::query()->images()->latest()->take(200)->get(),
+        ];
     }
 
     private function categories()

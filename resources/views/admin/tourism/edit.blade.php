@@ -19,16 +19,37 @@
         <div class="col-md-4"><label class="form-label" for="badge">برچسب کارت</label><input class="form-control" id="badge" name="badge" value="{{ old('badge', $place->badge) }}"></div>
         <div class="col-md-6">
             <label class="form-label" for="image">تصویر کارت</label>
-            <input class="form-control" id="image" name="image" type="file" accept="image/*">
-            @if ($place->image)<small><a href="{{ Storage::url($place->image) }}" target="_blank">مشاهده تصویر کارت فعلی</a></small>@endif
-            <div class="mt-2" data-image-preview="image">@if ($place->image)<img src="{{ Storage::url($place->image) }}" alt="{{ $place->title }}" class="img-fluid rounded" style="max-height:140px;object-fit:cover">@endif</div>
+            <input class="form-control" id="image" name="image" type="file" accept="image/*" data-skip-media-picker>
+            <button class="admin-secondary-btn mt-2" type="button" data-media-select-target="image_media_id">انتخاب تصویر کارت از کتابخانه</button>
+            <select class="d-none" name="image_media_id" id="image_media_id" aria-hidden="true" tabindex="-1">
+                <option value="">بدون تغییر / انتخاب تصویر از کتابخانه</option>
+                @foreach($mediaItems as $media)
+                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('image_media_id', $currentCardMediaId) === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
+                @endforeach
+            </select>
+            <div class="mt-2" data-image-preview="image" id="image_media_preview">
+                @if($place->image)<img src="{{ $place->home_image_url }}" alt="{{ $place->title }}" class="img-fluid rounded" style="max-height:140px;object-fit:cover">@endif
+            </div>
         </div>
         <div class="col-md-6"><label class="form-label" for="location">موقعیت کارت</label><input class="form-control" id="location" name="location" value="{{ old('location', $place->location) }}"></div>
         <div class="col-md-4"><label class="form-label" for="status">وضعیت</label><select class="form-control" id="status" name="status" required>@foreach ($statusLabels as $value => $label)<option value="{{ $value }}" @selected(old('status', $place->status) === $value)>{{ $label }}</option>@endforeach</select></div>
         <div class="col-md-4"><label class="form-label" for="published_at">تاریخ انتشار</label><input class="form-control" id="published_at" name="published_at" type="text" data-jalali-datepicker value="{{ jalali_input_datetime(old('published_at', $place->published_at)) }}"></div>
         <div class="col-md-4"><label class="form-label" for="sort_order">ترتیب نمایش</label><input class="form-control" id="sort_order" name="sort_order" type="number" min="0" value="{{ old('sort_order', $place->sort_order) }}"></div>
         <div class="col-md-4"><label class="form-label" for="is_active">فعال</label><select class="form-control" id="is_active" name="is_active"><option value="1" @selected((string) old('is_active', (int) $place->is_active) === '1')>فعال</option><option value="0" @selected((string) old('is_active', (int) $place->is_active) === '0')>غیرفعال</option></select></div>
-        <div class="col-md-4"><label class="form-label" for="featured_image">تصویر شاخص جدید</label><input class="form-control" id="featured_image" name="featured_image" type="file" accept="image/*">@if ($place->featured_image)<small><a href="{{ Storage::url($place->featured_image) }}" target="_blank">مشاهده تصویر فعلی</a></small>@endif</div>
+        <div class="col-md-4">
+            <label class="form-label" for="featured_image">تصویر شاخص</label>
+            <input class="form-control" id="featured_image" name="featured_image" type="file" accept="image/*" data-skip-media-picker>
+            <button class="admin-secondary-btn mt-2" type="button" data-media-select-target="featured_image_media_id">انتخاب تصویر شاخص از کتابخانه</button>
+            <select class="d-none" name="featured_image_media_id" id="featured_image_media_id" aria-hidden="true" tabindex="-1">
+                <option value="">بدون تغییر / انتخاب تصویر از کتابخانه</option>
+                @foreach($mediaItems as $media)
+                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('featured_image_media_id', $currentFeaturedMediaId) === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
+                @endforeach
+            </select>
+            <div class="mt-2" id="featured_image_media_preview">
+                @if($place->featured_image)<img src="{{ $place->featured_image_url }}" alt="{{ $place->title }}" class="img-fluid rounded" style="max-height:140px;object-fit:cover">@endif
+            </div>
+        </div>
         <div class="col-md-6"><label class="form-label" for="phone">تلفن</label><input class="form-control" id="phone" name="phone" value="{{ old('phone', $place->phone) }}"></div>
         <div class="col-md-6"><label class="form-label" for="working_hours">ساعت بازدید</label><input class="form-control" id="working_hours" name="working_hours" value="{{ old('working_hours', $place->working_hours) }}"></div>
         <div class="col-md-4"><label class="form-label" for="visit_price">هزینه بازدید</label><input class="form-control" id="visit_price" name="visit_price" value="{{ old('visit_price', $place->visit_price) }}"></div>
@@ -38,7 +59,20 @@
         <div class="col-12"><label class="form-label" for="address">آدرس</label><textarea class="form-control" id="address" name="address" rows="2">{{ old('address', $place->address) }}</textarea></div>
         <div class="col-12"><label class="form-label" for="short_description">توضیح کوتاه</label><textarea class="form-control js-rich-editor" id="short_description" name="short_description" rows="3">{{ old('short_description', $place->short_description) }}</textarea></div>
         <div class="col-12"><label class="form-label" for="description">توضیحات کامل</label><textarea class="form-control js-rich-editor" id="description" name="description" rows="6">{{ old('description', $place->description) }}</textarea></div>
-        <div class="col-12"><label class="form-label" for="gallery_images">افزودن تصاویر جدید به گالری</label><input class="form-control" id="gallery_images" name="gallery_images[]" type="file" accept="image/*" multiple></div>
+        <div class="col-12">
+            <label class="form-label" for="gallery_images">افزودن تصاویر جدید به گالری</label>
+            <input class="form-control" id="gallery_images" name="gallery_images[]" type="file" accept="image/*" multiple data-skip-media-picker>
+            <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
+                <button class="admin-secondary-btn" type="button" data-media-select-target="gallery_images_media_ids" data-media-select-multiple="true">انتخاب چند تصویر از کتابخانه</button>
+                <small class="text-muted">تصاویر انتخاب‌شده به گالری فعلی اضافه می‌شوند.</small>
+            </div>
+            <select class="d-none" id="gallery_images_media_ids" name="gallery_images_media_ids[]" multiple aria-hidden="true">
+                @foreach($mediaItems as $media)
+                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected(in_array((string) $media->id, array_map('strval', old('gallery_images_media_ids', [])), true))>{{ $media->title ?: $media->original_name }}</option>
+                @endforeach
+            </select>
+            <div class="row g-2 mt-2" id="gallery_images_media_preview"></div>
+        </div>
         @if (! empty($place->gallery))
             <div class="col-12">
                 <h4>تصاویر فعلی گالری</h4>
@@ -46,7 +80,7 @@
                     @foreach (collect($place->gallery)->sortBy('sort_order') as $index => $image)
                         <div class="col-md-4">
                             <div class="admin-panel-card h-100">
-                                <img src="{{ Storage::url($image['path'] ?? '') }}" alt="{{ $image['caption'] ?? $place->title }}" style="width:100%;height:140px;object-fit:cover;border-radius:12px">
+                                <img src="{{ \App\Support\PublicFileUrl::make($image['path'] ?? '', '') }}" alt="{{ $image['caption'] ?? $place->title }}" style="width:100%;height:140px;object-fit:cover;border-radius:12px">
                                 <input type="hidden" name="existing_gallery[{{ $index }}][path]" value="{{ $image['path'] ?? '' }}">
                                 <label class="form-label mt-2">کپشن</label><input class="form-control" name="existing_gallery[{{ $index }}][caption]" value="{{ $image['caption'] ?? '' }}">
                                 <label class="form-label mt-2">ترتیب</label><input class="form-control" name="existing_gallery[{{ $index }}][sort_order]" type="number" value="{{ $image['sort_order'] ?? 0 }}">
@@ -64,18 +98,66 @@
 
 @push('scripts')
 <script>
-document.querySelectorAll('input[type="file"][accept^="image/"]').forEach((input) => {
-    const preview = document.querySelector(`[data-image-preview="${input.id}"]`);
-    if (!preview) return;
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('input[type="file"][accept^="image/"]').forEach((input) => {
+        const preview = document.querySelector(`[data-image-preview="${input.id}"]`);
+        if (!preview) return;
 
-    input.addEventListener('change', () => {
-        const file = input.files && input.files[0];
-        if (!file) return;
+        input.addEventListener('change', () => {
+            const file = input.files && input.files[0];
+            if (!file) return;
 
-        const url = URL.createObjectURL(file);
-        preview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر انتخاب‌شده" class="img-fluid rounded" style="max-height:140px;object-fit:cover">`;
-        preview.querySelector('img')?.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+            const url = URL.createObjectURL(file);
+            preview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر انتخاب‌شده" class="img-fluid rounded" style="max-height:140px;object-fit:cover">`;
+            preview.querySelector('img')?.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+        });
     });
+
+    const renderSingleMedia = (selectId, previewId, fallbackUrl) => {
+        const select = document.getElementById(selectId);
+        const preview = document.getElementById(previewId);
+        const option = select?.selectedOptions?.[0];
+        const url = option?.dataset?.url || fallbackUrl || '';
+        if (!preview) return;
+        preview.replaceChildren();
+        if (!url) return;
+
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'پیش‌نمایش تصویر گردشگری';
+        img.className = 'img-fluid rounded';
+        img.style.cssText = 'max-height:140px;object-fit:cover';
+        preview.appendChild(img);
+    };
+
+    const cardSelect = document.getElementById('image_media_id');
+    cardSelect?.addEventListener('change', () => renderSingleMedia('image_media_id', 'image_media_preview', @json($place->home_image_url)));
+    renderSingleMedia('image_media_id', 'image_media_preview', @json($place->home_image_url));
+
+    const featuredSelect = document.getElementById('featured_image_media_id');
+    featuredSelect?.addEventListener('change', () => renderSingleMedia('featured_image_media_id', 'featured_image_media_preview', @json($place->featured_image_url)));
+    renderSingleMedia('featured_image_media_id', 'featured_image_media_preview', @json($place->featured_image_url));
+
+    const gallerySelect = document.getElementById('gallery_images_media_ids');
+    const galleryPreview = document.getElementById('gallery_images_media_preview');
+    const renderGalleryMedia = () => {
+        if (!galleryPreview) return;
+        galleryPreview.replaceChildren();
+        Array.from(gallerySelect?.selectedOptions || []).forEach((option) => {
+            if (!option.dataset.url) return;
+            const tile = document.createElement('div');
+            tile.className = 'col-6 col-md-3';
+            const img = document.createElement('img');
+            img.src = option.dataset.url;
+            img.alt = option.text;
+            img.className = 'img-fluid rounded';
+            img.style.cssText = 'height:90px;width:100%;object-fit:cover';
+            tile.appendChild(img);
+            galleryPreview.appendChild(tile);
+        });
+    };
+    gallerySelect?.addEventListener('change', renderGalleryMedia);
+    renderGalleryMedia();
 });
 </script>
 @endpush
