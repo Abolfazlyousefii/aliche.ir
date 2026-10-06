@@ -100,6 +100,38 @@
             <label class="form-label" for="manager_description">معرفی کوتاه رئیس</label>
             <textarea class="form-control" id="manager_description" name="manager_description" rows="4">{{ old('manager_description', $union?->manager_description) }}</textarea>
         </div>
+        <div class="col-12"><h3 class="h6 mt-3 mb-0">مدیر اجرایی اتحادیه</h3>
+            <small class="text-muted">این اطلاعات مستقل از رئیس اتحادیه است و در کنار ایشان در ابتدای صفحه عمومی نمایش داده می‌شود. اگر نام وارد نشود، کارت مدیر اجرایی نشان داده نمی‌شود.</small>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="executive_name">نام مدیر اجرایی</label>
+            <input class="form-control" id="executive_name" name="executive_name" maxlength="190" value="{{ old('executive_name', $union?->executive_name) }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="executive_position">سمت مدیر اجرایی</label>
+            <input class="form-control" id="executive_position" name="executive_position" maxlength="190" placeholder="مدیر اجرایی" value="{{ old('executive_position', $union?->executive_position) }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="executive_image">تصویر مدیر اجرایی (اختیاری)</label>
+            <input class="form-control" id="executive_image" name="executive_image" type="file" accept="image/*" data-skip-media-picker>
+            <button class="admin-secondary-btn mt-2" type="button" data-media-select-target="executive_image_media_id">انتخاب تصویر مدیر اجرایی از کتابخانه</button>
+            <select class="d-none" id="executive_image_media_id" name="executive_image_media_id" data-union-media-select data-preview-target="executive_image" aria-hidden="true" tabindex="-1">
+                <option value="">بدون تغییر / انتخاب تصویر</option>
+                @foreach(($mediaItems ?? collect()) as $media)
+                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('executive_image_media_id', $currentMediaIds['executive_image'] ?? null) === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
+                @endforeach
+            </select>
+            <div class="mt-2" data-image-preview="executive_image">
+                @if($union?->executive_image)<img src="{{ image_url($union->executive_image, '') }}" alt="تصویر فعلی مدیر اجرایی" class="img-fluid rounded" style="width:120px;height:120px;object-fit:cover">@endif
+            </div>
+            @if($union?->executive_image)
+                <label class="form-check mt-2" for="remove_executive_image">
+                    <input class="form-check-input" type="checkbox" id="remove_executive_image" name="remove_executive_image" value="1">
+                    حذف تصویر مدیر اجرایی از این اتحادیه
+                </label>
+            @endif
+        </div>
+
         <div class="col-12"><h4 class="h6 mt-2">دکمه‌های رئیس اتحادیه</h4></div>
         <div class="col-12 union-dynamic-section" data-section="president-buttons" data-next-index="{{ count($presidentButtons) }}">
             <div data-rows>
@@ -231,6 +263,17 @@
 
 @push('scripts')
 <script>
+const renderUnionImagePreview = (preview, url, fit, position) => {
+    preview.replaceChildren();
+    if (!url) return null;
+    const image = document.createElement('img');
+    image.src = url;
+    image.alt = 'پیش‌نمایش تصویر انتخاب‌شده';
+    image.className = 'img-fluid rounded';
+    image.style.cssText = 'width:100%;max-width:360px;height:180px;object-fit:' + fit + ';object-position:' + position;
+    preview.appendChild(image);
+    return image;
+};
 document.querySelectorAll('input[type="file"][accept^="image/"]').forEach((input) => {
     const preview = document.querySelector(`[data-image-preview="${input.id}"]`);
     if (!preview) return;
@@ -242,8 +285,9 @@ document.querySelectorAll('input[type="file"][accept^="image/"]').forEach((input
         const url = URL.createObjectURL(file);
         const fit = input.id === 'logo' || input.id === 'price_list_image' ? 'contain' : 'cover';
         const position = input.id === 'manager_image' ? 'center 20%' : 'center';
-        preview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر انتخاب‌شده" class="img-fluid rounded" style="width:100%;max-width:360px;height:180px;object-fit:${fit};object-position:${position}">`;
-        preview.querySelector('img')?.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+        const image = renderUnionImagePreview(preview, url, fit, position);
+        image?.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+        image?.addEventListener('error', () => URL.revokeObjectURL(url), { once: true });
     });
 });
 
@@ -259,7 +303,7 @@ document.querySelectorAll('[data-union-media-select]').forEach((select) => {
 
         const fit = previewKey === 'logo' || previewKey === 'price_list_image' ? 'contain' : 'cover';
         const position = previewKey === 'manager_image' ? 'center 20%' : 'center';
-        preview.innerHTML = `<img src="${url}" alt="پیش‌نمایش تصویر انتخاب‌شده" class="img-fluid rounded" style="width:100%;max-width:360px;height:180px;object-fit:${fit};object-position:${position}">`;
+        renderUnionImagePreview(preview, url, fit, position);
     };
 
     select.addEventListener('change', renderSelectedMedia);

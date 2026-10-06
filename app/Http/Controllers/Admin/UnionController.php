@@ -69,6 +69,7 @@ class UnionController extends Controller
         $data['logo'] = $this->storeImage($request, 'logo', 'unions/logos');
         $data['cover_image'] = $this->storeImage($request, 'cover_image', 'unions/covers');
         $data['manager_image'] = $this->storeImage($request, 'manager_image', 'unions/managers');
+        $data['executive_image'] = $this->storeImage($request, 'executive_image', 'unions/executives');
         $data['price_list_image'] = $this->storeImage($request, 'price_list_image', 'unions/price-lists');
 
         $union = GuildUnion::create($data);
@@ -102,6 +103,7 @@ class UnionController extends Controller
                 'cover_image' => Media::query()->where('path', $union->cover_image)->value('id'),
                 'logo' => Media::query()->where('path', $union->logo)->value('id'),
                 'manager_image' => Media::query()->where('path', $union->manager_image)->value('id'),
+                'executive_image' => Media::query()->where('path', $union->executive_image)->value('id'),
                 'price_list_image' => Media::query()->where('path', $union->price_list_image)->value('id'),
             ],
         ]);
@@ -113,10 +115,17 @@ class UnionController extends Controller
 
         $data = $this->unionData($request->validated(), $union);
 
-        foreach (['logo' => 'unions/logos', 'cover_image' => 'unions/covers', 'manager_image' => 'unions/managers', 'price_list_image' => 'unions/price-lists'] as $field => $directory) {
+        foreach (['logo' => 'unions/logos', 'cover_image' => 'unions/covers', 'manager_image' => 'unions/managers', 'executive_image' => 'unions/executives', 'price_list_image' => 'unions/price-lists'] as $field => $directory) {
             if ($path = $this->storeImage($request, $field, $directory)) {
                 $data[$field] = $path;
             }
+        }
+
+        if ($request->boolean('remove_executive_image')
+            && ! $request->hasFile('executive_image')
+            && ! $request->filled('executive_image_media_id')) {
+            // Unlink the photo without deleting potentially shared media.
+            $data['executive_image'] = null;
         }
 
         $union->update($data);
@@ -204,6 +213,8 @@ class UnionController extends Controller
             'manager_name' => $validated['manager_name'] ?? null,
             'manager_position' => $validated['manager_position'] ?? null,
             'manager_description' => $validated['manager_description'] ?? null,
+            'executive_name' => $validated['executive_name'] ?? null,
+            'executive_position' => $validated['executive_position'] ?? null,
             'union_type' => $selectedUnionTypeSlug ?: ($validated['union_type'] ?? null),
             'union_type_id' => $validated['union_type_id'] ?? null,
             'working_hours' => $validated['working_hours'] ?? null,

@@ -16,7 +16,7 @@ class UnionRequestValidationTest extends TestCase
             $rules = $request->rules();
             $this->assertArrayNotHasKey('category_id', $rules);
 
-            foreach (['logo', 'cover_image', 'manager_image', 'price_list_image'] as $field) {
+            foreach (['logo', 'cover_image', 'manager_image', 'executive_image', 'price_list_image'] as $field) {
                 $this->assertContains('max:5120', $rules[$field]);
                 $this->assertContains('image', $rules[$field]);
 

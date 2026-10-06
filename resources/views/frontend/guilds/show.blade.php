@@ -28,6 +28,7 @@
     $showUnionTypeLabel = filled($unionTypeLabel) && ! in_array($unionTypeLabel, ['نامشخص', 'ثبت نشده', 'بدون دسته‌بندی'], true);
 
     $showManager = $union->isSectionEnabled('show_manager', true) && filled($union->manager_name);
+    $showExecutive = filled($union->executive_name);
     $showMembers = $union->members_enabled && $union->isSectionEnabled('show_board_members', true) && $union->members->isNotEmpty();
     $showCommissions = $union->isSectionEnabled('show_commissions', true) && $union->commissions->isNotEmpty();
     $showRules = $union->isSectionEnabled('show_rules', true) && $union->rules->isNotEmpty();
@@ -48,12 +49,6 @@
     $hasContactData = filled($union->address) || filled($unionPhone) || filled($union->email) || filled($union->working_hours) || filled($unionWebsiteUrl) || $socialLinks->isNotEmpty();
     $showContact = $union->isSectionEnabled('show_contact', true) && $hasContactData;
 
-    $heroStats = collect([
-        ['label' => 'اعضای هیئت‌مدیره', 'value' => $union->members->count()],
-        ['label' => 'کمیسیون فعال', 'value' => $union->commissions->count()],
-        ['label' => 'خبر و اطلاعیه', 'value' => $posts->count() + $union->announcements->count()],
-    ])->filter(fn ($item) => $item['value'] > 0)->values();
-
     $contentLinks = collect([
         ['visible' => $showMembers, 'id' => 'guild-board', 'title' => 'اعضای هیئت‌مدیره', 'description' => 'معرفی اعضا و مسئولیت‌های سازمانی', 'icon' => 'members'],
         ['visible' => $showCommissions, 'id' => 'guild-commissions', 'title' => 'کمیسیون‌های اتحادیه', 'description' => 'کمیسیون‌ها و وظایف ثبت‌شده', 'icon' => 'commission'],
@@ -67,43 +62,21 @@
     ])->filter(fn ($item) => $item['visible'])->values();
     $showServices = $union->services_enabled && $contentLinks->isNotEmpty();
 
-    $navItems = collect([
-        ['visible' => $showManager, 'id' => 'guild-manager', 'label' => 'رئیس اتحادیه'],
-        ['visible' => $showMembers, 'id' => 'guild-board', 'label' => 'هیئت‌مدیره'],
-        ['visible' => $showNews, 'id' => 'guild-news', 'label' => 'اخبار'],
-        ['visible' => $showCommissions, 'id' => 'guild-commissions', 'label' => 'کمیسیون‌ها'],
-        ['visible' => $showServices, 'id' => 'guild-services', 'label' => 'خدمات و محتوا'],
-        ['visible' => $showRules, 'id' => 'guild-rules', 'label' => 'قوانین'],
-        ['visible' => $showArticles, 'id' => 'guild-articles', 'label' => 'مقاله‌ها'],
-        ['visible' => $showPrices, 'id' => 'guild-prices', 'label' => 'نرخ‌نامه'],
-        ['visible' => $showComplaint, 'id' => 'guild-complaint', 'label' => 'ثبت شکایت'],
-        ['visible' => $showMessages, 'id' => 'guild-messages', 'label' => 'پیام‌ها'],
-        ['visible' => $showMinutes, 'id' => 'guild-minutes', 'label' => 'صورت‌جلسه‌ها'],
-        ['visible' => $showEducation, 'id' => 'guild-education', 'label' => 'آموزش‌ها'],
-        ['visible' => $showAnnouncements, 'id' => 'guild-announcements', 'label' => 'اطلاعیه‌ها'],
-        ['visible' => $showGallerySection, 'id' => 'guild-gallery', 'label' => 'گالری'],
-        ['visible' => $showContact, 'id' => 'guild-contact', 'label' => 'تماس'],
-    ])->filter(fn ($item) => $item['visible'])->values();
-
     $quickActions = collect([
-        ['visible' => $showManager, 'id' => 'guild-manager', 'title' => 'رئیس اتحادیه', 'subtitle' => $union->manager_name, 'icon' => 'manager'],
+        ['visible' => ($showManager || $showExecutive), 'id' => 'guild-manager', 'title' => $showManager ? 'رئیس اتحادیه' : 'مدیر اجرایی', 'subtitle' => $showManager ? $union->manager_name : $union->executive_name, 'icon' => 'manager'],
         ['visible' => $showContact, 'id' => 'guild-contact', 'title' => 'راه‌های ارتباطی', 'subtitle' => $hasContactData ? 'تماس و اطلاعات اتحادیه' : 'اطلاعات در حال تکمیل', 'icon' => 'contact'],
         ['visible' => $showServices, 'id' => 'guild-services', 'title' => 'خدمات اتحادیه', 'subtitle' => 'دسترسی سریع به بخش‌ها', 'icon' => 'services'],
         ['visible' => $showComplaint, 'id' => 'guild-complaint', 'title' => 'ثبت شکایت', 'subtitle' => 'ثبت و پیگیری آنلاین', 'icon' => 'complaint'],
     ])->filter(fn ($item) => $item['visible'])->take(3)->values();
 
-    $settings = app(\App\Services\SettingService::class);
-    $officePhone = $settings->get('site.phone', '01732152912');
-    $officePhoneHref = $normalizePhone($officePhone);
-    $officeEmail = $settings->get('site.email', 'info@asnaf-gorgan.ir');
     $featuredGuildNews = $showNews ? $posts->first() : null;
-    $secondaryGuildNews = $showNews ? $posts->skip(1)->take(5)->values() : collect();
+    $secondaryGuildNews = $showNews ? $posts->skip(1)->take(6)->values() : collect();
 @endphp
 
 @section('content')
-<main class="guild-profile-page guild-profile-page--redesigned" data-guild-profile>
-    <section class="guild-profile-hero" @if($union->primary_image) style="--guild-profile-cover:url('{{ $assetImage($union->primary_image, '') }}')" @endif>
-        <div class="site-container guild-profile-hero__inner">
+<main class="guild-profile-page guild-profile-page--redesigned guild-profile-page--v4" data-guild-profile>
+    <section class="guild-profile-hero guild-profile-hero--light" id="guild-manager">
+        <div class="site-container guild-profile-hero__inner guild-profile-hero__inner--v4">
             <div class="guild-profile-hero__content">
                 <nav class="guild-profile-breadcrumb" aria-label="مسیر صفحه">
                     <a href="{{ route('home') }}">خانه</a>
@@ -116,46 +89,76 @@
                 @if($showUnionTypeLabel)
                     <span class="guild-profile-kicker"><i aria-hidden="true"></i>{{ $unionTypeLabel }}</span>
                 @endif
-                <h1>{{ $union->display_title }}</h1>
-                <p>{{ $plain($union->short_description, 240) ?: $plain($union->description, 240) ?: 'مرجع اطلاع‌رسانی، خدمات و راه‌های ارتباطی این اتحادیه صنفی.' }}</p>
-
-                <div class="guild-profile-hero__actions">
-                    @if($showComplaint)
-                        <a class="guild-profile-btn guild-profile-btn--light" href="{{ route('complaints.create', ['union' => $union->id]) }}">
-                            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>
-                            ثبت شکایت صنفی
-                        </a>
-                    @endif
-                    @if(filled($unionPhoneHref))
-                        <a class="guild-profile-btn guild-profile-btn--outline" href="tel:{{ $unionPhoneHref }}">
-                            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3 4 6c0 6 8 14 14 14l3-3-4-4-3 2c-2-1-4-3-5-5l2-3-4-4Z"/></svg>
-                            تماس با اتحادیه
-                        </a>
-                    @elseif($showManager)
-                        <a class="guild-profile-btn guild-profile-btn--outline" href="#guild-manager">
-                            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 20c0-4 3-7 7-7s7 3 7 7"/></svg>
-                            معرفی رئیس اتحادیه
-                        </a>
-                    @endif
-                </div>
-            </div>
-
-            <div class="guild-profile-hero__profile">
-                <div class="guild-profile-emblem {{ $union->logo ? '' : 'guild-profile-emblem--fallback' }}" data-guild-profile-image-wrap>
+                <div class="guild-profile-hero__identity-row">
                     @if($union->logo)
-                        <img src="{{ $assetImage($union->logo, '') }}" alt="لوگوی {{ $union->display_title }}" loading="eager" decoding="async" data-guild-profile-optional-image>
+                        <img class="guild-profile-hero__logo" src="{{ $assetImage($union->logo, '') }}"
+                             alt="لوگوی {{ $union->display_title }}" loading="eager" decoding="async">
                     @endif
-                    <span @if($union->logo) hidden @endif data-guild-profile-image-fallback>{{ $initial($union->display_title) }}</span>
+                    <h1>{{ $union->display_title }}</h1>
                 </div>
-                <strong class="guild-profile-hero__profile-title">پروفایل رسمی اتحادیه</strong>
-                @if($heroStats->isNotEmpty())
-                    <div class="guild-profile-hero__stats" aria-label="آمار اتحادیه">
-                        @foreach($heroStats as $stat)
-                            <div><strong>{{ fa_number(number_format($stat['value'])) }}</strong><span>{{ $stat['label'] }}</span></div>
-                        @endforeach
+                @if(filled($union->short_description) || filled($union->description))
+                    <p>{{ $plain($union->short_description, 240) ?: $plain($union->description, 240) }}</p>
+                @endif
+                @if($showComplaint || filled($unionPhoneHref))
+                    <div class="guild-profile-hero__actions">
+                        @if(filled($unionPhoneHref))
+                            <a class="guild-profile-btn guild-profile-btn--outline" href="tel:{{ $unionPhoneHref }}">
+                                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3 4 6c0 6 8 14 14 14l3-3-4-4-3 2c-2-1-4-3-5-5l2-3-4-4Z"/></svg>
+                                تماس با اتحادیه
+                            </a>
+                        @endif
+                        @if($showComplaint)
+                            <a class="guild-profile-btn guild-profile-btn--light" href="{{ route('complaints.create', ['union' => $union->id]) }}">
+                                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>
+                                ثبت شکایت
+                            </a>
+                        @endif
                     </div>
                 @endif
             </div>
+
+            @if($showManager || $showExecutive)
+                <div class="guild-profile-hero__leaders" aria-label="مدیریت اتحادیه">
+                    @if($showManager)
+                        <article class="guild-profile-person guild-profile-person--president">
+                            <div class="guild-profile-person__portrait" data-guild-profile-image-wrap>
+                                @if($union->manager_image)
+                                    <img src="{{ $assetImage($union->manager_image, '') }}" alt="تصویر {{ $union->manager_name }}" loading="eager" decoding="async" data-guild-profile-optional-image>
+                                @endif
+                                <span @if($union->manager_image) hidden @endif data-guild-profile-image-fallback>{{ $initial($union->manager_name) }}</span>
+                            </div>
+                            <div class="guild-profile-person__copy">
+                                <span class="guild-profile-person__role">{{ $union->manager_position ?: 'رئیس اتحادیه' }}</span>
+                                <h2>{{ $union->manager_name }}</h2>
+                                @if(filled($union->manager_description))
+                                    <p>{{ $plain($union->manager_description, 120) }}</p>
+                                @endif
+                                @if($presidentButtons->isNotEmpty())
+                                    <div class="guild-profile-person__actions">
+                                        @foreach($presidentButtons as $button)
+                                            <a href="{{ $button['url'] }}" target="{{ $button['target'] }}" @if($button['target'] === '_blank') rel="noopener noreferrer" @endif><x-ui-icon :name="$button['icon']" /><span>{{ $button['title'] }}</span></a>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </div>
+                        </article>
+                    @endif
+                    @if($showExecutive)
+                        <article class="guild-profile-person guild-profile-person--executive">
+                            <div class="guild-profile-person__portrait" data-guild-profile-image-wrap>
+                                @if($union->executive_image)
+                                    <img src="{{ $assetImage($union->executive_image, '') }}" alt="تصویر {{ $union->executive_name }}" loading="eager" decoding="async" data-guild-profile-optional-image>
+                                @endif
+                                <span @if($union->executive_image) hidden @endif data-guild-profile-image-fallback>{{ $initial($union->executive_name) }}</span>
+                            </div>
+                            <div class="guild-profile-person__copy">
+                                <span class="guild-profile-person__role">{{ $union->executive_position ?: 'مدیر اجرایی' }}</span>
+                                <h2>{{ $union->executive_name }}</h2>
+                            </div>
+                        </article>
+                    @endif
+                </div>
+            @endif
         </div>
     </section>
 
@@ -179,61 +182,8 @@
         </div>
     @endif
 
-    <div class="site-container guild-profile-layout">
+    <div class="site-container guild-profile-layout guild-profile-layout--full">
         <div class="guild-profile-content">
-            @if($showManager)
-                <section class="guild-profile-section" id="guild-manager" data-guild-profile-section>
-                    <header class="guild-profile-section__head">
-                        <div><span>مدیریت اتحادیه</span><h2>رئیس اتحادیه</h2><p>معرفی مسئول اجرایی {{ $union->display_title }}</p></div>
-                    </header>
-                    <div class="guild-profile-manager">
-                        <div class="guild-profile-manager__avatar" data-guild-profile-image-wrap>
-                            @if($union->manager_image)
-                                <img src="{{ $assetImage($union->manager_image, '') }}" alt="{{ $union->manager_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
-                            @endif
-                            <span @if($union->manager_image) hidden @endif data-guild-profile-image-fallback>{{ $initial($union->manager_name) }}</span>
-                            <small>{{ $union->manager_position ?: 'رئیس اتحادیه' }}</small>
-                        </div>
-                        <div class="guild-profile-manager__info">
-                            <h3>{{ $union->manager_name }}</h3>
-                            <strong>{{ $union->manager_position ?: 'رئیس اتحادیه' }}</strong>
-                            @if(filled($union->manager_description))
-                                <p>{{ $union->manager_description }}</p>
-                            @endif
-                            @if($presidentButtons->isNotEmpty() || filled($unionPhoneHref) || filled($union->email))
-                                <div class="guild-profile-manager__actions">
-                                    @forelse($presidentButtons as $button)
-                                        <a href="{{ $button['url'] }}" target="{{ $button['target'] }}" @if($button['target'] === '_blank') rel="noopener noreferrer" @endif><x-ui-icon :name="$button['icon']" /> <span>{{ $button['title'] }}</span></a>
-                                    @empty
-                                        @if(filled($unionPhoneHref))<a href="tel:{{ $unionPhoneHref }}"><x-ui-icon name="phone" /> <span>تماس با اتحادیه</span></a>@endif
-                                        @if($union->email)<a href="mailto:{{ $union->email }}"><x-ui-icon name="email" /> <span>ارسال ایمیل</span></a>@endif
-                                    @endforelse
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                </section>
-            @endif
-
-            @if($showMembers)
-                <section class="guild-profile-section" id="guild-board" data-guild-profile-section>
-                    <header class="guild-profile-section__head"><div><span>ساختار مدیریتی</span><h2>اعضای هیئت‌مدیره اتحادیه</h2></div></header>
-                    <div class="guild-profile-members">
-                        @foreach($union->members as $member)
-                            <article class="guild-profile-member">
-                                <div class="guild-profile-member__avatar" data-guild-profile-image-wrap>
-                                    @if($member->image)
-                                        <img src="{{ $member->image_url }}" alt="{{ $member->full_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
-                                    @endif
-                                    <span @if($member->image) hidden @endif data-guild-profile-image-fallback>{{ $initial($member->full_name) }}</span>
-                                </div>
-                                <div><h3>{{ $member->full_name }}</h3><strong>{{ $member->position ?: 'عضو اتحادیه' }}</strong>@if($member->business_name)<p>{{ $member->business_name }}</p>@endif</div>
-                            </article>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
-
             @if($showNews && $featuredGuildNews)
                 <section class="guild-profile-section guild-profile-news-section" id="guild-news" data-guild-profile-section>
                     <header class="guild-profile-section__head guild-profile-news-head">
@@ -242,7 +192,7 @@
                             <h2>آخرین اخبار اتحادیه</h2>
                             <p>خبرها و اطلاع‌رسانی‌های مرتبط با {{ $union->display_title }}</p>
                         </div>
-                        <a href="{{ route('posts.index') }}">آرشیو اخبار</a>
+                        <a href="{{ route('posts.index', ['union_id' => $union->id]) }}">آرشیو اخبار اتحادیه</a>
                     </header>
 
                     @php($featuredNewsUrl = route('posts.show', $featuredGuildNews->slug))
@@ -268,10 +218,10 @@
                     </article>
 
                     @if($secondaryGuildNews->isNotEmpty())
-                        <div class="guild-profile-news-strip" aria-label="سایر اخبار اتحادیه">
+                        <div class="guild-profile-news-grid" aria-label="شش خبر دیگر اتحادیه">
                             @foreach($secondaryGuildNews as $post)
                                 @php($postUrl = route('posts.show', $post->slug))
-                                <article class="guild-profile-news-mini">
+                                <article class="guild-profile-news-card">
                                     <a href="{{ $postUrl }}">
                                         <div class="guild-profile-news-mini__media">
                                             <img src="{{ $post->featured_image_url }}" alt="{{ $post->featuredMedia?->alt_text ?: $post->title }}" loading="lazy" decoding="async">
@@ -279,6 +229,7 @@
                                         <div class="guild-profile-news-mini__body">
                                             <time datetime="{{ $post->published_at?->toIso8601String() }}">{{ jalali_datetime($post->published_at) ?: 'بدون تاریخ' }}</time>
                                             <h3>{{ $post->title }}</h3>
+                                            <p class="guild-profile-news-mini__excerpt">{{ $plain($post->excerpt ?: $post->short_description ?: $post->summary ?: $post->body, 100) }}</p>
                                             <span>مشاهده خبر</span>
                                         </div>
                                     </a>
@@ -286,6 +237,25 @@
                             @endforeach
                         </div>
                     @endif
+                </section>
+            @endif
+
+            @if($showMembers)
+                <section class="guild-profile-section" id="guild-board" data-guild-profile-section>
+                    <header class="guild-profile-section__head"><div><span>ساختار مدیریتی</span><h2>اعضای هیئت‌مدیره اتحادیه</h2></div></header>
+                    <div class="guild-profile-members">
+                        @foreach($union->members as $member)
+                            <article class="guild-profile-member">
+                                <div class="guild-profile-member__avatar" data-guild-profile-image-wrap>
+                                    @if($member->image)
+                                        <img src="{{ $member->image_url }}" alt="{{ $member->full_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
+                                    @endif
+                                    <span @if($member->image) hidden @endif data-guild-profile-image-fallback>{{ $initial($member->full_name) }}</span>
+                                </div>
+                                <div><h3>{{ $member->full_name }}</h3><strong>{{ $member->position ?: 'عضو اتحادیه' }}</strong>@if($member->business_name)<p>{{ $member->business_name }}</p>@endif</div>
+                            </article>
+                        @endforeach
+                    </div>
                 </section>
             @endif
 
@@ -455,22 +425,7 @@
             @endif
         </div>
 
-        <aside class="guild-profile-sidebar">
-            @if($navItems->isNotEmpty())
-                <nav class="guild-profile-side-card" aria-label="راهنمای سریع صفحه">
-                    <h2>راهنمای سریع صفحه</h2>
-                    <ul>@foreach($navItems as $item)<li><a href="#{{ $item['id'] }}" data-guild-profile-nav><span>{{ $item['label'] }}</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></a></li>@endforeach</ul>
-                </nav>
-            @endif
 
-            <div class="guild-profile-side-card guild-profile-side-card--office">
-                <h2>ارتباط با اتاق اصناف</h2>
-                <div class="guild-profile-side-contact">
-                    @if(filled($officePhoneHref))<a href="tel:{{ $officePhoneHref }}"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3 4 6c0 6 8 14 14 14l3-3-4-4-3 2c-2-1-4-3-5-5l2-3-4-4Z"/></svg><span><strong>تلفن اتاق اصناف</strong><small>{{ fa_number($officePhone) }}</small></span></a>@endif
-                    @if($officeEmail)<a href="mailto:{{ $officeEmail }}"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 5h18v14H3zM4 7l8 6 8-6"/></svg><span><strong>پست الکترونیکی</strong><small>{{ $officeEmail }}</small></span></a>@endif
-                </div>
-            </div>
-        </aside>
     </div>
 </main>
 @endsection

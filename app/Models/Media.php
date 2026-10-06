@@ -75,7 +75,7 @@ class Media extends Model
             [Post::class, 'featured_image'], [PostGallery::class, 'image'],
             [Gallery::class, 'cover_image'], [GalleryImage::class, 'image'],
             [GuildUnion::class, 'logo'], [GuildUnion::class, 'cover_image'],
-            [GuildUnion::class, 'manager_image'], [GuildUnion::class, 'price_list_image'],
+            [GuildUnion::class, 'manager_image'], [GuildUnion::class, 'executive_image'], [GuildUnion::class, 'price_list_image'],
             [UnionMember::class, 'image'], [UnionType::class, 'image'],
             [Page::class, 'featured_image'], [Announcement::class, 'featured_image'],
             [Video::class, 'cover_image'], [TourismPlace::class, 'featured_image'],
