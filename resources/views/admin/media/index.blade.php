@@ -3,10 +3,14 @@
 @section('content')
 <div class="admin-page-toolbar">
     <div><p class="admin-eyebrow">Media Library</p><h2>کتابخانه رسانه</h2></div>
-    <div class="admin-media-view-tabs" aria-label="حالت نمایش رسانه"><button class="is-active" type="button">شبکه‌ای</button><button type="button">فهرستی</button></div>
+    <div class="admin-media-view-tabs" role="group" aria-label="حالت نمایش رسانه">
+        <button class="is-active" type="button" aria-pressed="true" data-admin-media-view="grid">شبکه‌ای</button>
+        <button type="button" aria-pressed="false" data-admin-media-view="list">فهرستی</button>
+    </div>
 </div>
 
-<div class="admin-wp-media-shell" data-wp-media-library>
+<div class="admin-wp-media-shell {{ request()->user()->hasPermission('media.upload') ? '' : 'admin-wp-media-readonly' }}" data-wp-media-library>
+    @if(request()->user()->hasPermission('media.upload'))
     <aside class="admin-wp-upload-panel">
         <form method="POST" action="{{ route('admin.media.store') }}" enctype="multipart/form-data" class="admin-wp-upload" data-media-dropzone>@csrf
             <input id="mediaFiles" class="admin-wp-upload-input" type="file" name="files[]" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/jpeg,image/png,image/webp,image/gif,image/avif" multiple required>
@@ -18,6 +22,7 @@
             <div class="admin-wp-upload-meta"><span data-media-file-count>هیچ فایلی انتخاب نشده است.</span><button class="admin-primary-btn">آپلود رسانه</button></div>
         </form>
     </aside>
+    @endif
 
     <section class="admin-wp-library-panel">
         <form class="admin-wp-toolbar">
@@ -27,7 +32,7 @@
             <button class="admin-secondary-btn">فیلتر</button>
         </form>
 
-        <div class="admin-wp-media-grid">
+        <div class="admin-wp-media-grid" data-admin-media-grid>
             @forelse($media as $item)
                 <article class="admin-wp-media-tile" tabindex="0" data-media-tile data-id="{{ $item->id }}">
                     <img src="{{ $item->url }}" alt="{{ $item->alt_text ?: $item->title ?: $item->original_name }}" loading="lazy" decoding="async" @if($item->srcset) srcset="{{ $item->srcset }}" sizes="200px" @endif @if($item->width && $item->height) width="{{ $item->width }}" height="{{ $item->height }}" @endif>
@@ -39,14 +44,21 @@
                             <h3>{{ $item->title ?: $item->original_name }}</h3>
                             <p dir="ltr" class="text-muted">{{ $item->path }}</p>
                             <dl><dt>ابعاد</dt><dd>{{ $item->width ?: '—' }} × {{ $item->height ?: '—' }}</dd><dt>حجم</dt><dd>{{ number_format(($item->size ?: 0) / 1024, 1) }} KB</dd><dt>آپلودکننده</dt><dd>{{ $item->uploader?->name ?: '—' }}</dd></dl>
+                            @if(request()->user()->hasPermission('media.edit'))
                             <form method="POST" action="{{ route('admin.media.update',$item) }}" class="admin-form">@csrf @method('PUT')
                                 <label class="form-label">عنوان</label><input class="form-control" name="title" value="{{ $item->title }}">
                                 <label class="form-label">متن جایگزین</label><input class="form-control" name="alt_text" value="{{ $item->alt_text }}">
                                 <label class="form-label">کپشن</label><textarea class="form-control" name="caption" rows="2">{{ $item->caption }}</textarea>
                                 <label class="form-label">توضیحات</label><textarea class="form-control" name="description" rows="3">{{ $item->description }}</textarea>
-                                <div class="admin-form-actions"><button class="admin-primary-btn">ذخیره اطلاعات</button><button class="admin-secondary-btn" type="button" data-copy-url="{{ $item->url }}">کپی آدرس</button></div>
+                                <div class="admin-form-actions"><button class="admin-primary-btn">ذخیره اطلاعات</button></div>
                             </form>
-                            <form method="POST" action="{{ route('admin.media.destroy',$item) }}" class="mt-3">@csrf @method('DELETE')<button class="admin-danger-btn" type="submit">حذف دائمی</button></form>
+                            @endif
+                            <div class="admin-form-actions mt-3">
+                                <button class="admin-secondary-btn" type="button" data-copy-url="{{ $item->url }}">کپی آدرس رسانه</button>
+                            </div>
+                            @if(request()->user()->hasPermission('media.delete'))
+                                <form method="POST" action="{{ route('admin.media.destroy',$item) }}" class="mt-3">@csrf @method('DELETE')<button class="admin-danger-btn" type="submit">حذف دائمی</button></form>
+                            @endif
                         </div>
                     </template>
                 </article>

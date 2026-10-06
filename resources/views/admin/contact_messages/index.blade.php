@@ -10,23 +10,21 @@
     </div>
 </div>
 
-<div class="admin-panel-card mb-3">
-    <form class="admin-search-form" action="{{ route('admin.contact_messages.index') }}" method="GET">
-        <label class="form-label mb-0" for="search">جستجو</label>
-        <input class="form-control" id="search" name="search" value="{{ $search }}" placeholder="نام، موبایل، ایمیل، موضوع یا متن پیام...">
-        <select class="form-control" name="read_status" aria-label="فیلتر وضعیت خواندن">
-            <option value="">همه پیام‌ها</option>
-            <option value="unread" @selected($readStatus === 'unread')>خوانده‌نشده</option>
-            <option value="read" @selected($readStatus === 'read')>خوانده‌شده</option>
-        </select>
-        <button class="admin-primary-btn" type="submit">اعمال فیلتر</button>
-        <a class="admin-secondary-btn" href="{{ route('admin.contact_messages.index') }}">حذف فیلتر</a>
-    </form>
-</div>
+@include('admin.partials.list-filters', [
+    'listRoute' => 'admin.contact_messages.index',
+    'listTitle' => 'فیلتر پیام‌های تماس',
+    'listDescription' => 'جستجوی پیام‌های دریافتی و پیگیری موارد خوانده‌نشده',
+    'listSearch' => $search,
+    'listPlaceholder' => 'نام، ایمیل، موبایل یا متن پیام...',
+    'listPaginator' => $messages,
+    'listFilters' => [
+            ['name' => 'read_status', 'label' => 'وضعیت خواندن', 'value' => $readStatus, 'options' => ['unread' => 'خوانده‌نشده', 'read' => 'خوانده‌شده'], 'empty' => 'همه پیام‌ها'],
+    ],
+])
 
 <div class="admin-panel-card">
-    <div class="table-responsive">
-        <table class="admin-table">
+    <div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="فیلتر پیام‌های تماس">
+        <table class="admin-table admin-list-table" data-admin-list-table>
             <thead>
                 <tr>
                     <th>فرستنده</th>

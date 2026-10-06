@@ -45,6 +45,7 @@ jobs:
       - name: Test admin role boundaries and existing personal inbox behavior
         run: |
           vendor/bin/phpunit tests/Feature/Admin/AdminListWorkspaceTest.php
+          vendor/bin/phpunit tests/Feature/Admin/AdminRemainingListsTest.php
           vendor/bin/phpunit tests/Feature/Admin/AdminFormWorkspaceTest.php
           vendor/bin/phpunit tests/Feature/Admin/AdminPhaseOneSecurityTest.php
           vendor/bin/phpunit tests/Feature/Admin/AdminDashboardV2Test.php

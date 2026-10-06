@@ -8,23 +8,24 @@
         <p class="admin-eyebrow">مدیریت سطح دسترسی</p>
         <h2>دسترسی‌های سامانه</h2>
     </div>
-    <a class="admin-primary-btn" href="{{ route('admin.permissions.create') }}">ایجاد دسترسی جدید</a>
+    @if(request()->user()->hasPermission('permissions.create'))<a class="admin-primary-btn" href="{{ route('admin.permissions.create') }}">ایجاد دسترسی جدید</a>@endif
 </div>
 
-<div class="admin-panel-card mb-3">
-    <form class="admin-search-form" action="{{ route('admin.permissions.index') }}" method="GET">
-        <label class="form-label mb-0" for="search">جستجو</label>
-        <input class="form-control" id="search" name="search" value="{{ $search }}" placeholder="عنوان، نام دسترسی یا گروه...">
-        <button class="admin-primary-btn" type="submit">جستجو</button>
-        @if ($search !== '')
-            <a class="admin-secondary-btn" href="{{ route('admin.permissions.index') }}">حذف فیلتر</a>
-        @endif
-    </form>
-</div>
+@include('admin.partials.list-filters', [
+    'listRoute' => 'admin.permissions.index',
+    'listTitle' => 'فیلتر سطح دسترسی',
+    'listDescription' => 'پیداکردن مجوزها بر اساس عنوان، گروه و نام سیستمی',
+    'listSearch' => $search,
+    'listPlaceholder' => 'عنوان یا نام سطح دسترسی...',
+    'listPaginator' => $permissions,
+    'listFilters' => [
+
+    ],
+])
 
 <div class="admin-panel-card">
-    <div class="table-responsive">
-        <table class="table admin-table align-middle">
+    <div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="فیلتر سطح دسترسی">
+        <table class="table admin-table align-middle admin-list-table" data-admin-list-table>
             <thead>
                 <tr>
                     <th>عنوان</th>
@@ -43,12 +44,12 @@
                         <td>{{ $permission->roles_count }}</td>
                         <td>
                             <div class="admin-actions">
-                                <a href="{{ route('admin.permissions.edit', $permission) }}">ویرایش</a>
-                                <form action="{{ route('admin.permissions.destroy', $permission) }}" method="POST">
+                                @if(request()->user()->hasPermission('permissions.edit'))<a href="{{ route('admin.permissions.edit', $permission) }}">ویرایش</a>@endif
+                                @if(request()->user()->hasPermission('permissions.delete'))<form action="{{ route('admin.permissions.destroy', $permission) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit">حذف</button>
-                                </form>
+                                </form>@endif
                             </div>
                         </td>
                     </tr>
