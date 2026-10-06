@@ -28,6 +28,21 @@
         $adminUiV2Css = base_path('public/assets/admin/css/admin-ui-v2.css');
     @endphp
     <link href="{{ asset('assets/admin/css/admin-ui-v2.css') }}?v={{ is_file($adminUiV2Css) ? filemtime($adminUiV2Css) : '1' }}" rel="stylesheet">
+    @if(request()->routeIs(
+        'admin.unions.index',
+        'admin.union_members.index',
+        'admin.complaints.index',
+        'admin.tourism.index',
+        'admin.electronic_services.index',
+        'admin.announcements.index',
+        'admin.pages.index',
+        'admin.users.index'
+    ))
+        @php
+            $adminListCss = base_path('public/assets/admin/css/list-workspace.css');
+        @endphp
+        <link href="{{ asset('assets/admin/css/list-workspace.css') }}?v={{ is_file($adminListCss) ? filemtime($adminListCss) : '1' }}" rel="stylesheet">
+    @endif
     @if(request()->routeIs('admin.unions.create', 'admin.unions.edit', 'admin.posts.create', 'admin.posts.edit'))
         @php
             $formWorkspaceCss = base_path('public/assets/admin/css/form-workspace.css');
@@ -85,6 +100,21 @@
     @endphp
     <script src="{{ asset('assets/admin/js/navigation.js') }}?v={{ is_file($adminNavigationJs) ? filemtime($adminNavigationJs) : '1' }}"></script>
     <script src="{{ asset('assets/admin/js/rich-editor.js') }}"></script>
+    @if(request()->routeIs(
+        'admin.unions.index',
+        'admin.union_members.index',
+        'admin.complaints.index',
+        'admin.tourism.index',
+        'admin.electronic_services.index',
+        'admin.announcements.index',
+        'admin.pages.index',
+        'admin.users.index'
+    ))
+        @php
+            $adminListJs = base_path('public/assets/admin/js/list-workspace.js');
+        @endphp
+        <script src="{{ asset('assets/admin/js/list-workspace.js') }}?v={{ is_file($adminListJs) ? filemtime($adminListJs) : '1' }}"></script>
+    @endif
     @if(request()->routeIs('admin.unions.create', 'admin.unions.edit', 'admin.posts.create', 'admin.posts.edit'))
         @php
             $formWorkspaceJs = base_path('public/assets/admin/js/form-workspace.js');

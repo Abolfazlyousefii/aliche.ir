@@ -8,28 +8,26 @@
         <p class="admin-eyebrow">مدیریت کاربران</p>
         <h2>کاربران پنل مدیریت</h2>
     </div>
-    <a class="admin-primary-btn" href="{{ route('admin.users.create') }}">ایجاد کاربر جدید</a>
+    @if(request()->user()->hasPermission('users.create'))
+        <a class="admin-primary-btn" href="{{ route('admin.users.create') }}">ایجاد کاربر جدید</a>
+    @endif
 </div>
 
-<div class="admin-panel-card mb-3">
-    <form class="admin-search-form" action="{{ route('admin.users.index') }}" method="GET">
-        <label class="form-label mb-0" for="search">جستجو</label>
-        <input class="form-control" id="search" name="search" value="{{ $search }}" placeholder="نام، ایمیل یا شماره تماس را وارد کنید...">
-        <select class="form-control" name="status" aria-label="فیلتر وضعیت">
-            <option value="">همه وضعیت‌ها</option>
-            <option value="active" @selected($status === 'active')>فعال</option>
-            <option value="inactive" @selected($status === 'inactive')>غیرفعال</option>
-        </select>
-        <button class="admin-primary-btn" type="submit">اعمال فیلتر</button>
-        @if ($search !== '' || $status !== '')
-            <a class="admin-secondary-btn" href="{{ route('admin.users.index') }}">حذف فیلتر</a>
-        @endif
-    </form>
-</div>
+@include('admin.partials.list-filters', [
+    'listRoute' => 'admin.users.index',
+    'listTitle' => 'فیلتر کاربران پنل',
+    'listDescription' => 'جستجو و مدیریت دسترسی حساب‌های مدیریتی',
+    'listSearch' => $search,
+    'listPlaceholder' => 'نام، ایمیل یا شماره تماس...',
+    'listPaginator' => $users,
+    'listFilters' => [
+            ['name' => 'status', 'label' => 'وضعیت حساب', 'value' => $status, 'options' => ['active' => 'فعال', 'inactive' => 'غیرفعال'], 'empty' => 'همه وضعیت‌ها'],
+    ],
+])
 
 <div class="admin-panel-card">
-    <div class="table-responsive">
-        <table class="table admin-table align-middle">
+    <div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="فیلتر کاربران پنل">
+        <table class="table admin-table align-middle admin-list-table" data-admin-list-table>
             <thead>
                 <tr>
                     <th>نام</th>
@@ -67,12 +65,12 @@
                         <td>
                             <div class="admin-actions">
                                 <a href="{{ route('admin.users.show', $user) }}">مشاهده</a>
-                                <a href="{{ route('admin.users.edit', $user) }}">ویرایش</a>
-                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST">
+                                @if(request()->user()->hasPermission('users.edit'))<a href="{{ route('admin.users.edit', $user) }}">ویرایش</a>@endif
+                                @if(request()->user()->hasPermission('users.delete'))<form action="{{ route('admin.users.destroy', $user) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit">حذف</button>
-                                </form>
+                                </form>@endif
                             </div>
                         </td>
                     </tr>

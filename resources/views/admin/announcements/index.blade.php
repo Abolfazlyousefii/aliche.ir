@@ -5,33 +5,27 @@
 @section('content')
 <div class="admin-page-toolbar">
     <div><p class="admin-eyebrow">CMS اطلاعیه‌ها</p><h2>مدیریت اطلاعیه‌ها</h2></div>
-    <a class="admin-primary-btn" href="{{ route('admin.announcements.create') }}">ایجاد اطلاعیه جدید</a>
+    @if(request()->user()->hasPermission('announcements.create'))
+        <a class="admin-primary-btn" href="{{ route('admin.announcements.create') }}">ایجاد اطلاعیه جدید</a>
+    @endif
 </div>
 
-<div class="admin-panel-card mb-3">
-    <form class="admin-search-form" action="{{ route('admin.announcements.index') }}" method="GET">
-        <label class="form-label mb-0" for="search">جستجو</label>
-        <input class="form-control" id="search" name="search" value="{{ $search }}" placeholder="عنوان، اسلاگ یا خلاصه...">
-        <select class="form-control" name="status" aria-label="فیلتر وضعیت">
-            <option value="">همه وضعیت‌ها</option>
-            @foreach (\App\Models\Announcement::STATUSES as $itemStatus)
-                <option value="{{ $itemStatus }}" @selected($status === $itemStatus)>{{ $itemStatus }}</option>
-            @endforeach
-        </select>
-        <select class="form-control" name="union_id" aria-label="فیلتر اتحادیه">
-            <option value="">همه اتحادیه‌ها</option>
-            @foreach ($unions as $union)
-                <option value="{{ $union->id }}" @selected((string) $unionId === (string) $union->id)>{{ $union->name }}</option>
-            @endforeach
-        </select>
-        <button class="admin-primary-btn" type="submit">اعمال</button>
-        @if ($search !== '' || $status !== '' || $unionId)<a class="admin-secondary-btn" href="{{ route('admin.announcements.index') }}">حذف فیلتر</a>@endif
-    </form>
-</div>
+@include('admin.partials.list-filters', [
+    'listRoute' => 'admin.announcements.index',
+    'listTitle' => 'فیلتر اطلاعیه‌ها',
+    'listDescription' => 'اطلاعیه‌ها را بر اساس عنوان، وضعیت یا اتحادیه محدود کنید',
+    'listSearch' => $search,
+    'listPlaceholder' => 'عنوان اطلاعیه یا خلاصه...',
+    'listPaginator' => $announcements,
+    'listFilters' => [
+            ['name' => 'status', 'label' => 'وضعیت', 'value' => $status, 'options' => \App\Models\Announcement::statusLabels(), 'empty' => 'همه وضعیت‌ها'],
+            ['name' => 'union_id', 'label' => 'اتحادیه', 'value' => $unionId, 'options' => $unions->mapWithKeys(fn ($union) => [(string) $union->id => $union->display_title])->all(), 'empty' => 'همه اتحادیه‌ها'],
+    ],
+])
 
 <div class="admin-panel-card">
-    <div class="table-responsive">
-        <table class="table admin-table align-middle">
+    <div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="فیلتر اطلاعیه‌ها">
+        <table class="table admin-table align-middle admin-list-table" data-admin-list-table>
             <thead><tr><th>عنوان</th><th>دسته‌بندی</th><th>اتحادیه</th><th>وضعیت</th><th>نوع نمایش</th><th>شروع/انقضا</th><th>مهم</th><th>انتشار</th><th>عملیات</th></tr></thead>
             <tbody>
                 @forelse ($announcements as $announcement)
@@ -47,8 +41,8 @@
                         <td>
                             <div class="admin-actions">
                                 <a href="{{ route('admin.announcements.show', $announcement) }}">مشاهده</a>
-                                <a href="{{ route('admin.announcements.edit', $announcement) }}">ویرایش</a>
-                                <form action="{{ route('admin.announcements.destroy', $announcement) }}" method="POST">@csrf @method('DELETE')<button type="submit">حذف</button></form>
+                                @if(request()->user()->hasPermission('announcements.edit'))<a href="{{ route('admin.announcements.edit', $announcement) }}">ویرایش</a>@endif
+                                @if(request()->user()->hasPermission('announcements.delete'))<form action="{{ route('admin.announcements.destroy', $announcement) }}" method="POST">@csrf @method('DELETE')<button type="submit">حذف</button></form>@endif
                             </div>
                         </td>
                     </tr>
