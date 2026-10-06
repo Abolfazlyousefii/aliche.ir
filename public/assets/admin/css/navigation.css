@@ -1,0 +1,112 @@
+/* Phase 1: discoverable and keyboard-usable admin navigation. */
+.admin-header .admin-quick-search {
+    position: relative;
+    isolation: isolate;
+}
+.admin-header .admin-quick-search > input {
+    min-width: 0;
+}
+.admin-search-mobile-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 39px;
+    height: 39px;
+    padding: 7px;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    color: var(--admin-text);
+    background: #fff;
+    cursor: pointer;
+}
+.admin-quick-results[hidden],
+.admin-quick-results [hidden] {
+    display: none !important;
+}
+.admin-quick-results {
+    position: absolute;
+    z-index: 1200;
+    top: calc(100% + 9px);
+    inset-inline-start: 0;
+    width: max(100%, 300px);
+    max-width: min(400px, calc(100vw - 24px));
+    max-height: min(65vh, 460px);
+    overflow-y: auto;
+    padding: 7px;
+    border: 1px solid #d8e4ec;
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 16px 42px rgba(18, 42, 62, .15);
+}
+.admin-quick-results__heading {
+    margin: 3px 8px 8px;
+    color: #657989;
+    font-size: 11px;
+    font-weight: 700;
+}
+.admin-quick-results a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 42px;
+    padding: 8px 10px;
+    border-radius: 7px;
+    color: #204359;
+    font-size: 12px;
+    font-weight: 650;
+    text-decoration: none;
+}
+.admin-quick-results a small {
+    color: #697f90;
+    font-size: 10px;
+    text-align: end;
+    font-weight: 400;
+}
+.admin-quick-results a:hover,
+.admin-quick-results a:focus-visible {
+    color: #0a669e;
+    outline: 2px solid #a1cce5;
+    outline-offset: -2px;
+    background: #f0f8fd;
+}
+.admin-quick-results__empty {
+    margin: 0;
+    padding: 12px;
+    color: #52697a;
+    font-size: 12px;
+}
+.admin-nav-link:focus-visible,
+.admin-nav-sublink:focus-visible,
+.admin-search-mobile-toggle:focus-visible,
+.admin-header .admin-quick-search input:focus-visible {
+    outline: 2px solid #93ccec;
+    outline-offset: 2px;
+}
+@media (max-width: 767.98px) {
+    .admin-header .admin-search-mobile-toggle {
+        display: inline-flex;
+    }
+    .admin-header .admin-quick-search {
+        display: none;
+        position: absolute;
+        top: calc(100% + 5px);
+        inset-inline: 12px;
+        width: auto;
+        min-height: 44px;
+        border: 1px solid #cddfeb;
+        box-shadow: 0 8px 22px rgba(18,42,62,.13);
+    }
+    .admin-header .admin-quick-search.is-mobile-open {
+        display: flex;
+    }
+    .admin-quick-results {
+        width: 100%;
+        max-width: none;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .admin-quick-results a {
+        transition: none;
+    }
+}
