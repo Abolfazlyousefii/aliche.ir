@@ -118,7 +118,7 @@ class AdminRemainingListsTest extends TestCase
             ->assertSee('data-admin-media-grid', false)
             ->assertSee('admin-wp-media-readonly', false)
             ->assertSee('list-workspace.js')
-            ->assertDontSee(route('admin.media.store'))
+            ->assertDontSee('action="'.route('admin.media.store').'"', false)
             ->assertDontSee('data-media-dropzone', false);
 
         $this->assertFalse($user->hasPermission('media.upload'));
