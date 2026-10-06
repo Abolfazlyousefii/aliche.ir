@@ -45,7 +45,14 @@ class StoreUnionRequest extends FormRequest
             'executive_name' => ['nullable', 'string', 'max:190'],
             'executive_position' => ['nullable', 'string', 'max:190'],
             'executive_image' => ['nullable', 'bail', 'file', 'image', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
-            'executive_image_media_id' => ['nullable', 'integer', 'exists:media,id'],
+            'executive_image_media_id' => [
+                'nullable', 'integer',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (filled($value) && ! \App\Models\Media::query()->images()->whereKey($value)->exists()) {
+                        $fail('تصویر انتخاب‌شده مدیر اجرایی باید یک تصویر معتبر باشد.');
+                    }
+                },
+            ],
             'union_type' => ['nullable', 'string', 'max:190'],
             'union_type_id' => ['nullable', 'exists:union_types,id'],
             'manager_image' => ['nullable', 'bail', 'file', 'image', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
