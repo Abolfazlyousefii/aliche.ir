@@ -16,6 +16,8 @@
         ->filter(fn ($file) => is_array($file) && filled($file['path'] ?? null))
         ->values();
     $hasDescription = filled(plain_text($commission->description));
+    // Sanitize on output too: old records may predate the admin-side sanitizer.
+    $richTextSanitizer = app(\App\Services\RichTextSanitizer::class);
 @endphp
 
 <main class="commission-profile-v3">
@@ -45,7 +47,7 @@
                         </div>
                         @if($hasDescription)
                             <div class="commission-profile-v3__rich-text">
-                                {!! rich_text($commission->description) !!}
+                                {!! $richTextSanitizer->sanitize($commission->description) !!}
                             </div>
                         @else
                             <p class="commission-profile-v3__muted">توضیحات این کمیسیون هنوز در پنل مدیریت تکمیل نشده است.</p>
@@ -77,7 +79,7 @@
                                         <h3>{{ $task->title }}</h3>
                                         @if(filled(plain_text($task->description)))
                                             <div class="commission-profile-v3__rich-text">
-                                                {!! rich_text($task->description) !!}
+                                                {!! $richTextSanitizer->sanitize($task->description) !!}
                                             </div>
                                         @endif
                                     </div>
