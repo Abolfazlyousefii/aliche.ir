@@ -32,6 +32,11 @@ jobs:
         run: |
           php -l app/Support/AdminNavigation.php
           php -l app/Http/Controllers/Admin/AdminDashboardController.php
+          php -l app/Http/Controllers/Admin/CategoryController.php
+          php -l app/Http/Controllers/Admin/UnionTypeController.php
+          php -l app/Http/Controllers/Admin/MenuController.php
+          php -l app/Http/Controllers/Admin/CommissionSessionController.php
+          php -l app/Http/Controllers/Admin/PendingApprovalController.php
           test -s public/assets/admin/css/admin-ui-v2.css
           php -l app/Support/AdminCategoryAccess.php
           php -l app/Http/Controllers/Admin/CategoryController.php
@@ -46,6 +51,7 @@ jobs:
         run: |
           vendor/bin/phpunit tests/Feature/Admin/AdminListWorkspaceTest.php
           vendor/bin/phpunit tests/Feature/Admin/AdminRemainingListsTest.php
+          vendor/bin/phpunit tests/Feature/Admin/AdminPhaseFiveCompletionTest.php
           vendor/bin/phpunit tests/Feature/Admin/AdminFormWorkspaceTest.php
           vendor/bin/phpunit tests/Feature/Admin/AdminPhaseOneSecurityTest.php
           vendor/bin/phpunit tests/Feature/Admin/AdminDashboardV2Test.php
