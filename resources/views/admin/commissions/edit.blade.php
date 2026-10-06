@@ -3,7 +3,7 @@
 @section('content')
 <div class="admin-page-toolbar"><div><p class="admin-eyebrow">کمیسیون‌ها</p><h2>ویرایش {{ $commission->title }}</h2></div><a class="admin-secondary-btn" href="{{ route('admin.commissions.show', $commission) }}">بازگشت</a></div>
 <form class="admin-panel-card admin-form" method="POST" action="{{ route('admin.commissions.update', $commission) }}" enctype="multipart/form-data">@csrf @method('PUT')
-@php($taskRows = collect(old('tasks', $commission->tasks->map(fn($task) => ['id' => $task->id, 'title' => $task->title, 'description' => $task->description, 'sort_order' => $task->sort_order, 'is_active' => (int) $task->is_active])->all()))->pad(5, []))
+@php($taskRows = collect(old('tasks', $commission->tasks->map(fn($task) => ['id' => $task->id, 'title' => $task->title, 'description' => $task->description, 'sort_order' => $task->sort_order, 'is_active' => (int) $task->is_active])->all()))->pad(max(5, $commission->tasks->count() + 5), []))
 <div class="row g-3">
 <div class="col-md-6"><label class="form-label">عنوان</label><input class="form-control" name="title" value="{{ old('title',$commission->title) }}" required></div>
 <div class="col-md-6"><label class="form-label">نامک</label><input class="form-control" name="slug" value="{{ old('slug',$commission->slug) }}" dir="ltr"></div>
