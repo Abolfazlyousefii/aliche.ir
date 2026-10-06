@@ -18,10 +18,10 @@ class UnionAdminDynamicIntegrityTest extends TestCase
     {
         $this->signInAsSuperAdmin();
         $union = $this->union();
-        $ownFirst = $this->publishedPost(['union_id' => $union->id, 'slug' => 'manual-own-first']);
-        $ownSecond = $this->publishedPost(['union_id' => $union->id, 'slug' => 'manual-own-second']);
+        $ownFirst = $this->publishedPost(['union_id' => $union->id, 'slug' => 'manual-own-first', 'title' => 'خبر متعلق اول']);
+        $ownSecond = $this->publishedPost(['union_id' => $union->id, 'slug' => 'manual-own-second', 'title' => 'خبر متعلق دوم']);
         $other = $this->union(['slug' => 'integrity-other-union']);
-        $foreign = $this->publishedPost(['union_id' => $other->id, 'slug' => 'manual-foreign-news']);
+        $foreign = $this->publishedPost(['union_id' => $other->id, 'slug' => 'manual-foreign-news', 'title' => 'خبر اتحادیه دیگر']);
 
         // Legacy cross-union selections are retained in storage but must not
         // be offered as new choices or shown on the public union page.
@@ -29,8 +29,8 @@ class UnionAdminDynamicIntegrityTest extends TestCase
 
         $this->get(route('admin.unions.edit', $union))
             ->assertOk()
-            ->assertSee('manual-own-first')
-            ->assertDontSee('manual-foreign-news');
+            ->assertSee('خبر متعلق اول')
+            ->assertDontSee('خبر اتحادیه دیگر');
 
         $this->put(route('admin.unions.update', $union), $this->unionPayload([
             'title' => $union->title,
