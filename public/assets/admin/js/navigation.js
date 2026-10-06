@@ -69,8 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const index = options.indexOf(document.activeElement);
         if (event.key === 'Escape') {
             event.preventDefault();
-            closeMobile();
             input.focus();
+            closeMobile();
         } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             if (index < 0) return;
             event.preventDefault();
