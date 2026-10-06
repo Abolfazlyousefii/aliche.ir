@@ -39,6 +39,10 @@ class UnionAdminDynamicIntegrityTest extends TestCase
             'selected_posts' => [$ownSecond->id, $ownFirst->id],
         ]))->assertSessionHasNoErrors();
 
+        $this->get(route('admin.unions.edit', $union))
+            ->assertOk()
+            ->assertSeeInOrder(['خبر متعلق دوم', 'خبر متعلق اول']);
+
         $selection = $union->fresh()->selectedPosts()->get();
         $this->assertSame(
             [$foreign->id, $ownSecond->id, $ownFirst->id],
