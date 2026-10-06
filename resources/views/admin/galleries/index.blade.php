@@ -30,7 +30,13 @@
             <tbody id="gallery-sortable">
                 @forelse ($galleries as $gallery)
                     <tr @if(request()->user()->hasPermission('galleries.edit')) draggable="true" @endif data-id="{{ $gallery->id }}">
-                        <td class="text-muted" style="cursor:move">☰</td>
+                        <td class="text-muted">
+                            @if(request()->user()->hasPermission('galleries.edit'))
+                                <span style="cursor:grab" title="برای تغییر ترتیب بکشید" aria-label="دستگیره جابه‌جایی">☰</span>
+                            @else
+                                <span aria-label="ویرایش ترتیب غیرفعال">—</span>
+                            @endif
+                        </td>
                         <td><img src="{{ $gallery->cover_image_url }}" alt="{{ $gallery->title }}" style="width:72px;height:52px;object-fit:cover;border-radius:10px"></td>
                         <td><strong>{{ $gallery->title }}</strong><br><small dir="ltr">{{ $gallery->slug }}</small></td>
                         <td>{{ $gallery->union?->display_title ?: 'عمومی' }}</td>
