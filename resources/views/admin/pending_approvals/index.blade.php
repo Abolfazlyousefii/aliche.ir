@@ -3,19 +3,50 @@
 @section('title', 'محتواهای در انتظار انتشار')
 
 @section('content')
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div class="admin-page-toolbar">
         <div>
-            <h1 class="h3 mb-1">محتواهای در انتظار انتشار</h1>
-            <p class="text-muted mb-0">همه محتواهای در انتظار بررسی از ماژول‌های محتوایی اینجا نمایش داده می‌شوند و با یک دکمه هم تایید و هم منتشر می‌شوند.</p>
+            <p class="admin-eyebrow">گردش‌کار انتشار</p>
+            <h2>محتوای نیازمند بررسی</h2>
+            <p class="text-muted mb-0">فقط محتوای ماژول‌هایی که مجوز بررسی آن‌ها را دارید نمایش داده می‌شود.</p>
         </div>
-        <span class="badge text-bg-warning fs-6">{{ $items->count() }} مورد</span>
+        <span class="admin-list-total">{{ fa_number($items->count()) }} مورد در فهرست</span>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-0">
+    <section class="admin-panel-card admin-list-filter-card mb-3" aria-label="فیلتر محتواهای در انتظار">
+        <form method="GET" action="{{ route('admin.pending_approvals.index') }}" class="admin-list-filter-form" role="search">
+            <div class="admin-list-primary-search">
+                <div class="admin-list-primary-search__field">
+                    <label for="pending-content-search">جستجوی محتوا</label>
+                    <input id="pending-content-search" class="form-control" type="search" name="search" value="{{ $search }}" placeholder="عنوان یا خلاصه محتوا...">
+                </div>
+                <button class="admin-primary-btn" type="submit">جستجو</button>
+                @if($search !== '' || $type !== '')
+                    <a href="{{ route('admin.pending_approvals.index') }}" class="admin-secondary-btn">پاک‌کردن فیلترها</a>
+                @endif
+            </div>
+            <div class="admin-list-extra-grid">
+                <div class="admin-list-extra-field">
+                    <label for="pending-content-type">نوع محتوا</label>
+                    <select id="pending-content-type" class="form-select" name="type">
+                        <option value="">همه انواع مجاز</option>
+                        @foreach($typeOptions as $typeCode => $typeLabel)
+                            <option value="{{ $typeCode }}" @selected($type === $typeCode)>{{ $typeLabel }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="admin-list-extra-apply">
+                    <button class="admin-primary-btn" type="submit">اعمال فیلتر</button>
+                </div>
+            </div>
+        </form>
+        <p class="admin-pending-summary">نمایش {{ fa_number($items->count()) }} مورد از {{ fa_number($totalVisibleItems) }} محتوای قابل بررسی</p>
+    </section>
+
+    <div class="admin-panel-card">
+        <div>
             @if($items->isNotEmpty())
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0">
+                <div class="table-responsive admin-list-responsive-table" tabindex="0" role="region" aria-label="محتوای در انتظار بررسی">
+                    <table class="table admin-table admin-list-table align-middle mb-0" data-admin-list-table>
                         <thead class="table-light">
                             <tr>
                                 <th>عنوان</th>
