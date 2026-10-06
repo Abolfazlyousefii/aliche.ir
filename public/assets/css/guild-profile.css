@@ -3090,3 +3090,60 @@ a.guild-profile-contact-card:focus-visible {
     transition: none;
   }
 }
+
+
+/* Full union introduction lives below editorial content; the compact hero stays minimal. */
+.guild-profile-page--v4 .guild-profile-about__rich {
+  color: #385368;
+  font-size: 13px;
+  line-height: 2;
+  overflow-wrap: anywhere;
+}
+.guild-profile-page--v4 .guild-profile-about__rich > :first-child {
+  margin-top: 0;
+}
+.guild-profile-page--v4 .guild-profile-about__rich > :last-child {
+  margin-bottom: 0;
+}
+.guild-profile-page--v4 .guild-profile-about__rich :is(img, video) {
+  max-width: 100%;
+  height: auto;
+}
+.guild-profile-page--v4 .guild-profile-about__rich table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.guild-profile-page--v4 .guild-profile-about__rich a {
+  color: #17618c;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.guild-profile-page--v4 .guild-profile-about__rich a:focus-visible {
+  outline: 2px solid #1478b3;
+  outline-offset: 3px;
+}
+.guild-profile-page--v4 .guild-profile-about__president {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #e7edf1;
+}
+.guild-profile-page--v4 .guild-profile-about__president:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.guild-profile-page--v4 .guild-profile-about__president h3 {
+  margin: 0 0 7px;
+  color: #10334d;
+  font-size: 14px;
+  font-weight: 750;
+}
+.guild-profile-page--v4 .guild-profile-about__president p {
+  margin: 0;
+  color: #546e80;
+  font-size: 12.5px;
+  line-height: 1.95;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
