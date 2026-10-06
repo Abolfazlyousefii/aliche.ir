@@ -166,8 +166,8 @@
                         @endif
 
                         @if($hasNeshanMap)
-                            <div class="tourism-detail-v2__map" style="min-height:240px">
-                                <div id="tourism-neshan-map" aria-label="نقشه نشان: {{ $title }}" role="region" style="width:100%;height:100%"></div>
+                            <div class="tourism-detail-v2__map" style="min-height:240px;position:relative">
+                                <div id="tourism-neshan-map" aria-label="نقشه نشان: {{ $title }}" role="region" style="position:absolute;inset:0"></div>
                             </div>
                         @elseif($isEmbeddableMap)
                             <div class="tourism-detail-v2__map">
