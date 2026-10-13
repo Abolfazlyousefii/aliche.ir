@@ -80,7 +80,7 @@ class UnionMinimalBoardTest extends TestCase
             'union_id' => $union->id, 'first_name' => 'لیلا', 'last_name' => 'کاظمی',
             'position' => 'دبیر', 'sort_order' => 8, 'status' => 'active',
             'is_active' => '1', 'image_media_id' => $image->id, 'board_editor' => '1',
-        ])->assertSessionHasNoErrors()->assertRedirect(route('admin.unions.edit', $union).'#union-board-management');
+        ])->assertSessionHasNoErrors()->assertRedirect(route('admin.unions.edit', $union->id).'#union-board-management');
 
         $this->assertDatabaseHas('union_members', ['union_id' => $union->id,
             'first_name' => 'لیلا', 'last_name' => 'کاظمی', 'full_name' => 'لیلا کاظمی',
