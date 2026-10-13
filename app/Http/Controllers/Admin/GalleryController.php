@@ -209,7 +209,7 @@ class GalleryController extends Controller
             'title' => $validated['title'],
             'slug' => $this->uniqueSlug($validated['slug'] ?: $validated['title'], $gallery),
             'description' => $validated['description'] ?? null,
-            'meta_keywords' => MediaKeywords::normalize($validated['meta_keywords'] ?? $gallery?->meta_keywords),
+            'meta_keywords' => MediaKeywords::normalize(array_key_exists('meta_keywords', $validated) ? $validated['meta_keywords'] : $gallery?->meta_keywords),
             'category_id' => $validated['category_id'] ?? null,
             'union_id' => $validated['union_id'] ?? null,
             'display_location' => $validated['display_location'] ?? 'both',
