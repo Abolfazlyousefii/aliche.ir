@@ -36,6 +36,7 @@ class UnionMinimalBoardTest extends TestCase
         $response = $this->get(route('guilds.show', $own->slug));
         $response->assertOk()
             ->assertSee('guild-profile-page--hero-refresh', false)
+            ->assertSee('guild-profile-page--with-board', false)
             ->assertSeeInOrder(['guild-profile-hero__inner--v4', 'id="guild-board"', 'اولین عضو', 'آخرین عضو'], false)
             ->assertSee('data-guild-board-slider', false)
             ->assertSee('swiper-wrapper', false)
@@ -75,7 +76,7 @@ class UnionMinimalBoardTest extends TestCase
         $this->assertNotFalse($css);
         $this->assertStringContainsString('guild-profile-hero__inner--v4', $css);
         $this->assertStringNotContainsString('.guild-profile-section', $css);
-        $this->assertStringNotContainsString('.guild-profile-quickbar', $css);
+        $this->assertStringContainsString('.guild-profile-page--hero-refresh .guild-profile-quickbar--sections', $css);
         $this->assertStringNotContainsString('.guild-profile-members', $css);
         $this->assertSame($css, file_get_contents(base_path('public_html/assets/css/guild-minimal.css')));
     }
@@ -147,7 +148,10 @@ class UnionMinimalBoardTest extends TestCase
     public function test_no_board_is_rendered_without_real_active_members(): void
     {
         $union = $this->union('board-empty', ['members_enabled' => true]);
-        $this->get(route('guilds.show', $union->slug))->assertOk()->assertDontSee('id="guild-board"', false);
+        $this->get(route('guilds.show', $union->slug))
+            ->assertOk()
+            ->assertDontSee('id="guild-board"', false)
+            ->assertDontSee('guild-profile-page--with-board', false);
     }
 
     public function test_union_edit_has_separate_board_management_only_for_own_members(): void
