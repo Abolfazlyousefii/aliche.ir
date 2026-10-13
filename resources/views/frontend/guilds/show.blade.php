@@ -94,7 +94,7 @@
 @endpush
 
 @section('content')
-<main class="guild-profile-page guild-profile-page--redesigned guild-profile-page--v4 guild-profile-page--hero-refresh" data-guild-profile>
+<main class="guild-profile-page guild-profile-page--redesigned guild-profile-page--v4 guild-profile-page--hero-refresh{{ $showMembers ? ' guild-profile-page--with-board' : '' }}" data-guild-profile>
     <section class="guild-profile-hero guild-profile-hero--light guild-profile-hero--cover" id="guild-manager">
         @if($union->cover_image)
             <div class="guild-profile-hero__backdrop" aria-hidden="true">
