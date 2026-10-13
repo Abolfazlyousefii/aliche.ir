@@ -91,7 +91,7 @@ class MediaDetailKeywordsTest extends TestCase
             'title' => 'ویدئوی برچسب', 'slug' => 'video-keyword-admin',
             'video_type' => 'aparat', 'aparat_url' => 'https://www.aparat.com/v/xyz123',
             'status' => 'draft', 'is_active' => '1',
-            'meta_keywords' => 'ویدئو، بازار\nنشست خبری',
+            'meta_keywords' => "ویدئو، بازار\nنشست خبری",
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         $video = Video::query()->where('slug', 'video-keyword-admin')->firstOrFail();
