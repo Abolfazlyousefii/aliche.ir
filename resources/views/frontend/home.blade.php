@@ -1038,6 +1038,35 @@
 @push('scripts')
 <script>
 (function () {
+    // Keep this heading in sync independently of the CDN-cached main.js bundle.
+    const tabs = document.querySelector('#multimedia [data-tab-group="media"]');
+    const heading = tabs?.querySelector('[data-media-heading]');
+    if (!tabs || !heading) return;
+
+    const headingsByTab = {
+        'media-video': 'ویدئوها',
+        'media-image': 'گالری',
+    };
+
+    const updateMediaHeading = (target) => {
+        if (Object.prototype.hasOwnProperty.call(headingsByTab, target)) {
+            heading.textContent = headingsByTab[target];
+        }
+    };
+
+    const activeTab = tabs.querySelector('.media-tab.active[data-tab-target]');
+    if (activeTab) updateMediaHeading(activeTab.dataset.tabTarget);
+
+    tabs.addEventListener('click', (event) => {
+        const tab = event.target.closest('.media-tab[data-tab-target]');
+        if (!tab || !tabs.contains(tab)) return;
+        // Run after all other click handlers so a stale main.js cannot override it.
+        queueMicrotask(() => updateMediaHeading(tab.dataset.tabTarget));
+    });
+})();
+</script>
+<script>
+(function () {
     const section = document.querySelector('[data-home-unions-section]');
     if (!section) return;
 

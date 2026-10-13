@@ -52,7 +52,7 @@ jobs:
           test -s public/assets/admin/css/form-workspace.css
       - name: Verify homepage multimedia headings and compile Blade views
         run: |
-          vendor/bin/phpunit tests/Feature/HomeVisibleContentRegressionTest.php --filter test_home_multimedia_tabs_use_their_respective_editable_section_titles
+          vendor/bin/phpunit tests/Feature/HomeVisibleContentRegressionTest.php --filter 'test_home_(multimedia|media)_'
           php artisan view:cache
       - name: Test admin role boundaries and existing personal inbox behavior
         run: |

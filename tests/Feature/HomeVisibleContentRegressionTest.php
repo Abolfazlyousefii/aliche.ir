@@ -44,6 +44,15 @@ class HomeVisibleContentRegressionTest extends TestCase
             ->assertSee('data-tab-panel="media-image"', false);
     }
 
+    public function test_home_media_heading_stays_in_sync_without_relying_on_cached_main_javascript(): void
+    {
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee("'media-video': 'ویدئوها'", false)
+            ->assertSee("'media-image': 'گالری'", false)
+            ->assertSee('queueMicrotask(() => updateMediaHeading(tab.dataset.tabTarget));', false);
+    }
+
     public function test_home_marks_tourism_records_without_real_image_instead_of_showing_generic_photo(): void
     {
         TourismPlace::query()->create([
