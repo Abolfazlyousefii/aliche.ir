@@ -176,10 +176,10 @@
                     @if($union->members->count() > 1)
                         <div class="guild-profile-hero__board-controls" aria-label="کنترل اسلایدر اعضا">
                             <button type="button" data-guild-board-prev aria-label="عضو قبلی">
-                                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>
+                                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
                             </button>
                             <button type="button" data-guild-board-next aria-label="عضو بعدی">
-                                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+                                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>
                             </button>
                         </div>
                     @endif
