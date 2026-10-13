@@ -133,7 +133,7 @@ class GuildProfileV4Test extends TestCase
             ->assertSee('id="guild-news"', false)
             ->assertSee('id="guild-commissions"', false)
             ->assertDontSee('id="guild-services"', false)
-            ->assertDontSee('کادر خدمات و محتوای اتحادیه')
+            ->assertDontSee('خدمات و محتوای اتحادیه')
             ->assertDontSee('class="guild-profile-services"', false)
             ->assertSee('id="guild-contact"', false)
             ->assertSee('href="'.route('electronic-services.index').'" class="guild-profile-quickbar__item"', false);
