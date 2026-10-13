@@ -156,7 +156,7 @@ class UnionController extends Controller
 
         $unionNews = $newsQuery
             ->with(['category', 'featuredMedia'])
-            ->paginate(6, ['posts.*'], 'news_page')
+            ->paginate(7, ['posts.*'], 'news_page')
             ->withPath(route('guilds.show', $union->slug));
 
         if ($request->ajax() || $request->expectsJson()) {
@@ -187,7 +187,7 @@ class UnionController extends Controller
             'educations' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
             'prices' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
             // The page's additional article section still needs only articles.
-            // News itself is fetched in its own six-item paginator below.
+            // News itself is fetched in its own seven-item paginator below.
             'posts' => fn ($q) => $q
                 ->published()
                 ->where('type', 'article')
