@@ -50,3 +50,30 @@ jobs:
           vendor/bin/phpunit tests/Feature/Unions/UnionAdminDynamicIntegrityTest.php
       - name: Compile Blade templates
         run: php artisan view:cache
+      - name: Compare full PHPUnit suite to PR base (informational; known baseline failures)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        shell: bash
+        run: |
+          set -u
+          vendor/bin/phpunit --colors=never > /tmp/union-head-suite.log 2>&1
+          head_exit=$?
+          git worktree add --detach /tmp/union-baseline "$BASE_SHA"
+          ln -s "$GITHUB_WORKSPACE/vendor" /tmp/union-baseline/vendor
+          cp .env /tmp/union-baseline/.env
+          mkdir -p /tmp/union-baseline/storage/framework/{views,cache/data,sessions,testing}
+          mkdir -p /tmp/union-baseline/storage/logs /tmp/union-baseline/bootstrap/cache
+          (cd /tmp/union-baseline && vendor/bin/phpunit --colors=never > /tmp/union-base-suite.log 2>&1)
+          base_exit=$?
+          echo "Full suite: base exit=$base_exit; proposed exit=$head_exit"
+          for side in base head; do
+            echo "======== $side PHPUnit summary ========"
+            grep -E '^[0-9]+\) Tests\\|^Tests: |^There (was|were) |^OK \(' "/tmp/union-${side}-suite.log" | tail -n 140 || true
+          done
+          # Do not hide baseline known failures, but do not gate this focused fix on unrelated tests.
+          exit 0
