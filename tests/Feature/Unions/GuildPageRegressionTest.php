@@ -125,7 +125,7 @@ class GuildPageRegressionTest extends TestCase
             ->assertDontSee('https://example.com/unsupported', false);
     }
 
-    public function test_services_section_respects_services_enabled_and_requires_displayable_content(): void
+    public function test_redundant_services_cards_are_absent_and_services_quicklink_respects_enabled_flag(): void
     {
         $disabled = $this->union([
             'slug' => 'services-disabled-union',
@@ -140,7 +140,9 @@ class GuildPageRegressionTest extends TestCase
 
         $this->get(route('guilds.show', $disabled->slug))
             ->assertOk()
-            ->assertDontSee('id="guild-services"', false);
+            ->assertDontSee('id="guild-services"', false)
+            ->assertDontSee('class="guild-profile-services"', false)
+            ->assertDontSee('href="'.route('electronic-services.index').'" class="guild-profile-quickbar__item"', false);
 
         $enabled = $this->union([
             'slug' => 'services-enabled-union',
@@ -159,11 +161,12 @@ class GuildPageRegressionTest extends TestCase
 
         $this->get(route('guilds.show', $enabled->slug))
             ->assertOk()
-            ->assertSee('id="guild-services"', false)
+            ->assertDontSee('id="guild-services"', false)
+            ->assertDontSee('class="guild-profile-services"', false)
+            ->assertSee('href="'.route('electronic-services.index').'" class="guild-profile-quickbar__item"', false)
             ->assertSeeInOrder([
                 'id="guild-manager"',
                 'id="guild-news"',
-                'id="guild-services"',
             ], false);
     }
 
