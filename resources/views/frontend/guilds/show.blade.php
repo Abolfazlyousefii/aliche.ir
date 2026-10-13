@@ -81,7 +81,13 @@
 
 @section('content')
 <main class="guild-profile-page guild-profile-page--redesigned guild-profile-page--v4 guild-profile-page--hero-refresh" data-guild-profile>
-    <section class="guild-profile-hero guild-profile-hero--light" id="guild-manager">
+    <section class="guild-profile-hero guild-profile-hero--light guild-profile-hero--cover" id="guild-manager">
+        @if($union->cover_image)
+            <div class="guild-profile-hero__backdrop" aria-hidden="true">
+                <img src="{{ $union->cover_image_url }}" alt="" loading="eager" decoding="async" fetchpriority="high">
+            </div>
+        @endif
+        <div class="guild-profile-hero__overlay" aria-hidden="true"></div>
         <div class="site-container guild-profile-hero__inner guild-profile-hero__inner--v4">
             <div class="guild-profile-hero__content">
                 <nav class="guild-profile-breadcrumb" aria-label="مسیر صفحه">
@@ -159,6 +165,45 @@
                 </div>
             @endif
         </div>
+
+        @if($showMembers)
+            <section class="site-container guild-profile-hero__board" id="guild-board" data-guild-profile-section aria-labelledby="guild-board-heading">
+                <div class="guild-profile-hero__board-head">
+                    <div>
+                        <span>ساختار مدیریتی اتحادیه</span>
+                        <h2 id="guild-board-heading">هیئت‌مدیره اتحادیه</h2>
+                    </div>
+                    @if($union->members->count() > 1)
+                        <div class="guild-profile-hero__board-controls" aria-label="کنترل اسلایدر اعضا">
+                            <button type="button" data-guild-board-prev aria-label="عضو قبلی">
+                                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>
+                            </button>
+                            <button type="button" data-guild-board-next aria-label="عضو بعدی">
+                                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+                            </button>
+                        </div>
+                    @endif
+                </div>
+                <div class="swiper guild-profile-hero__board-slider" data-guild-board-slider dir="rtl">
+                    <div class="swiper-wrapper">
+                        @foreach($union->members as $member)
+                            <article class="swiper-slide guild-profile-hero__board-member">
+                                <div class="guild-profile-hero__board-photo" data-guild-profile-image-wrap>
+                                    @if($member->image)
+                                        <img src="{{ $member->image_url }}" alt="تصویر {{ $member->full_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
+                                    @endif
+                                    <span @if($member->image) hidden @endif data-guild-profile-image-fallback>تصویر ثبت نشده</span>
+                                </div>
+                                <div class="guild-profile-hero__board-person">
+                                    <h3>{{ $member->full_name }}</h3>
+                                    <p>{{ $member->position ?: 'عضو هیئت‌مدیره' }}</p>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+        @endif
     </section>
 
     @if($quickActions->isNotEmpty())
@@ -213,25 +258,6 @@
                                         <ul>@foreach($commission->tasks as $task)<li>{{ $task->title }}</li>@endforeach</ul>
                                     @endif
                                 </div>
-                            </article>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
-
-            @if($showMembers)
-                <section class="guild-profile-section" id="guild-board" data-guild-profile-section>
-                    <header class="guild-profile-section__head"><div><span>ساختار مدیریتی</span><h2>اعضای هیئت‌مدیره اتحادیه</h2></div></header>
-                    <div class="guild-profile-members">
-                        @foreach($union->members as $member)
-                            <article class="guild-profile-member">
-                                <div class="guild-profile-member__avatar" data-guild-profile-image-wrap>
-                                    @if($member->image)
-                                        <img src="{{ $member->image_url }}" alt="{{ $member->full_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
-                                    @endif
-                                    <span @if($member->image) hidden @endif data-guild-profile-image-fallback>{{ $initial($member->full_name) }}</span>
-                                </div>
-                                <div><h3>{{ $member->full_name }}</h3><strong>{{ $member->position ?: 'عضو اتحادیه' }}</strong>@if($member->business_name)<p>{{ $member->business_name }}</p>@endif</div>
                             </article>
                         @endforeach
                     </div>
@@ -409,6 +435,39 @@
 
 
 @push('scripts')
+<script>
+(() => {
+    'use strict';
+    const slider = document.querySelector('#guild-board [data-guild-board-slider]');
+    if (!slider || typeof window.Swiper !== 'function') return;
+
+    const board = slider.closest('#guild-board');
+    const count = slider.querySelectorAll('.swiper-slide').length;
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+
+    new Swiper(slider, {
+        slidesPerView: 1,
+        spaceBetween: 12,
+        speed: 550,
+        watchOverflow: true,
+        rewind: count > 1,
+        grabCursor: count > 1,
+        autoplay: count > 4 && !reduceMotion
+            ? { delay: 6000, disableOnInteraction: false, pauseOnMouseEnter: true }
+            : false,
+        navigation: {
+            nextEl: board?.querySelector('[data-guild-board-next]'),
+            prevEl: board?.querySelector('[data-guild-board-prev]'),
+        },
+        breakpoints: {
+            640: { slidesPerView: 2, spaceBetween: 14 },
+            960: { slidesPerView: 3, spaceBetween: 16 },
+            1200: { slidesPerView: 4, spaceBetween: 18 },
+        },
+        a11y: { enabled: true },
+    });
+})();
+</script>
 <script>
 (() => {
     'use strict';
