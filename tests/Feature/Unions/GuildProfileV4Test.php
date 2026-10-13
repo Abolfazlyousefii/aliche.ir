@@ -231,6 +231,79 @@ class GuildProfileV4Test extends TestCase
         $this->assertSame(['guild-contact'], $links[1]);
     }
 
+    public function test_news_preview_uses_split_layout_only_when_more_than_one_item_exists(): void
+    {
+        $union = $this->union([
+            'slug' => 'union-preview-editorial',
+            'news_enabled' => true,
+            'settings' => ['show_news' => true],
+        ]);
+        $this->publishedPost([
+            'slug' => 'preview-lead-news', 'title' => 'خبر شاخص اتحادیه',
+            'union_id' => $union->id, 'published_at' => now()->subMinutes(1),
+        ]);
+        $this->publishedPost([
+            'slug' => 'preview-secondary-news', 'title' => 'خبر دوم اتحادیه',
+            'union_id' => $union->id, 'published_at' => now()->subMinutes(2),
+        ]);
+
+        $this->get(route('guilds.show', $union->slug))
+            ->assertOk()
+            ->assertSee('guild-profile-news-result--split', false)
+            ->assertSee('guild-profile-news-feature', false)
+            ->assertSee('guild-profile-news-rows', false)
+            ->assertSeeInOrder(['خبر شاخص اتحادیه', 'خبر دوم اتحادیه']);
+
+        $single = $this->union(['slug' => 'union-preview-single-news', 'news_enabled' => true]);
+        $this->publishedPost(['slug' => 'preview-only-news', 'union_id' => $single->id]);
+        $this->get(route('guilds.show', $single->slug))
+            ->assertOk()
+            ->assertDontSee('guild-profile-news-result--split', false)
+            ->assertSee('guild-profile-news-feature', false);
+    }
+
+    public function test_about_preview_uses_existing_president_portrait_without_duplicate_bio(): void
+    {
+        $union = $this->union([
+            'slug' => 'union-about-portrait-preview',
+            'description' => '<p>متن معرفی اتحادیه</p>',
+            'manager_name' => 'رئیس اتحادیه نمونه',
+            'manager_image' => 'unions/president-portrait.jpg',
+            'manager_description' => 'شرح سوابق رئیس اتحادیه',
+        ]);
+
+        $response = $this->get(route('guilds.show', $union->slug));
+        $response->assertOk()
+            ->assertSee('guild-profile-about__layout--with-portrait', false)
+            ->assertSee('guild-profile-about__portrait', false)
+            ->assertSee('unions/president-portrait.jpg')
+            ->assertSee('متن معرفی اتحادیه')
+            ->assertSee('شرح سوابق رئیس اتحادیه');
+
+        $this->assertSame(1, substr_count($response->getContent(), 'id="guild-about"'));
+    }
+
+    public function test_preview_styles_are_scoped_to_union_and_both_public_trees_match(): void
+    {
+        $canonical = file_get_contents(base_path('public/assets/css/guild-minimal.css'));
+        $deployable = file_get_contents(base_path('public_html/assets/css/guild-minimal.css'));
+
+        $this->assertNotFalse($canonical);
+        $this->assertSame($canonical, $deployable);
+        foreach ([
+            'guild-profile-news-result--split',
+            'guild-profile-hero__board',
+            'guild-profile-about__layout--with-portrait',
+            'guild-profile-contact-grid',
+            'guild-profile-gallery',
+            'guild-profile-quickbar--sections',
+            '@media (max-width: 767.98px)',
+            '@media (max-width: 575.98px)',
+        ] as $selector) {
+            $this->assertStringContainsString($selector, $canonical);
+        }
+    }
+
     private function union(array $overrides = []): GuildUnion
     {
         return GuildUnion::query()->create(array_replace([
