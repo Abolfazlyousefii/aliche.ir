@@ -26,7 +26,7 @@
             @endif
         </div>
     </div>
-    <div class="col-md-4"><label class="form-label" for="template">قالب</label><select class="form-control" id="template" name="template">@foreach($templates as $template)<option value="{{ $template }}" @selected(old('template', $page?->template ?? 'default') === $template)>{{ $templateLabels[$template] ?? $template }}</option>@endforeach</select></div>
+    <div class="col-md-4"><label class="form-label" for="template">قالب</label><select class="form-control" id="template" name="template">@foreach($templates as $template)<option value="{{ $template }}" @selected(old('template', ($page?->isChamberAboutPage() ? 'chamber-about' : ($page?->template ?? 'default'))) === $template)>{{ $templateLabels[$template] ?? $template }}</option>@endforeach</select></div>
     <div class="col-md-4"><label class="form-label" for="status">وضعیت</label><select class="form-control" id="status" name="status">@foreach($statuses as $status)<option value="{{ $status }}" @selected(old('status', $page?->status ?? 'draft') === $status)>{{ $statusLabels[$status] ?? $status }}</option>@endforeach</select></div>
     <div class="col-md-4"><label class="form-label" for="published_at">تاریخ انتشار</label><input class="form-control" dir="ltr" id="published_at" name="published_at" type="text" data-jalali-datepicker value="{{ jalali_input_datetime(old('published_at', $page?->published_at)) }}"></div>
     <div class="col-md-4"><label class="form-label" for="sort_order">ترتیب</label><input class="form-control" dir="ltr" id="sort_order" name="sort_order" type="number" min="0" value="{{ old('sort_order', $page?->sort_order ?? 0) }}"></div>

@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\StorePageRequest;
 use App\Http\Requests\Admin\UpdatePageRequest;
 use App\Models\Media;
 use App\Models\Page;
+use App\Models\ChamberMember;
 use App\Services\SlugService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -124,6 +125,9 @@ class PageController extends Controller
     {
         return [
             'page' => $page,
+            'boardMembers' => $page?->isChamberAboutPage() && request()->user()?->hasPermission('chamber_members.view')
+                ? ChamberMember::query()->orderByDesc('is_president')->orderBy('sort_order')->orderBy('id')->get()
+                : collect(),
             'statuses' => $this->allowedStatuses(),
             'templates' => Page::TEMPLATES,
             'templateLabels' => Page::templateLabels(),

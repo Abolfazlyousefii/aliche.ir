@@ -1,4 +1,9 @@
 @csrf
+<div class="mb-3">
+    <input type="hidden" name="is_president" value="0">
+    <label class="form-check"><input class="form-check-input" type="checkbox" name="is_president" value="1" @checked(old('is_president', $member->is_president))> رئیس اتاق اصناف (نمایش برجسته در بالای صفحه)</label>
+    <small class="text-muted">فقط یک رئیس فعال مجاز است. برای تغییر رئیس، ابتدا رئیس قبلی را غیرفعال کنید یا این گزینه را بردارید.</small>
+</div>
 <div class="row g-3">
     <div class="col-md-6"><label class="form-label" for="first_name">نام</label><input class="form-control" id="first_name" name="first_name" value="{{ old('first_name', $member->first_name) }}" required></div>
     <div class="col-md-6"><label class="form-label" for="last_name">نام خانوادگی</label><input class="form-control" id="last_name" name="last_name" value="{{ old('last_name', $member->last_name) }}" required></div>
@@ -22,7 +27,7 @@
         </div>
     </div>
 </div>
-<div class="mt-3 d-flex gap-2"><button class="admin-primary-btn" type="submit">ذخیره</button><a class="admin-secondary-btn" href="{{ route('admin.chamber_members.index') }}">انصراف</a></div>
+<div class="mt-3 d-flex gap-2"><button class="admin-primary-btn" type="submit">ذخیره</button><a class="admin-secondary-btn" href="{{ route(request()->user()->hasPermission('pages.edit') ? 'admin.chamber_board.index' : 'admin.chamber_members.index') }}">انصراف</a></div>
 
 @push('scripts')
 <script>

@@ -200,6 +200,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::resource('categories', AdminCategoryController::class)->except(['show']);
     // Global chamber leadership and union-type definitions are separate from
     // an individual union manager's authority. Apply action-specific checks.
+    Route::get('chamber-board', [ChamberMemberController::class, 'board'])->middleware('permission:pages.edit')->name('chamber_board.index');
     Route::get('chamber-members', [ChamberMemberController::class, 'index'])->middleware('permission:chamber_members.view')->name('chamber_members.index');
     Route::get('chamber-members/create', [ChamberMemberController::class, 'create'])->middleware('permission:chamber_members.create')->name('chamber_members.create');
     Route::post('chamber-members', [ChamberMemberController::class, 'store'])->middleware('permission:chamber_members.create')->name('chamber_members.store');

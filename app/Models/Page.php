@@ -12,7 +12,18 @@ class Page extends Model
 
     public const STATUSES = ['draft', 'pending', 'approved', 'rejected', 'published', 'archived'];
     public const LIMITED_STATUSES = ['draft', 'pending'];
-    public const TEMPLATES = ['default', 'blank', 'landing'];
+    public const TEMPLATES = ['default', 'blank', 'landing', 'chamber-about'];
+
+    public function isChamberAboutPage(): bool
+    {
+        return $this->template === 'chamber-about' || $this->slug === 'about-gorgan-guild-chamber';
+    }
+
+    public static function chamberAboutPage(): ?self
+    {
+        return static::query()->where('slug', 'about-gorgan-guild-chamber')->first()
+            ?? static::query()->where('template', 'chamber-about')->orderBy('id')->first();
+    }
 
 
     public static function statusLabels(): array
@@ -33,6 +44,7 @@ class Page extends Model
             'default' => 'قالب پیش‌فرض',
             'blank' => 'صفحه ساده',
             'landing' => 'صفحه فرود',
+            'chamber-about' => 'درباره اتاق و هیئت‌رئیسه',
         ];
     }
 

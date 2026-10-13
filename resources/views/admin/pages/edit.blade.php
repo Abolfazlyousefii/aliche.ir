@@ -13,4 +13,7 @@
     @method('PUT')
     @include('admin.pages._form')
 </form>
+@if($page->isChamberAboutPage() && request()->user()->hasPermission('chamber_members.view'))
+    @include('admin.pages.chamber-board', ['members' => $boardMembers])
+@endif
 @endsection

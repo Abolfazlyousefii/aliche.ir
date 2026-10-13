@@ -30,6 +30,7 @@ final class AdminNavigation
                     ['title' => 'اخبار و مقاله‌ها', 'route' => 'admin.posts.index', 'match' => 'admin.posts.*', 'permission' => 'posts.view'],
                     ['title' => 'ایجاد خبر', 'route' => 'admin.posts.create', 'match' => 'admin.posts.create', 'permission' => 'posts.create'],
                     ['title' => 'صفحات سایت', 'route' => 'admin.pages.index', 'match' => 'admin.pages.*', 'permission' => 'pages.view'],
+                    ['title' => 'رییس هیئت اتاق اصناف', 'route' => 'admin.chamber_board.index', 'match' => 'admin.chamber_board.*', 'permission' => 'pages.edit'],
                     ['title' => 'اطلاعیه‌ها', 'route' => 'admin.announcements.index', 'match' => 'admin.announcements.*', 'permission' => 'announcements.view'],
                     ['title' => 'پیام‌های مناسبتی', 'route' => 'admin.congratulation_messages.index', 'match' => 'admin.congratulation_messages.*', 'permission' => 'congratulation_messages.view'],
                     ['title' => 'دسته‌بندی اخبار', 'route' => 'admin.categories.index', 'params' => ['type' => 'news'], 'match' => 'admin.categories.*', 'active_type' => 'news', 'permission' => 'posts.view'],
