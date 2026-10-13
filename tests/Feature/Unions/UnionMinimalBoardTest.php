@@ -87,6 +87,39 @@ class UnionMinimalBoardTest extends TestCase
             'position' => 'دبیر', 'sort_order' => 8, 'image' => $image->path]);
     }
 
+    public function test_board_editor_can_upload_photo_update_order_and_disable_only_selected_member(): void
+    {
+        $this->signInAsSuperAdmin();
+        Storage::fake('public');
+        $own = $this->union('board-upload-own', ['members_enabled' => true]);
+        $other = $this->union('board-upload-other', ['members_enabled' => true]);
+        $member = UnionMember::query()->create([
+            'union_id' => $own->id, 'full_name' => 'نام قدیمی', 'position' => 'عضو',
+            'sort_order' => 3, 'status' => 'active', 'is_active' => true,
+        ]);
+        $foreign = UnionMember::query()->create([
+            'union_id' => $other->id, 'full_name' => 'عضو دیگر', 'position' => 'دبیر',
+            'sort_order' => 4, 'status' => 'active', 'is_active' => true,
+        ]);
+
+        $this->put(route('admin.union_members.update', $member), [
+            'union_id' => $own->id, 'first_name' => 'نرگس', 'last_name' => 'رضایی',
+            'position' => 'نایب‌رئیس', 'sort_order' => 1, 'status' => 'active',
+            'is_active' => '0', 'board_editor' => '1',
+            'image' => UploadedFile::fake()->image('board-portrait.jpg', 140, 170),
+        ])->assertSessionHasNoErrors();
+
+        $member->refresh();
+        $this->assertSame('نرگس رضایی', $member->full_name);
+        $this->assertSame(1, $member->sort_order);
+        $this->assertFalse($member->is_active);
+        $this->assertNotEmpty($member->image);
+        Storage::disk('public')->assertExists($member->image);
+        $this->assertSame('عضو دیگر', $foreign->refresh()->full_name);
+        $this->assertSame($other->id, $foreign->union_id);
+        $this->get(route('guilds.show', $own->slug))->assertDontSee('نرگس رضایی');
+    }
+
     public function test_board_editor_cannot_move_a_member_into_another_union(): void
     {
         $own = $this->union('board-owner');
