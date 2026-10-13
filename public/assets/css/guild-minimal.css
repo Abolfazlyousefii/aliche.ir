@@ -494,49 +494,36 @@
   color: #637e8f;
 }
 
-/* About: original sanitized introduction and biography with existing president photo. */
+/* About: show this union's cover image, not the president's portrait.
+   If no cover is registered, the introduction remains full width. */
 .guild-profile-page--hero-refresh .guild-profile-about__layout {
   min-width: 0;
 }
-.guild-profile-page--hero-refresh .guild-profile-about__layout--with-portrait {
+.guild-profile-page--hero-refresh .guild-profile-about__layout--with-cover {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 146px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 32%);
+  align-items: center;
   gap: 24px;
 }
 .guild-profile-page--hero-refresh .guild-profile-about__copy {
   min-width: 0;
   align-self: center;
 }
-.guild-profile-page--hero-refresh .guild-profile-about__portrait {
+.guild-profile-page--hero-refresh .guild-profile-about__cover {
   width: 100%;
+  min-width: 0;
   margin: 0;
   overflow: hidden;
   background: #f5f8fa;
   border: 1px solid #e0e8ed;
-  border-radius: 6px;
+  border-radius: 7px;
 }
-.guild-profile-page--hero-refresh .guild-profile-about__portrait img {
+.guild-profile-page--hero-refresh .guild-profile-about__cover img {
   display: block;
   width: 100%;
-  height: 174px;
+  height: clamp(175px, 20vw, 230px);
   object-fit: cover;
-  object-position: center 20%;
-}
-.guild-profile-page--hero-refresh .guild-profile-about__portrait figcaption {
-  padding: 8px 9px;
-  color: #183b51;
-  font-size: 11px;
-  line-height: 1.7;
-  text-align: center;
-  font-weight: 750;
-  overflow-wrap: anywhere;
-}
-.guild-profile-page--hero-refresh .guild-profile-about__portrait figcaption span {
-  display: block;
-  color: #647d8c;
-  font-size: 10px;
-  font-weight: 400;
+  object-position: center;
 }
 
 /* News: lead story on the right, compact story rows on the left (RTL grid).
@@ -616,6 +603,39 @@
   margin-top: 0;
 }
 
+/* Commission badges always contain sequence numbers, even when an icon is
+   configured for the commission. Per-card accent cycles through four colors. */
+.guild-profile-page--hero-refresh .guild-profile-commission {
+  grid-template-columns: 48px minmax(0, 1fr);
+}
+.guild-profile-page--hero-refresh .guild-profile-commission__number {
+  position: relative;
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  line-height: 1;
+  background: #e7f2fc;
+  color: #1c6fa5;
+}
+.guild-profile-page--hero-refresh .guild-profile-commission:nth-child(4n + 1) .guild-profile-commission__number {
+  background: #e7f2fc;
+  color: #1c6fa5;
+}
+.guild-profile-page--hero-refresh .guild-profile-commission:nth-child(4n + 2) .guild-profile-commission__number {
+  background: #e8f5ed;
+  color: #28764a;
+}
+.guild-profile-page--hero-refresh .guild-profile-commission:nth-child(4n + 3) .guild-profile-commission__number {
+  background: #fff0e1;
+  color: #a55b18;
+}
+.guild-profile-page--hero-refresh .guild-profile-commission:nth-child(4n + 4) .guild-profile-commission__number {
+  background: #f0eafa;
+  color: #704ba8;
+}
+
 /* Gallery: equal-size image frames and captions BELOW (not over) media. */
 .guild-profile-page--hero-refresh .guild-profile-gallery {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -660,21 +680,26 @@
   overflow-wrap: anywhere;
   background: #fff;
 }
+/* Place the play badge at the exact center of the thumbnail (not the caption).
+   Image height above is clamp(150px, 17vw, 205px). */
 .guild-profile-page--hero-refresh .guild-profile-gallery > a.is-video::before {
   content: "▶";
   position: absolute;
-  top: 60px;
-  left: calc(50% - 18px);
+  top: clamp(75px, 8.5vw, 102.5px);
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   padding-inline-start: 2px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, .92);
+  background: rgba(255, 255, 255, .94);
   color: #184765;
-  font-size: 16px;
+  font-size: 17px;
+  line-height: 1;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .18);
   pointer-events: none;
 }
 
@@ -742,15 +767,15 @@
   }
 }
 @media (max-width: 575.98px) {
-  .guild-profile-page--hero-refresh .guild-profile-about__layout--with-portrait {
+  .guild-profile-page--hero-refresh .guild-profile-about__layout--with-cover {
     grid-template-columns: 1fr;
     gap: 15px;
   }
-  .guild-profile-page--hero-refresh .guild-profile-about__portrait {
-    width: min(150px, 100%);
+  .guild-profile-page--hero-refresh .guild-profile-about__cover {
+    width: 100%;
   }
-  .guild-profile-page--hero-refresh .guild-profile-about__portrait img {
-    height: 170px;
+  .guild-profile-page--hero-refresh .guild-profile-about__cover img {
+    height: 190px;
   }
   .guild-profile-page--hero-refresh .guild-profile-contact-grid,
   .guild-profile-page--hero-refresh .guild-profile-gallery {
