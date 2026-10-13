@@ -20,12 +20,21 @@ class UpdateUnionMemberRequest extends FormRequest
         return $this->user()?->hasRole('super-admin') || (int) $member->union_id === (int) $this->user()?->union_id;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('first_name') || $this->filled('last_name')) {
+            $this->merge(['full_name' => trim((string) $this->input('first_name').' '.(string) $this->input('last_name'))]);
+        }
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
             'union_id' => $this->unionRule(),
             'full_name' => ['required', 'string', 'max:190'],
+            'first_name' => ['nullable', 'required_with:last_name', 'string', 'max:90'],
+            'last_name' => ['nullable', 'required_with:first_name', 'string', 'max:90'],
             'position' => ['nullable', 'string', 'max:190'],
             'image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'image_media_id' => ['nullable', 'integer', 'exists:media,id'],
