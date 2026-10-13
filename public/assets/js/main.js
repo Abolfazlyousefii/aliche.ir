@@ -293,6 +293,12 @@
       qsa('[data-tab-target]', group).forEach((item) => item.classList.remove('active'));
       button.classList.add('active');
 
+      if (groupName === 'media') {
+        const heading = qs('[data-media-heading]', group);
+        const title = button.getAttribute('data-media-title');
+        if (heading && title) heading.textContent = title;
+      }
+
       if (panelWrap) {
         qsa('[data-tab-panel]', panelWrap).forEach((panel) => {
           const active = panel.getAttribute('data-tab-panel') === targetName;
