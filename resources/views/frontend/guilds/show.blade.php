@@ -247,15 +247,25 @@
                     <header class="guild-profile-section__head">
                         <div><span>معرفی و اطلاعات</span><h2>درباره اتحادیه</h2></div>
                     </header>
-                    @if($showFullIntroduction)
-                        <div class="guild-profile-about__rich">{!! $fullIntroduction !!}</div>
-                    @endif
-                    @if($showPresidentBiography)
-                        <div class="guild-profile-about__president">
-                            <h3>معرفی رئیس اتحادیه: {{ $union->manager_name }}</h3>
-                            <p>{{ $union->manager_description }}</p>
+                    <div class="guild-profile-about__layout{{ $showManager && filled($union->manager_image) ? ' guild-profile-about__layout--with-portrait' : '' }}">
+                        <div class="guild-profile-about__copy">
+                            @if($showFullIntroduction)
+                                <div class="guild-profile-about__rich">{!! $fullIntroduction !!}</div>
+                            @endif
+                            @if($showPresidentBiography)
+                                <div class="guild-profile-about__president">
+                                    <h3>معرفی رئیس اتحادیه: {{ $union->manager_name }}</h3>
+                                    <p>{{ $union->manager_description }}</p>
+                                </div>
+                            @endif
                         </div>
-                    @endif
+                        @if($showManager && filled($union->manager_image))
+                            <figure class="guild-profile-about__portrait">
+                                <img src="{{ $assetImage($union->manager_image, '') }}" alt="تصویر {{ $union->manager_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
+                                <figcaption>{{ $union->manager_name }}<span>{{ $union->manager_position ?: 'رئیس اتحادیه' }}</span></figcaption>
+                            </figure>
+                        @endif
+                    </div>
                 </section>
             @endif
 
