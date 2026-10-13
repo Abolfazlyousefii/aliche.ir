@@ -3,6 +3,7 @@
 namespace Tests\Feature\Unions;
 
 use App\Models\GuildUnion;
+use App\Models\UnionCommission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsAdminPayloads;
 use Tests\TestCase;
@@ -106,6 +107,67 @@ class GuildProfileV4Test extends TestCase
                 'id="guild-news"',
             ], false)
             ->assertDontSee('guild-profile-sidebar', false);
+    }
+
+    public function test_quick_links_are_news_commissions_services_and_contact_in_requested_order(): void
+    {
+        $union = $this->union([
+            'slug' => 'guild-four-quick-links',
+            'news_enabled' => true,
+            'services_enabled' => true,
+            'phone' => '01732345678',
+            'settings' => ['show_news' => true, 'show_commissions' => true, 'show_contact' => true],
+        ]);
+        $this->publishedPost(['slug' => 'guild-quicklink-news', 'union_id' => $union->id]);
+
+        UnionCommission::query()->create([
+            'union_id' => $union->id,
+            'title' => 'کمیسیون تخصصی',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $response = $this->get(route('guilds.show', $union->slug));
+        $response->assertOk()
+            ->assertSee('guild-profile-quickbar--sections', false)
+            ->assertSee('id="guild-news"', false)
+            ->assertSee('id="guild-commissions"', false)
+            ->assertSee('id="guild-services"', false)
+            ->assertSee('id="guild-contact"', false);
+
+        preg_match_all(
+            '/<a href="#(guild-[a-z-]+)" class="guild-profile-quickbar__item">/',
+            $response->getContent(),
+            $links
+        );
+        $this->assertSame(
+            ['guild-news', 'guild-commissions', 'guild-services', 'guild-contact'],
+            $links[1]
+        );
+        $this->assertStringContainsString('--guild-quickbar-count: 4', $response->getContent());
+    }
+
+    public function test_quick_links_do_not_point_to_hidden_or_empty_sections(): void
+    {
+        $union = $this->union([
+            'slug' => 'guild-only-contact-quicklink',
+            'manager_name' => 'رئیس اتحادیه',
+            'services_enabled' => true,
+            'phone' => '01732345678',
+            'settings' => ['show_news' => true, 'show_commissions' => true, 'show_contact' => true],
+        ]);
+
+        $response = $this->get(route('guilds.show', $union->slug));
+        $response->assertOk()
+            ->assertSee('id="guild-manager"', false)
+            ->assertSee('id="guild-contact"', false);
+
+        preg_match_all(
+            '/<a href="#(guild-[a-z-]+)" class="guild-profile-quickbar__item">/',
+            $response->getContent(),
+            $links
+        );
+        $this->assertSame(['guild-contact'], $links[1]);
     }
 
     private function union(array $overrides = []): GuildUnion
