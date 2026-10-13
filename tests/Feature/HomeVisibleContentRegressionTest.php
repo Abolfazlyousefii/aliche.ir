@@ -24,6 +24,26 @@ class HomeVisibleContentRegressionTest extends TestCase
             ->assertDontSee('نمایشگاه صنایع دستی و سوغات استان گلستان');
     }
 
+    public function test_home_multimedia_tabs_use_their_respective_editable_section_titles(): void
+    {
+        \App\Models\HomeSection::query()->updateOrCreate(
+            ['key' => 'videos'],
+            ['title' => 'ویدئوهای منتخب', 'is_active' => true, 'sort_order' => 120]
+        );
+        \App\Models\HomeSection::query()->updateOrCreate(
+            ['key' => 'galleries'],
+            ['title' => 'گالری منتخب', 'is_active' => true, 'sort_order' => 130]
+        );
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('<h2 data-media-heading>ویدئوهای منتخب</h2>', false)
+            ->assertSee('data-tab-target="media-video" data-media-title="ویدئوهای منتخب"', false)
+            ->assertSee('data-tab-target="media-image" data-media-title="گالری منتخب"', false)
+            ->assertSee('data-tab-panel="media-video"', false)
+            ->assertSee('data-tab-panel="media-image"', false);
+    }
+
     public function test_home_marks_tourism_records_without_real_image_instead_of_showing_generic_photo(): void
     {
         TourismPlace::query()->create([
