@@ -1,0 +1,385 @@
+/* Single-union minimal layout. Loaded AFTER guild-profile.css, on guilds.show only.
+   The existing section markup, AJAX news navigation and media URLs remain unchanged. */
+.guild-profile-page--minimal.guild-profile-page--v4 {
+  --gp-ink: #16394d;
+  --gp-ink-soft: #38566a;
+  --gp-muted: #687e8b;
+  --gp-border: #e3e9ed;
+  --gp-border-strong: #d8e2e8;
+  --gp-primary: #16394d;
+  --gp-primary-dark: #16394d;
+  --gp-primary-soft: #f3f6f7;
+  --gp-shadow: none;
+  --gp-shadow-hover: none;
+  --gp-radius: 3px;
+  --gp-radius-sm: 2px;
+  background: #fff;
+  color: var(--gp-ink);
+  overflow-x: clip;
+}
+.guild-profile-page--minimal .site-container { min-width: 0; }
+.guild-profile-page--minimal .guild-profile-hero--light {
+  min-height: 0;
+  border-bottom: 1px solid var(--gp-border);
+  background: #fff;
+  color: var(--gp-ink);
+}
+.guild-profile-page--minimal .guild-profile-hero__inner--v4 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 335px);
+  align-items: center;
+  gap: 30px;
+  padding-block: 24px 27px;
+}
+.guild-profile-page--minimal .guild-profile-breadcrumb {
+  margin-bottom: 21px;
+  color: var(--gp-muted);
+  font-size: 11px;
+}
+.guild-profile-page--minimal .guild-profile-breadcrumb a { color: var(--gp-muted); }
+.guild-profile-page--minimal .guild-profile-kicker {
+  margin-bottom: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+  color: var(--gp-muted);
+  font-weight: 500;
+  font-size: 11px;
+}
+.guild-profile-page--minimal .guild-profile-kicker i { display: none; }
+.guild-profile-page--minimal .guild-profile-hero__content h1 {
+  font-size: clamp(21px, 2vw, 25px);
+  line-height: 1.7;
+  font-weight: 700;
+  color: var(--gp-ink);
+}
+.guild-profile-page--minimal .guild-profile-hero__content > p {
+  margin-top: 8px;
+  max-width: 500px;
+  color: var(--gp-muted);
+  font-size: 12px;
+  line-height: 2.1;
+}
+.guild-profile-page--minimal .guild-profile-hero__actions { margin-top: 14px; gap: 8px; }
+.guild-profile-page--minimal .guild-profile-hero__actions .guild-profile-btn,
+.guild-profile-page--minimal .guild-profile-hero__actions .guild-profile-btn--light {
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid var(--gp-border);
+  border-radius: 3px;
+  color: var(--gp-ink);
+  background: #fff;
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 500;
+}
+.guild-profile-page--minimal .guild-profile-hero__actions .guild-profile-btn:hover,
+.guild-profile-page--minimal .guild-profile-hero__actions .guild-profile-btn:focus-visible {
+  border-color: #b9cbd5;
+  color: var(--gp-ink);
+  background: #f6f8fa;
+}
+.guild-profile-page--minimal .guild-profile-hero__leaders--minimal {
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  justify-content: center;
+}
+.guild-profile-page--minimal .guild-profile-hero__leaders--minimal .guild-profile-person {
+  flex: none;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.guild-profile-page--minimal .guild-profile-hero__leaders--minimal .guild-profile-person + .guild-profile-person {
+  border: 0;
+  border-top: 1px solid var(--gp-border);
+  padding-top: 10px;
+}
+.guild-profile-page--minimal .guild-profile-hero__leaders--minimal .guild-profile-person__portrait {
+  flex: 0 0 140px;
+  width: 140px;
+  height: 170px;
+  border: 1px solid var(--gp-border);
+  border-radius: 2px;
+  background: #f3f6f7;
+  color: var(--gp-muted);
+  font-size: 11px;
+  font-weight: 400;
+  text-align: center;
+}
+.guild-profile-page--minimal .guild-profile-hero__leaders--minimal .guild-profile-person--executive .guild-profile-person__portrait {
+  flex-basis: 58px;
+  width: 58px;
+  height: 74px;
+}
+.guild-profile-page--minimal .guild-profile-hero__leaders--minimal .guild-profile-person__portrait img {
+  object-position: center 20%;
+  border-radius: 0;
+}
+.guild-profile-page--minimal .guild-profile-hero__leaders--minimal .guild-profile-person__copy h2 {
+  font-size: 16px;
+  line-height: 1.8;
+  font-weight: 700;
+  color: var(--gp-ink);
+}
+.guild-profile-page--minimal .guild-profile-hero__leaders--minimal .guild-profile-person__role {
+  color: var(--gp-muted);
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+.guild-profile-page--minimal .guild-profile-person__actions a {
+  border-radius: 3px;
+  border-color: var(--gp-border);
+  background: #fff;
+  font-weight: 500;
+}
+.guild-profile-page--minimal .guild-profile-board-wrap { padding-top: 20px; }
+.guild-profile-page--minimal .guild-profile-board-wrap .guild-profile-section { margin: 0; padding: 0; }
+.guild-profile-page--minimal .guild-profile-members {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 26px;
+}
+.guild-profile-page--minimal .guild-profile-member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid var(--gp-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+.guild-profile-page--minimal .guild-profile-member:hover { transform: none; box-shadow: none; background: transparent; }
+.guild-profile-page--minimal .guild-profile-member__avatar {
+  width: 58px;
+  height: 74px;
+  min-width: 58px;
+  flex: 0 0 58px;
+  border-radius: 2px;
+  border: 1px solid var(--gp-border);
+  background: #f3f6f7;
+  color: var(--gp-muted);
+  font-size: 10px;
+  font-weight: 400;
+  text-align: center;
+  overflow: hidden;
+}
+.guild-profile-page--minimal .guild-profile-member__avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  object-fit: cover;
+  object-position: center 20%;
+}
+.guild-profile-page--minimal .guild-profile-member__identity { min-width: 0; overflow-wrap: anywhere; }
+.guild-profile-page--minimal .guild-profile-member h3 {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--gp-ink);
+  font-weight: 600;
+}
+.guild-profile-page--minimal .guild-profile-member strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--gp-muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+.guild-profile-page--minimal .guild-profile-quickbar { margin: 18px 0 0; border-bottom: 1px solid var(--gp-border); }
+.guild-profile-page--minimal .guild-profile-quickbar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 22px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.guild-profile-page--minimal .guild-profile-quickbar__item {
+  flex: none;
+  min-height: 0;
+  padding: 9px 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.guild-profile-page--minimal .guild-profile-quickbar__icon,
+.guild-profile-page--minimal .guild-profile-quickbar__item small { display: none; }
+.guild-profile-page--minimal .guild-profile-quickbar__item strong { font-size: 11px; font-weight: 500; color: var(--gp-muted); }
+.guild-profile-page--minimal .guild-profile-layout--full { padding-block: 22px 36px; }
+.guild-profile-page--minimal .guild-profile-layout--full .guild-profile-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+.guild-profile-page--minimal .guild-profile-section,
+.guild-profile-page--minimal .guild-profile-complaint {
+  margin: 0;
+  padding: 20px 0;
+  min-width: 0;
+  border: 0;
+  border-bottom: 1px solid var(--gp-border);
+  border-radius: 0;
+  box-shadow: none;
+  background: #fff;
+  color: var(--gp-ink);
+}
+.guild-profile-page--minimal .guild-profile-section:last-child { border-bottom: 0; }
+.guild-profile-page--minimal .guild-profile-section__head {
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+  gap: 12px;
+}
+.guild-profile-page--minimal .guild-profile-section__head h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gp-ink);
+  line-height: 1.8;
+}
+.guild-profile-page--minimal .guild-profile-section__head > div > span { display: none; }
+.guild-profile-page--minimal .guild-profile-section__head p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--gp-muted);
+}
+.guild-profile-page--minimal .guild-profile-section__head a { font-size: 11px; color: var(--gp-muted); }
+.guild-profile-page--minimal :is(.guild-profile-service, .guild-profile-commission, .guild-profile-document, .guild-profile-list > a, .guild-profile-education > a, .guild-profile-contact-card, .guild-profile-post, .guild-profile-gallery > a, .guild-profile-news-card, .guild-profile-news-section .guild-profile-news-feature) {
+  box-shadow: none !important;
+  border-radius: 2px;
+  background: #fff;
+}
+.guild-profile-page--minimal :is(.guild-profile-service, .guild-profile-commission, .guild-profile-document, .guild-profile-list > a, .guild-profile-education > a, .guild-profile-contact-card):hover {
+  box-shadow: none;
+  transform: none;
+}
+.guild-profile-page--minimal .guild-profile-services {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+}
+.guild-profile-page--minimal .guild-profile-service {
+  min-width: 0;
+  min-height: 0;
+  padding: 11px 0;
+  border: 0;
+  border-top: 1px solid var(--gp-border);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.guild-profile-page--minimal .guild-profile-service__icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 2px;
+  background: #f3f6f7;
+  color: var(--gp-muted);
+}
+.guild-profile-page--minimal .guild-profile-service strong {
+  font-weight: 600;
+  font-size: 12px;
+}
+.guild-profile-page--minimal .guild-profile-service small { display: none; }
+.guild-profile-page--minimal .guild-profile-commissions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+}
+.guild-profile-page--minimal .guild-profile-commission {
+  padding: 12px 0;
+  border: 0;
+  border-top: 1px solid var(--gp-border);
+  min-width: 0;
+}
+.guild-profile-page--minimal .guild-profile-commission__number {
+  border-radius: 2px;
+  background: #f3f6f7;
+  color: var(--gp-muted);
+}
+.guild-profile-page--minimal .guild-profile-commission h3,
+.guild-profile-page--minimal .guild-profile-document h3 { font-size: 12px; font-weight: 600; }
+.guild-profile-page--minimal .guild-profile-about__rich { font-size: 12px; line-height: 2.1; }
+.guild-profile-page--minimal .guild-profile-news-section .guild-profile-news-feature {
+  border: 0;
+  border-bottom: 1px solid var(--gp-border);
+  background: #fff;
+}
+.guild-profile-page--minimal .guild-profile-news-feature__body { padding: 12px 14px; }
+.guild-profile-page--minimal .guild-profile-news-rows .latest-news-card { border-radius: 0; box-shadow: none; }
+.guild-profile-page--minimal .guild-profile-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.guild-profile-page--minimal .guild-profile-gallery > a { min-width: 0; border: 1px solid var(--gp-border); }
+.guild-profile-page--minimal .guild-profile-gallery > a img { max-width: 100%; }
+.guild-profile-page--minimal .guild-profile-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 20px;
+}
+.guild-profile-page--minimal .guild-profile-contact-card {
+  min-width: 0;
+  padding: 11px 0;
+  border: 0;
+  border-top: 1px solid var(--gp-border);
+}
+.guild-profile-page--minimal .guild-profile-contact-card > span { background: #f3f6f7; border-radius: 2px; }
+.guild-profile-page--minimal .guild-profile-social { box-shadow: none; border-radius: 3px; }
+.guild-profile-page--minimal :is(h1,h2,h3,p,small,strong,a) { overflow-wrap: anywhere; }
+
+@media (max-width: 1000px) {
+  .guild-profile-page--minimal .guild-profile-hero__inner--v4 {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .guild-profile-page--minimal .guild-profile-hero__leaders--minimal { max-width: 450px; }
+}
+@media (max-width: 767.98px) {
+  .guild-profile-page--minimal .guild-profile-members { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+  .guild-profile-page--minimal .guild-profile-commissions,
+  .guild-profile-page--minimal .guild-profile-services { grid-template-columns: 1fr; }
+  .guild-profile-page--minimal .guild-profile-contact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .guild-profile-page--minimal .guild-profile-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 575.98px) {
+  .guild-profile-page--minimal .guild-profile-hero__inner--v4 { padding-block: 18px 21px; }
+  .guild-profile-page--minimal .guild-profile-hero__content h1 { font-size: 21px; }
+  .guild-profile-page--minimal .guild-profile-hero__leaders--minimal .guild-profile-person__portrait {
+    flex-basis: 106px;
+    width: 106px;
+    height: 134px;
+  }
+  .guild-profile-page--minimal .guild-profile-hero__leaders--minimal .guild-profile-person--executive .guild-profile-person__portrait {
+    flex-basis: 52px; width: 52px; height: 66px;
+  }
+  .guild-profile-page--minimal .guild-profile-hero__leaders--minimal .guild-profile-person { gap: 11px; padding: 0; }
+  .guild-profile-page--minimal .guild-profile-members { grid-template-columns: 1fr; }
+  .guild-profile-page--minimal .guild-profile-contact-grid,
+  .guild-profile-page--minimal .guild-profile-gallery { grid-template-columns: 1fr; }
+  .guild-profile-page--minimal .guild-profile-board-wrap { padding-top: 18px; }
+  .guild-profile-page--minimal .guild-profile-section__head { flex-wrap: wrap; }
+  .guild-profile-page--minimal .guild-profile-quickbar__inner { gap: 0 18px; }
+  .guild-profile-page--minimal .guild-profile-hero__actions .guild-profile-btn { max-width: 100%; }
+}
