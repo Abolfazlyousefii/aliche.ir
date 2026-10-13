@@ -107,7 +107,7 @@ class UnionController extends Controller
         $this->authorizeVisible($request, $union);
 
         return view('admin.unions.edit', [
-            'union' => $union->load(['commissions.tasks', 'rules', 'minutes', 'educations', 'prices', 'selectedPosts']),
+            'union' => $union->load(['commissions.tasks', 'rules', 'minutes', 'educations', 'prices', 'selectedPosts', 'members' => fn ($query) => $query->orderBy('sort_order')->orderBy('id')]),
             'unionTypes' => $this->unionTypes(),
             'selectablePosts' => $this->selectablePosts($union),
             'mediaItems' => $this->mediaItems(),
