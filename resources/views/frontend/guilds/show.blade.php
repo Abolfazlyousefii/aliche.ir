@@ -247,7 +247,7 @@
                     <header class="guild-profile-section__head">
                         <div><span>معرفی و اطلاعات</span><h2>درباره اتحادیه</h2></div>
                     </header>
-                    <div class="guild-profile-about__layout{{ $showManager && filled($union->manager_image) ? ' guild-profile-about__layout--with-portrait' : '' }}">
+                    <div class="guild-profile-about__layout{{ filled($union->cover_image) ? ' guild-profile-about__layout--with-cover' : '' }}">
                         <div class="guild-profile-about__copy">
                             @if($showFullIntroduction)
                                 <div class="guild-profile-about__rich">{!! $fullIntroduction !!}</div>
@@ -259,10 +259,9 @@
                                 </div>
                             @endif
                         </div>
-                        @if($showManager && filled($union->manager_image))
-                            <figure class="guild-profile-about__portrait">
-                                <img src="{{ $assetImage($union->manager_image, '') }}" alt="تصویر {{ $union->manager_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
-                                <figcaption>{{ $union->manager_name }}<span>{{ $union->manager_position ?: 'رئیس اتحادیه' }}</span></figcaption>
+                        @if(filled($union->cover_image))
+                            <figure class="guild-profile-about__cover">
+                                <img src="{{ $union->cover_image_url }}" alt="تصویر شاخص {{ $union->display_title }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
                             </figure>
                         @endif
                     </div>
@@ -291,9 +290,8 @@
                     <header class="guild-profile-section__head"><div><span>کمیسیون‌های تخصصی</span><h2>کمیسیون‌های اتحادیه</h2></div></header>
                     <div class="guild-profile-commissions">
                         @foreach($union->commissions as $commission)
-                            @php($commissionIcon = \App\Support\UnionIcon::resolve($commission->icon))
                             <article class="guild-profile-commission">
-                                <span class="guild-profile-commission__number">@if($commissionIcon)<x-ui-icon :name="$commissionIcon" />@else{{ fa_number($loop->iteration) }}@endif</span>
+                                <span class="guild-profile-commission__number">{{ fa_number($loop->iteration) }}</span>
                                 <div><h3>{{ $commission->title }}</h3>@if($commission->description)<p>{{ $plain($commission->description, 180) }}</p>@endif
                                     @if($union->isSectionEnabled('show_commission_tasks', true) && $commission->tasks->isNotEmpty())
                                         <ul>@foreach($commission->tasks as $task)<li>{{ $task->title }}</li>@endforeach</ul>
