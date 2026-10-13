@@ -35,11 +35,41 @@ class UnionMinimalBoardTest extends TestCase
 
         $response = $this->get(route('guilds.show', $own->slug));
         $response->assertOk()
-            ->assertSee('guild-profile-page--minimal', false)
+            ->assertSee('guild-profile-page--hero-refresh', false)
             ->assertSeeInOrder(['id="guild-manager"', 'id="guild-board"', 'اولین عضو', 'آخرین عضو'], false)
             ->assertDontSee('عضو غیرفعال')->assertDontSee('عضو تعلیق')
             ->assertDontSee('عضو اتحادیه دیگر')
             ->assertDontSee('guild-profile-member__business', false);
+    }
+
+    public function test_hero_refresh_preserves_original_news_and_board_placement_and_only_styles_hero(): void
+    {
+        $union = $this->union('hero-only-preserves-layout', [
+            'manager_name' => 'رئیس اصلی', 'manager_position' => 'رئیس اتحادیه',
+            'news_enabled' => true, 'members_enabled' => true,
+            'settings' => ['show_news' => true, 'show_board_members' => true],
+        ]);
+        $this->publishedPost(['slug' => 'hero-only-news', 'title' => 'خبر صفحه اتحادیه',
+            'type' => 'news', 'union_id' => $union->id]);
+        UnionMember::query()->create(['union_id' => $union->id,
+            'full_name' => 'عضو اصلی', 'position' => 'دبیر', 'status' => 'active', 'is_active' => true]);
+
+        $this->get(route('guilds.show', $union->slug))
+            ->assertOk()
+            ->assertSee('guild-profile-page--hero-refresh', false)
+            ->assertSee('assets/css/guild-minimal.css', false)
+            ->assertSee('guild-profile-quickbar', false)
+            ->assertSeeInOrder(['id="guild-manager"', 'id="guild-news"', 'id="guild-board"'], false)
+            ->assertSee('خبر صفحه اتحادیه')
+            ->assertSee('عضو اصلی');
+
+        $css = file_get_contents(base_path('public/assets/css/guild-minimal.css'));
+        $this->assertNotFalse($css);
+        $this->assertStringContainsString('guild-profile-hero__inner--v4', $css);
+        $this->assertStringNotContainsString('.guild-profile-section', $css);
+        $this->assertStringNotContainsString('.guild-profile-quickbar', $css);
+        $this->assertStringNotContainsString('.guild-profile-members', $css);
+        $this->assertSame($css, file_get_contents(base_path('public_html/assets/css/guild-minimal.css')));
     }
 
     public function test_no_board_is_rendered_without_real_active_members(): void
