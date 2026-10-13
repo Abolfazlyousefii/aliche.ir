@@ -47,7 +47,7 @@ class GuildProfileV4Test extends TestCase
             ->assertDontSee('guild-profile-person--executive', false);
     }
 
-    public function test_latest_related_news_is_featured_and_only_five_more_are_shown(): void
+    public function test_latest_related_news_is_featured_and_six_more_are_shown(): void
     {
         $union = $this->union([
             'slug' => 'guild-seven-news',
@@ -81,14 +81,13 @@ class GuildProfileV4Test extends TestCase
             ->assertSeeInOrder([
                 'خبر مرتبط شماره 0',
                 'خبر مرتبط شماره 1',
-                'خبر مرتبط شماره 5',
+                'خبر مرتبط شماره 6',
             ])
-            ->assertDontSee('خبر مرتبط شماره 6')
             ->assertDontSee('خبر مرتبط شماره 7')
             ->assertDontSee('خبر مرتبط شماره 8')
             ->assertDontSee('خبر اتحادیه دیگر');
 
-        $this->assertSame(5, substr_count($response->getContent(), 'class="latest-news-card"'));
+        $this->assertSame(6, substr_count($response->getContent(), 'class="latest-news-card"'));
     }
 
     public function test_news_precedes_commissions_and_other_sections(): void
@@ -262,25 +261,97 @@ class GuildProfileV4Test extends TestCase
             ->assertSee('guild-profile-news-feature', false);
     }
 
-    public function test_about_preview_uses_existing_president_portrait_without_duplicate_bio(): void
+    public function test_about_preview_uses_union_cover_instead_of_president_portrait(): void
     {
         $union = $this->union([
             'slug' => 'union-about-portrait-preview',
             'description' => '<p>متن معرفی اتحادیه</p>',
             'manager_name' => 'رئیس اتحادیه نمونه',
             'manager_image' => 'unions/president-portrait.jpg',
+            'cover_image' => 'unions/guild-bread-cover.jpg',
             'manager_description' => 'شرح سوابق رئیس اتحادیه',
         ]);
 
         $response = $this->get(route('guilds.show', $union->slug));
         $response->assertOk()
-            ->assertSee('guild-profile-about__layout--with-portrait', false)
-            ->assertSee('guild-profile-about__portrait', false)
-            ->assertSee('unions/president-portrait.jpg')
+            ->assertSee('guild-profile-about__layout--with-cover', false)
+            ->assertSee('guild-profile-about__cover', false)
+            ->assertSee('unions/guild-bread-cover.jpg')
             ->assertSee('متن معرفی اتحادیه')
             ->assertSee('شرح سوابق رئیس اتحادیه');
 
         $this->assertSame(1, substr_count($response->getContent(), 'id="guild-about"'));
+    }
+
+    public function test_commissions_always_have_sequential_numbers_even_with_custom_icons(): void
+    {
+        $union = $this->union([
+            'slug' => 'union-commission-indices',
+            'settings' => ['show_commissions' => true],
+        ]);
+        foreach ([1, 2, 3, 4] as $number) {
+            UnionCommission::query()->create([
+                'union_id' => $union->id,
+                'title' => 'کمیسیون شماره '.$number,
+                'icon' => $number === 3 ? 'document' : null,
+                'sort_order' => $number,
+                'is_active' => true,
+            ]);
+        }
+
+        $response = $this->get(route('guilds.show', $union->slug));
+        $response->assertOk();
+        preg_match_all(
+            '/<span class="guild-profile-commission__number">([^<]+)<\\/span>/u',
+            $response->getContent(),
+            $matches
+        );
+        $this->assertSame(array_map('fa_number', [1, 2, 3, 4]), $matches[1]);
+    }
+
+    public function test_about_without_cover_does_not_reuse_the_president_photo(): void
+    {
+        $union = $this->union([
+            'slug' => 'union-coverless-about',
+            'description' => '<p>معرفی اتحادیه بدون کاور</p>',
+            'manager_name' => 'مدیر اتحادیه',
+            'manager_image' => 'unions/manager-portrait.jpg',
+            'cover_image' => null,
+        ]);
+
+        $response = $this->get(route('guilds.show', $union->slug));
+        $response->assertOk()
+            ->assertSee('معرفی اتحادیه بدون کاور')
+            ->assertDontSee('guild-profile-about__cover', false);
+    }
+
+    public function test_news_ajax_uses_same_seven_item_page_size(): void
+    {
+        $union = $this->union([
+            'slug' => 'union-seven-news-ajax',
+            'news_enabled' => true,
+            'settings' => ['show_news' => true],
+        ]);
+        foreach (range(0, 7) as $i) {
+            $this->publishedPost([
+                'slug' => 'ajax-union-news-'.$i,
+                'title' => 'خبر اختصاصی '.$i,
+                'union_id' => $union->id,
+                'published_at' => now()->subMinutes($i + 1),
+            ]);
+        }
+
+        $first = $this->get(route('guilds.show', $union->slug));
+        $first->assertOk()->assertSee('خبر اختصاصی 6')->assertDontSee('خبر اختصاصی 7');
+
+        $response = $this->withHeader('X-Requested-With', 'XMLHttpRequest')
+            ->get(route('guilds.show', $union->slug).'?news_page=2');
+        $response->assertOk()
+            ->assertJsonPath('current_page', 2)
+            ->assertJsonPath('last_page', 2)
+            ->assertJsonPath('total', 8);
+        $this->assertStringContainsString('خبر اختصاصی 7', $response->json('html'));
+        $this->assertStringNotContainsString('خبر اختصاصی 0', $response->json('html'));
     }
 
     public function test_preview_styles_are_scoped_to_union_and_both_public_trees_match(): void
@@ -298,6 +369,9 @@ class GuildProfileV4Test extends TestCase
             'guild-profile-gallery',
             'guild-profile-quickbar--sections',
             '@media (max-width: 767.98px)',
+            'guild-profile-gallery > a.is-video::before',
+            'guild-profile-commission:nth-child(4n + 3)',
+            'guild-profile-about__layout--with-cover',
             '@media (max-width: 575.98px)',
         ] as $selector) {
             $this->assertStringContainsString($selector, $canonical);
