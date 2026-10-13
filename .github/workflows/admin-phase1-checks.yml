@@ -50,6 +50,10 @@ jobs:
           node --check public_html/assets/js/main.js
           test -s public/assets/admin/css/list-workspace.css
           test -s public/assets/admin/css/form-workspace.css
+      - name: Verify homepage multimedia headings and compile Blade views
+        run: |
+          vendor/bin/phpunit tests/Feature/HomeVisibleContentRegressionTest.php
+          php artisan view:cache
       - name: Test admin role boundaries and existing personal inbox behavior
         run: |
           vendor/bin/phpunit tests/Feature/Admin/AdminListWorkspaceTest.php
@@ -61,6 +65,3 @@ jobs:
           vendor/bin/phpunit tests/Feature/Admin/AdminPhaseOneModerationTest.php
           vendor/bin/phpunit tests/Feature/Admin/InternalMessageAccessTest.php
           vendor/bin/phpunit tests/Feature/Media/RichTextUploadSecurityTest.php
-          vendor/bin/phpunit tests/Feature/HomeVisibleContentRegressionTest.php
-      - name: Compile Blade views
-        run: php artisan view:cache
