@@ -36,7 +36,8 @@ class UnionMinimalBoardTest extends TestCase
         $response = $this->get(route('guilds.show', $own->slug));
         $response->assertOk()
             ->assertSee('guild-profile-page--hero-refresh', false)
-            ->assertSeeInOrder(['guild-profile-hero__inner--v4', 'id="guild-board"', 'اولین عضو', 'آخرین عضو', 'id="guild-news"'], false)
+            ->assertSeeInOrder(['guild-profile-hero__inner--v4', 'id="guild-board"', 'اولین عضو', 'آخرین عضو'], false)
+            ->assertSame(1, substr_count($response->getContent(), 'id="guild-board"'))
             ->assertSee('data-guild-board-slider', false)
             ->assertSee('swiper-wrapper', false)
             ->assertDontSee('guild-profile-member__business', false)
