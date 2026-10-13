@@ -109,6 +109,64 @@ class GuildProfileV4Test extends TestCase
             ->assertDontSee('guild-profile-sidebar', false);
     }
 
+    public function test_about_union_moves_above_news_and_commissions_without_changing_its_content(): void
+    {
+        $union = $this->union([
+            'slug' => 'guild-about-before-news',
+            'description' => '<p><strong>معرفی رسمی اتحادیه</strong></p>',
+            'manager_name' => 'رئیس اتحادیه',
+            'manager_description' => 'سوابق و شرح مسئولیت رئیس اتحادیه',
+            'news_enabled' => true,
+            'settings' => [
+                'show_news' => true,
+                'show_commissions' => true,
+                'show_manager' => true,
+            ],
+        ]);
+        $this->publishedPost([
+            'slug' => 'guild-about-order-news',
+            'union_id' => $union->id,
+        ]);
+        UnionCommission::query()->create([
+            'union_id' => $union->id,
+            'title' => 'کمیسیون فعال اتحادیه',
+            'is_active' => true,
+            'sort_order' => 1,
+        ]);
+
+        $response = $this->get(route('guilds.show', $union->slug));
+
+        $response->assertOk()
+            ->assertSeeInOrder([
+                'guild-profile-quickbar--sections',
+                'id="guild-about"',
+                'id="guild-news"',
+                'id="guild-commissions"',
+            ], false)
+            ->assertSee('<strong>معرفی رسمی اتحادیه</strong>', false)
+            ->assertSee('معرفی رئیس اتحادیه: رئیس اتحادیه')
+            ->assertSee('سوابق و شرح مسئولیت رئیس اتحادیه');
+
+        $this->assertSame(1, substr_count($response->getContent(), 'id="guild-about"'));
+    }
+
+    public function test_about_union_is_not_added_when_no_about_information_exists(): void
+    {
+        $union = $this->union([
+            'slug' => 'guild-without-about-content',
+            'description' => null,
+            'manager_description' => null,
+            'news_enabled' => true,
+            'settings' => ['show_news' => true],
+        ]);
+        $this->publishedPost(['slug' => 'guild-no-about-news', 'union_id' => $union->id]);
+
+        $this->get(route('guilds.show', $union->slug))
+            ->assertOk()
+            ->assertDontSee('id="guild-about"', false)
+            ->assertSee('id="guild-news"', false);
+    }
+
     public function test_quick_links_are_news_commissions_services_and_contact_in_requested_order(): void
     {
         $union = $this->union([
