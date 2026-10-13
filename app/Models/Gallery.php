@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Support\PublicFileUrl;
+use App\Support\MediaKeywords;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,7 @@ class Gallery extends Model
         'title',
         'slug',
         'description',
+        'meta_keywords',
         'cover_image',
         'category_id',
         'union_id',
@@ -40,6 +42,12 @@ class Gallery extends Model
         ];
     }
 
+
+    /** @return array<int, string> */
+    public function getTagsAttribute(): array
+    {
+        return MediaKeywords::tags($this->meta_keywords);
+    }
 
     public function getDisplayCoverPathAttribute(): ?string
     {

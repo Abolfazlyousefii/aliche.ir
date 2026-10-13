@@ -38,6 +38,11 @@
         <div class="col-md-4 video-upload-field"><label class="form-label" for="video_file">فایل ویدیوی جدید</label><input class="form-control" id="video_file" name="video_file" type="file" accept="video/*">@if($video->video_file)<a class="d-inline-block mt-2" href="{{ image_url($video->video_file, '') }}" target="_blank">مشاهده فایل فعلی</a>@endif<small class="text-muted d-block mt-1">برای پخش مستقیم در مرورگر، MP4 یا WebM پیشنهاد می‌شود.</small></div>
         <div class="col-md-4 video-aparat-field"><label class="form-label" for="aparat_url">لینک آپارات</label><input class="form-control" id="aparat_url" name="aparat_url" value="{{ old('aparat_url', $video->aparat_url) }}" dir="ltr"></div>
         <div class="col-12"><label class="form-label" for="description">توضیحات</label><textarea class="form-control js-rich-editor" id="description" name="description" rows="4">{{ old('description', $video->description) }}</textarea></div>
+        <div class="col-12">
+            <label class="form-label" for="meta_keywords">کلیدواژه‌ها</label>
+            <textarea class="form-control" id="meta_keywords" name="meta_keywords" rows="2" maxlength="1000" placeholder="اصناف گرگان، اتحادیه‌ها، نشست خبری">{{ old('meta_keywords', $video->meta_keywords) }}</textarea>
+            <small class="text-muted d-block mt-1">کلیدواژه‌ها را با ویرگول فارسی یا انگلیسی جدا کنید. اختیاری؛ برای نمایش برچسب‌ها و اطلاعات سئوی همین محتوا.</small>
+        </div>
         <div class="col-12"><label class="form-label" for="rejected_reason">دلیل رد</label><textarea class="form-control" id="rejected_reason" name="rejected_reason" rows="2">{{ old('rejected_reason', $video->rejected_reason) }}</textarea></div>
     </div>
     <div class="mt-3 d-flex gap-2"><button class="admin-primary-btn" type="submit">ذخیره تغییرات</button><a class="admin-secondary-btn" href="{{ route('admin.videos.show', $video) }}">انصراف</a></div>

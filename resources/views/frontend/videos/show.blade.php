@@ -2,18 +2,12 @@
 
 @section('title', $video->title.' | اتاق اصناف مرکز استان گلستان')
 @section('meta_description', plain_text($video->description, 160))
+@if(filled($video->meta_keywords))
+@section('meta_keywords', $video->meta_keywords)
+@endif
 
 @section('content')
-<section class="page-header page-header-alt">
-  <div class="site-container">
-    <h1>{{ $video->title }}</h1>
-    <nav class="breadcrumb">
-      <a href="{{ route('home') }}">خانه</a>
-      <a href="{{ route('videos.index') }}">چندرسانه‌ای</a>
-      <span>{{ $video->title }}</span>
-    </nav>
-  </div>
-</section>
+@include('frontend.partials.media-detail-heading', ['title' => $video->title, 'indexUrl' => route('videos.index'), 'indexLabel' => 'ویدئوها'])
 
 <section class="site-container">
   <div class="video-single-layout">
@@ -52,6 +46,14 @@
           <span class="post-tag">{{ $video->type_label }}</span>
           @if($video->union)<span class="post-tag">{{ $video->union->display_title }}</span>@endif
         </div>
+      @if($video->tags !== [])
+        <div class="media-detail-tags" aria-label="کلیدواژه‌های ویدئوها">
+          <strong class="media-detail-tags__label">کلیدواژه‌ها:</strong>
+          @foreach($video->tags as $keyword)
+            <span class="post-tag">{{ $keyword }}</span>
+          @endforeach
+        </div>
+      @endif
       </div>
     </div>
     <aside class="video-sidebar">

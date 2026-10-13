@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\GuildUnion;
 use App\Models\Media;
+use App\Support\MediaKeywords;
 use App\Models\Video;
 use App\Rules\SafeImageUpload;
 use App\Services\ContentApprovalService;
@@ -161,6 +162,7 @@ class VideoController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('videos', 'slug')->ignore($video?->id)],
             'description' => ['nullable', 'string'],
+            'meta_keywords' => ['nullable', 'string', 'max:1000'],
             'cover_image' => ['nullable', 'bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
             'cover_image_media_id' => ['nullable', 'integer', 'exists:media,id'],
             'video_type' => ['required', Rule::in(Video::VIDEO_TYPES)],
@@ -177,6 +179,7 @@ class VideoController extends Controller
             'title' => 'عنوان',
             'slug' => 'نامک',
             'description' => 'توضیحات',
+            'meta_keywords' => 'کلیدواژه‌ها',
             'cover_image' => 'تصویر کاور',
             'video_type' => 'نوع ویدیو',
             'video_file' => 'فایل ویدیو',
@@ -217,6 +220,7 @@ class VideoController extends Controller
             'title' => $validated['title'],
             'slug' => $this->uniqueSlug($validated['slug'] ?: $validated['title'], $video),
             'description' => $validated['description'] ?? null,
+            'meta_keywords' => MediaKeywords::normalize(array_key_exists('meta_keywords', $validated) ? $validated['meta_keywords'] : $video?->meta_keywords),
             'video_type' => $validated['video_type'],
             'aparat_url' => $validated['video_type'] === 'aparat' ? ($validated['aparat_url'] ?? null) : null,
             'category_id' => $validated['category_id'] ?? null,

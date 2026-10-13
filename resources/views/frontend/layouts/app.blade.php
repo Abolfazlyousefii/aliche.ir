@@ -10,6 +10,9 @@
 @endphp
 <title>@yield('title', $siteTitle)</title>
 <meta content="@yield('meta_description', 'اتاق اصناف مرکز استان گلستان')" name="description"/>
+@hasSection('meta_keywords')
+<meta name="keywords" content="{{ trim($__env->yieldContent('meta_keywords')) }}"/>
+@endif
 @if($favicon)<link rel="icon" href="{{ $favicon }}">@endif
 @hasSection('canonical')<link rel="canonical" href="@yield('canonical')"/>@endif
 @include('frontend.partials.styles')
