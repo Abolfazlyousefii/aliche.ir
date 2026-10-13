@@ -23,7 +23,7 @@ class MediaDetailKeywordsTest extends TestCase
         ] as $url => $title) {
             $this->get($url)->assertOk()
                 ->assertSee('media-detail-heading', false)
-                ->assertSee('<h1>'.$title.'</h1>', false)
+                ->assertSee('<h1 id="media-detail-heading">'.$title.'</h1>', false)
                 ->assertDontSee('page-header-alt', false)
                 ->assertDontSee('class="page-header', false);
         }
