@@ -37,13 +37,14 @@ class UnionMinimalBoardTest extends TestCase
         $response->assertOk()
             ->assertSee('guild-profile-page--hero-refresh', false)
             ->assertSeeInOrder(['guild-profile-hero__inner--v4', 'id="guild-board"', 'اولین عضو', 'آخرین عضو'], false)
-            ->assertSame(1, substr_count($response->getContent(), 'id="guild-board"'))
             ->assertSee('data-guild-board-slider', false)
             ->assertSee('swiper-wrapper', false)
             ->assertDontSee('guild-profile-member__business', false)
             ->assertDontSee('عضو غیرفعال')->assertDontSee('عضو تعلیق')
             ->assertDontSee('عضو اتحادیه دیگر')
             ->assertDontSee('guild-profile-member__business', false);
+
+        $this->assertSame(1, substr_count($response->getContent(), 'id="guild-board"'));
     }
 
     public function test_covered_hero_puts_board_before_news_and_leaves_news_layout_intact(): void
@@ -58,16 +59,17 @@ class UnionMinimalBoardTest extends TestCase
         UnionMember::query()->create(['union_id' => $union->id,
             'full_name' => 'عضو اصلی', 'position' => 'دبیر', 'status' => 'active', 'is_active' => true]);
 
-        $this->get(route('guilds.show', $union->slug))
-            ->assertOk()
+        $response = $this->get(route('guilds.show', $union->slug));
+        $response->assertOk()
             ->assertSee('guild-profile-page--hero-refresh', false)
             ->assertSee('assets/css/guild-minimal.css', false)
             ->assertSee('guild-profile-quickbar', false)
             ->assertSeeInOrder(['id="guild-manager"', 'id="guild-board"', 'id="guild-news"'], false)
             ->assertSee('guild-profile-news-feature', false)
-            ->assertSame(1, substr_count($this->get(route('guilds.show', $union->slug))->getContent(), 'id="guild-board"'))
             ->assertSee('خبر صفحه اتحادیه')
             ->assertSee('عضو اصلی');
+
+        $this->assertSame(1, substr_count($response->getContent(), 'id="guild-board"'));
 
         $css = file_get_contents(base_path('public/assets/css/guild-minimal.css'));
         $this->assertNotFalse($css);
