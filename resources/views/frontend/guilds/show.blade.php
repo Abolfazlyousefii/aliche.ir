@@ -71,13 +71,27 @@
     $showServices = $union->services_enabled && $contentLinks->isNotEmpty();
 
     $quickActions = collect([
-        ['visible' => ($showManager || $showExecutive), 'id' => 'guild-manager', 'title' => $showManager ? 'رئیس اتحادیه' : 'مدیر اجرایی', 'subtitle' => $showManager ? $union->manager_name : $union->executive_name, 'icon' => 'manager'],
-        ['visible' => $showContact, 'id' => 'guild-contact', 'title' => 'راه‌های ارتباطی', 'subtitle' => $hasContactData ? 'تماس و اطلاعات اتحادیه' : 'اطلاعات در حال تکمیل', 'icon' => 'contact'],
-        ['visible' => $showServices, 'id' => 'guild-services', 'title' => 'خدمات اتحادیه', 'subtitle' => 'دسترسی سریع به بخش‌ها', 'icon' => 'services'],
-        ['visible' => $showComplaint, 'id' => 'guild-complaint', 'title' => 'ثبت شکایت', 'subtitle' => 'ثبت و پیگیری آنلاین', 'icon' => 'complaint'],
-    ])->filter(fn ($item) => $item['visible'])->take(3)->values();
+        ['visible' => $showNews, 'id' => 'guild-news', 'title' => 'اخبار', 'subtitle' => 'آخرین اخبار اتحادیه', 'icon' => 'news'],
+        ['visible' => $showCommissions, 'id' => 'guild-commissions', 'title' => 'کمیسیون‌ها', 'subtitle' => 'کمیسیون‌های اتحادیه', 'icon' => 'commission'],
+        ['visible' => $showServices, 'id' => 'guild-services', 'title' => 'خدمات', 'subtitle' => 'خدمات و محتوای اتحادیه', 'icon' => 'services'],
+        ['visible' => $showContact, 'id' => 'guild-contact', 'title' => 'راه‌های ارتباطی', 'subtitle' => 'تماس و اطلاعات اتحادیه', 'icon' => 'contact'],
+    ])->filter(fn ($item) => $item['visible'])->values();
 
 @endphp
+
+@push('styles')
+<style>
+/* Only the union quick-access row: four desktop links, two per mobile row. */
+.guild-profile-page--v4 .guild-profile-quickbar--sections .guild-profile-quickbar__inner {
+    grid-template-columns: repeat(var(--guild-quickbar-count, 4), minmax(0, 1fr));
+}
+@media (max-width: 767.98px) {
+    .guild-profile-page--v4 .guild-profile-quickbar--sections .guild-profile-quickbar__inner {
+        grid-template-columns: repeat(var(--guild-quickbar-mobile-count, 2), minmax(0, 1fr));
+    }
+}
+</style>
+@endpush
 
 @section('content')
 <main class="guild-profile-page guild-profile-page--redesigned guild-profile-page--v4 guild-profile-page--hero-refresh" data-guild-profile>
@@ -207,14 +221,14 @@
     </section>
 
     @if($quickActions->isNotEmpty())
-        <div class="guild-profile-quickbar">
-            <div class="site-container guild-profile-quickbar__inner">
+        <div class="guild-profile-quickbar guild-profile-quickbar--sections">
+            <div class="site-container guild-profile-quickbar__inner" style="--guild-quickbar-count: {{ $quickActions->count() }}; --guild-quickbar-mobile-count: {{ min($quickActions->count(), 2) }};">
                 @foreach($quickActions as $action)
                     <a href="#{{ $action['id'] }}" class="guild-profile-quickbar__item">
                         <span class="guild-profile-quickbar__icon">
                             @switch($action['icon'])
-                                @case('manager')<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 20c0-4 3-7 7-7s7 3 7 7"/></svg>@break
-                                @case('complaint')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 4h16v12H7l-3 3V4Z"/><path d="M8 8h8M8 12h5"/></svg>@break
+                                @case('news')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM7 9h4v4H7zM13 9h4M13 12h4M7 16h10"/></svg>@break
+                                @case('commission')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16v12H4zM8 7V4h8v3M9 12h6"/></svg>@break
                                 @case('contact')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3 4 6c0 6 8 14 14 14l3-3-4-4-3 2c-2-1-4-3-5-5l2-3-4-4Z"/></svg>@break
                                 @default<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h8M8 17h5"/></svg>
                             @endswitch
