@@ -16,6 +16,8 @@ class UnionMember extends Model
     protected $fillable = [
         'union_id',
         'full_name',
+        'first_name',
+        'last_name',
         'position',
         'image',
         'national_code',

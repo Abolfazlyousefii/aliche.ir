@@ -22,6 +22,13 @@
     @endphp
     <link href="{{ asset('assets/css/guild-profile.css') }}?v={{ $guildProfileStylesVersion }}" rel="stylesheet"/>
     <link href="{{ asset('assets/css/guild-member-images.css') }}?v={{ $guildMemberImagesVersion }}" rel="stylesheet"/>
+    @php
+        $guildMinimalStylesPath = base_path('public/assets/css/guild-minimal.css');
+        $guildMinimalStylesVersion = is_file($guildMinimalStylesPath)
+            ? substr(md5_file($guildMinimalStylesPath), 0, 12)
+            : '1';
+    @endphp
+    <link href="{{ asset('assets/css/guild-minimal.css') }}?v={{ $guildMinimalStylesVersion }}" rel="stylesheet"/>
 @endif
 
 @if(request()->routeIs('posts.index'))

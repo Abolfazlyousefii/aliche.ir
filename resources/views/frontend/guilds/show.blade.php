@@ -80,7 +80,7 @@
 @endphp
 
 @section('content')
-<main class="guild-profile-page guild-profile-page--redesigned guild-profile-page--v4" data-guild-profile>
+<main class="guild-profile-page guild-profile-page--redesigned guild-profile-page--v4 guild-profile-page--minimal" data-guild-profile>
     <section class="guild-profile-hero guild-profile-hero--light" id="guild-manager">
         <div class="site-container guild-profile-hero__inner guild-profile-hero__inner--v4">
             <div class="guild-profile-hero__content">
@@ -127,7 +127,7 @@
                                 @if($union->manager_image)
                                     <img src="{{ $assetImage($union->manager_image, '') }}" alt="تصویر {{ $union->manager_name }}" loading="eager" decoding="async" data-guild-profile-optional-image>
                                 @endif
-                                <span @if($union->manager_image) hidden @endif data-guild-profile-image-fallback>{{ $initial($union->manager_name) }}</span>
+                                <span @if($union->manager_image) hidden @endif data-guild-profile-image-fallback>بدون عکس</span>
                             </div>
                             <div class="guild-profile-person__copy">
                                 <span class="guild-profile-person__role">{{ $union->manager_position ?: 'رئیس اتحادیه' }}</span>
@@ -147,7 +147,7 @@
                             @if($union->executive_image)
                                 <div class="guild-profile-person__portrait" data-guild-profile-image-wrap>
                                     <img src="{{ $assetImage($union->executive_image, '') }}" alt="تصویر {{ $union->executive_name }}" loading="eager" decoding="async" data-guild-profile-optional-image>
-                                    <span hidden data-guild-profile-image-fallback>{{ $initial($union->executive_name) }}</span>
+                                    <span hidden data-guild-profile-image-fallback>بدون عکس</span>
                                 </div>
                             @endif
                             <div class="guild-profile-person__copy">
@@ -160,6 +160,30 @@
             @endif
         </div>
     </section>
+
+    @if($showMembers)
+        <div class="site-container guild-profile-board-wrap">
+            <section class="guild-profile-section" id="guild-board" data-guild-profile-section>
+                <header class="guild-profile-section__head"><div><h2>هیئت‌مدیرهٔ اتحادیه</h2></div></header>
+                <div class="guild-profile-members">
+                    @foreach($union->members as $member)
+                        <article class="guild-profile-member">
+                            <div class="guild-profile-member__avatar" data-guild-profile-image-wrap>
+                                @if($member->image)
+                                    <img src="{{ $member->image_url }}" alt="تصویر {{ $member->full_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
+                                @endif
+                                <span @if($member->image) hidden @endif data-guild-profile-image-fallback>بدون عکس</span>
+                            </div>
+                            <div class="guild-profile-member__identity">
+                                <h3>{{ $member->full_name }}</h3>
+                                <strong>{{ $member->position ?: 'عضو هیئت‌مدیره' }}</strong>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            </section>
+        </div>
+    @endif
 
     @if($quickActions->isNotEmpty())
         <div class="guild-profile-quickbar">
@@ -213,25 +237,6 @@
                                         <ul>@foreach($commission->tasks as $task)<li>{{ $task->title }}</li>@endforeach</ul>
                                     @endif
                                 </div>
-                            </article>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
-
-            @if($showMembers)
-                <section class="guild-profile-section" id="guild-board" data-guild-profile-section>
-                    <header class="guild-profile-section__head"><div><span>ساختار مدیریتی</span><h2>اعضای هیئت‌مدیره اتحادیه</h2></div></header>
-                    <div class="guild-profile-members">
-                        @foreach($union->members as $member)
-                            <article class="guild-profile-member">
-                                <div class="guild-profile-member__avatar" data-guild-profile-image-wrap>
-                                    @if($member->image)
-                                        <img src="{{ $member->image_url }}" alt="{{ $member->full_name }}" loading="lazy" decoding="async" data-guild-profile-optional-image>
-                                    @endif
-                                    <span @if($member->image) hidden @endif data-guild-profile-image-fallback>{{ $initial($member->full_name) }}</span>
-                                </div>
-                                <div><h3>{{ $member->full_name }}</h3><strong>{{ $member->position ?: 'عضو اتحادیه' }}</strong>@if($member->business_name)<p>{{ $member->business_name }}</p>@endif</div>
                             </article>
                         @endforeach
                     </div>

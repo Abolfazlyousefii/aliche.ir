@@ -95,7 +95,9 @@
 </section>
 <section class="admin-workspace-pane " id="admin-form-pane-people" role="tabpanel" aria-labelledby="admin-form-tab-people" tabindex="0" data-admin-workspace-pane="people">
 <div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
-        <div class="col-12"><h3 class="h6 mt-2 mb-0">رئیس اتحادیه</h3></div>
+        <div class="col-12"><h3 class="h6 mt-2 mb-0">رئیس اتحادیه</h3>
+            @if($union)<p class="small text-muted mb-0">مدیریت اعضای هیئت‌مدیرهٔ همین اتحادیه در پایین فرم ویرایش قرار دارد. <a href="#union-board-management">رفتن به بخش هیئت‌مدیره</a></p>@endif
+        </div>
         <div class="col-md-4">
             <label class="form-label" for="manager_name">نام رئیس</label>
             <input class="form-control" id="manager_name" name="manager_name" value="{{ old('manager_name', $union?->manager_name) }}">

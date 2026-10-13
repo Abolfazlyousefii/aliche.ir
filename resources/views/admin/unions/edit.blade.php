@@ -13,4 +13,5 @@
     @method('PUT')
     @include('admin.unions._form')
 </form>
+@include('admin.unions._board_management')
 @endsection
