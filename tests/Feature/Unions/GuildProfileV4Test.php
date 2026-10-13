@@ -132,16 +132,19 @@ class GuildProfileV4Test extends TestCase
             ->assertSee('guild-profile-quickbar--sections', false)
             ->assertSee('id="guild-news"', false)
             ->assertSee('id="guild-commissions"', false)
-            ->assertSee('id="guild-services"', false)
-            ->assertSee('id="guild-contact"', false);
+            ->assertDontSee('id="guild-services"', false)
+            ->assertDontSee('خدمات و محتوای اتحادیه')
+            ->assertDontSee('class="guild-profile-services"', false)
+            ->assertSee('id="guild-contact"', false)
+            ->assertSee('href="'.route('electronic-services.index').'" class="guild-profile-quickbar__item"', false);
 
         preg_match_all(
-            '/<a href="#(guild-[a-z-]+)" class="guild-profile-quickbar__item">/',
+            '/<a href="([^"]+)" class="guild-profile-quickbar__item">/',
             $response->getContent(),
             $links
         );
         $this->assertSame(
-            ['guild-news', 'guild-commissions', 'guild-services', 'guild-contact'],
+            ['#guild-news', '#guild-commissions', route('electronic-services.index'), '#guild-contact'],
             $links[1]
         );
         $this->assertStringContainsString('--guild-quickbar-count: 4', $response->getContent());

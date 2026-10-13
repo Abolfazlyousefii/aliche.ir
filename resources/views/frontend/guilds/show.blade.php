@@ -73,7 +73,7 @@
     $quickActions = collect([
         ['visible' => $showNews, 'id' => 'guild-news', 'title' => 'اخبار', 'subtitle' => 'آخرین اخبار اتحادیه', 'icon' => 'news'],
         ['visible' => $showCommissions, 'id' => 'guild-commissions', 'title' => 'کمیسیون‌ها', 'subtitle' => 'کمیسیون‌های اتحادیه', 'icon' => 'commission'],
-        ['visible' => $showServices, 'id' => 'guild-services', 'title' => 'خدمات', 'subtitle' => 'خدمات و محتوای اتحادیه', 'icon' => 'services'],
+        ['visible' => $showServices, 'id' => 'guild-services', 'url' => route('electronic-services.index'), 'title' => 'خدمات', 'subtitle' => 'خدمات الکترونیکی', 'icon' => 'services'],
         ['visible' => $showContact, 'id' => 'guild-contact', 'title' => 'راه‌های ارتباطی', 'subtitle' => 'تماس و اطلاعات اتحادیه', 'icon' => 'contact'],
     ])->filter(fn ($item) => $item['visible'])->values();
 
@@ -224,7 +224,7 @@
         <div class="guild-profile-quickbar guild-profile-quickbar--sections">
             <div class="site-container guild-profile-quickbar__inner" style="--guild-quickbar-count: {{ $quickActions->count() }}; --guild-quickbar-mobile-count: {{ min($quickActions->count(), 2) }};">
                 @foreach($quickActions as $action)
-                    <a href="#{{ $action['id'] }}" class="guild-profile-quickbar__item">
+                    <a href="{{ $action['url'] ?? '#'.$action['id'] }}" class="guild-profile-quickbar__item">
                         <span class="guild-profile-quickbar__icon">
                             @switch($action['icon'])
                                 @case('news')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM7 9h4v4H7zM13 9h4M13 12h4M7 16h10"/></svg>@break
@@ -273,35 +273,6 @@
                                     @endif
                                 </div>
                             </article>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
-
-            @if($showServices)
-                <section class="guild-profile-section" id="guild-services" data-guild-profile-section>
-                    <header class="guild-profile-section__head">
-                        <div><span>دسترسی سریع</span><h2>خدمات و محتوای اتحادیه</h2><p>بخش‌های دارای اطلاعات به‌صورت خودکار در این صفحه نمایش داده می‌شوند.</p></div>
-                    </header>
-                    <div class="guild-profile-services">
-                        @foreach($contentLinks as $item)
-                            <a href="#{{ $item['id'] }}" class="guild-profile-service">
-                                <span class="guild-profile-service__icon">
-                                    @switch($item['icon'])
-                                        @case('members')<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M2 20c0-4 2.7-7 6-7s6 3 6 7M14 15c3 0 5 2 5 5"/></svg>@break
-                                        @case('commission')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16v12H4zM8 7V4h8v3M9 12h6"/></svg>@break
-                                        @case('rules')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>@break
-                                        @case('news')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM7 9h4v4H7zM13 9h4M13 12h4M7 16h10"/></svg>@break
-                                        @case('education')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m3 9 9-5 9 5-9 5-9-5Z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/></svg>@break
-                                        @case('announcement')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h3l9-5v10l-9-5H4zM7 15l2 5"/></svg>@break
-                                        @case('minutes')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16v14H4zM8 3v6M16 3v6M4 10h16"/></svg>@break
-                                        @case('prices')<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/><circle cx="16" cy="16" r="3"/></svg>@break
-                                        @default<svg aria-hidden="true" viewBox="0 0 24 24"><path d="m4 18 4-5 4 3 4-6 4 8H4Z"/><circle cx="8" cy="8" r="2"/></svg>
-                                    @endswitch
-                                </span>
-                                <strong>{{ $item['title'] }}</strong>
-                                <small>{{ $item['description'] }}</small>
-                            </a>
                         @endforeach
                     </div>
                 </section>
