@@ -1,0 +1,92 @@
+name: Media detail headings and keywords
+
+on:
+  pull_request:
+    paths:
+      - 'app/Models/Gallery.php'
+      - 'app/Models/Video.php'
+      - 'app/Http/Controllers/Admin/GalleryController.php'
+      - 'app/Http/Controllers/Admin/VideoController.php'
+      - 'app/Support/MediaKeywords.php'
+      - 'database/migrations/*add_keywords_to_galleries_and_videos.php'
+      - 'resources/views/admin/galleries/**'
+      - 'resources/views/admin/videos/**'
+      - 'resources/views/frontend/galleries/show.blade.php'
+      - 'resources/views/frontend/videos/show.blade.php'
+      - 'resources/views/frontend/partials/media-detail-heading.blade.php'
+      - 'resources/views/frontend/layouts/app.blade.php'
+      - 'tests/Feature/MediaDetailKeywordsTest.php'
+      - '.github/workflows/media-detail-keywords-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  media-details:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3, dom, xml, gd, fileinfo, zip
+          coverage: none
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Prepare isolated test env
+        run: |
+          mkdir -p storage/framework/{views,cache/data,sessions,testing} storage/logs bootstrap/cache
+          cp .env.example .env
+          php artisan key:generate --ansi
+      - name: Syntax-check changed PHP
+        run: |
+          php -l app/Support/MediaKeywords.php
+          php -l app/Models/Gallery.php
+          php -l app/Models/Video.php
+          php -l app/Http/Controllers/Admin/GalleryController.php
+          php -l app/Http/Controllers/Admin/VideoController.php
+          php -l database/migrations/2026_10_14_000001_add_keywords_to_galleries_and_videos.php
+          php -l tests/Feature/MediaDetailKeywordsTest.php
+      - name: Run focused tests against in-memory SQLite only
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+        run: |
+          vendor/bin/phpunit tests/Feature/MediaDetailKeywordsTest.php
+          vendor/bin/phpunit tests/Feature/GalleryVideoMediaRegressionTest.php
+          vendor/bin/phpunit tests/Feature/GalleryArchiveTest.php
+          vendor/bin/phpunit tests/Feature/Admin/MediaControllersCrudRegressionTest.php
+      - name: Compile Blade views
+        run: php artisan view:cache
+      - name: Compare full suite to PR baseline (informational only)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        shell: bash
+        run: |
+          set +e
+          set -u
+          vendor/bin/phpunit --colors=never > /tmp/media-head-suite.log 2>&1
+          head_exit=$?
+          git worktree add --detach /tmp/media-baseline "$BASE_SHA"
+          ln -s "$GITHUB_WORKSPACE/vendor" /tmp/media-baseline/vendor
+          cp .env /tmp/media-baseline/.env
+          mkdir -p /tmp/media-baseline/storage/framework/{views,cache/data,sessions,testing}
+          mkdir -p /tmp/media-baseline/storage/logs /tmp/media-baseline/bootstrap/cache
+          (cd /tmp/media-baseline && vendor/bin/phpunit --colors=never > /tmp/media-base-suite.log 2>&1)
+          base_exit=$?
+          echo "Full suite: base exit=$base_exit; proposed exit=$head_exit"
+          for side in base head; do
+            echo "======== $side PHPUnit summary ========"
+            grep -E '^(There was|There were|Tests: |OK \()' "/tmp/media-${side}-suite.log" | tail -n 20 || true
+          done
+          exit 0
