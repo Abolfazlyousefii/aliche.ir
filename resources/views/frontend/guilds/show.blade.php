@@ -242,6 +242,23 @@
 
     <div class="site-container guild-profile-layout guild-profile-layout--full">
         <div class="guild-profile-content">
+            @if($showAbout)
+                <section class="guild-profile-section guild-profile-about-section" id="guild-about" data-guild-profile-section>
+                    <header class="guild-profile-section__head">
+                        <div><span>معرفی و اطلاعات</span><h2>درباره اتحادیه</h2></div>
+                    </header>
+                    @if($showFullIntroduction)
+                        <div class="guild-profile-about__rich">{!! $fullIntroduction !!}</div>
+                    @endif
+                    @if($showPresidentBiography)
+                        <div class="guild-profile-about__president">
+                            <h3>معرفی رئیس اتحادیه: {{ $union->manager_name }}</h3>
+                            <p>{{ $union->manager_description }}</p>
+                        </div>
+                    @endif
+                </section>
+            @endif
+
             @if($showNews)
                 <section class="guild-profile-section guild-profile-news-section" id="guild-news" data-guild-profile-section>
                     <header class="guild-profile-section__head guild-profile-news-head">
@@ -275,23 +292,6 @@
                             </article>
                         @endforeach
                     </div>
-                </section>
-            @endif
-
-            @if($showAbout)
-                <section class="guild-profile-section guild-profile-about-section" id="guild-about" data-guild-profile-section>
-                    <header class="guild-profile-section__head">
-                        <div><span>معرفی و اطلاعات</span><h2>درباره اتحادیه</h2></div>
-                    </header>
-                    @if($showFullIntroduction)
-                        <div class="guild-profile-about__rich">{!! $fullIntroduction !!}</div>
-                    @endif
-                    @if($showPresidentBiography)
-                        <div class="guild-profile-about__president">
-                            <h3>معرفی رئیس اتحادیه: {{ $union->manager_name }}</h3>
-                            <p>{{ $union->manager_description }}</p>
-                        </div>
-                    @endif
                 </section>
             @endif
 
