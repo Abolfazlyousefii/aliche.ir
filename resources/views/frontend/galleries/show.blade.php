@@ -2,18 +2,12 @@
 
 @section('title', $gallery->title.' | اتاق اصناف مرکز استان گلستان')
 @section('meta_description', plain_text($gallery->description, 160))
+@if(filled($gallery->meta_keywords))
+@section('meta_keywords', $gallery->meta_keywords)
+@endif
 
 @section('content')
-<section class="page-header page-header-alt">
-  <div class="site-container">
-    <h1>{{ $gallery->title }}</h1>
-    <nav class="breadcrumb">
-      <a href="{{ route('home') }}">خانه</a>
-      <a href="{{ route('galleries.index') }}">گالری</a>
-      <span>{{ $gallery->title }}</span>
-    </nav>
-  </div>
-</section>
+@include('frontend.partials.media-detail-heading', ['title' => $gallery->title, 'indexUrl' => route('galleries.index'), 'indexLabel' => 'گالری تصاویر'])
 
 <section class="site-container">
   <div class="gallery-single-layout">
@@ -32,6 +26,14 @@
           </button>
         @endforelse
       </div>
+      @if($gallery->tags !== [])
+        <div class="media-detail-tags" aria-label="کلیدواژه‌های گالری تصاویر">
+          <strong class="media-detail-tags__label">کلیدواژه‌ها:</strong>
+          @foreach($gallery->tags as $keyword)
+            <span class="post-tag">{{ $keyword }}</span>
+          @endforeach
+        </div>
+      @endif
     </div>
 
     <aside class="gallery-sidebar">
