@@ -364,7 +364,7 @@ class GuildProfileV4Test extends TestCase
         foreach ([
             'guild-profile-news-result--split',
             'guild-profile-hero__board',
-            'guild-profile-about__layout--with-portrait',
+            'guild-profile-about__layout--with-cover',
             'guild-profile-contact-grid',
             'guild-profile-gallery',
             'guild-profile-quickbar--sections',
