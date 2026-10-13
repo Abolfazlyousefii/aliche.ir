@@ -66,6 +66,11 @@ class UnionMemberController extends Controller
 
         $member = UnionMember::create($data);
 
+        if ($request->boolean('board_editor')) {
+            return redirect()->to(route('admin.unions.edit', $member->union_id).'#union-board-management')
+                ->with('success', 'عضو هیئت‌مدیره ثبت شد.');
+        }
+
         return redirect()->route('admin.union_members.show', $member)->with('success', 'عضو اتحادیه با موفقیت ایجاد شد.');
     }
 
@@ -105,6 +110,11 @@ class UnionMemberController extends Controller
 
         $unionMember->update($data);
 
+        if ($request->boolean('board_editor')) {
+            return redirect()->to(route('admin.unions.edit', $unionMember->union_id).'#union-board-management')
+                ->with('success', 'عضو هیئت‌مدیره به‌روزرسانی شد.');
+        }
+
         return redirect()->route('admin.union_members.show', $unionMember)->with('success', 'عضو اتحادیه با موفقیت ویرایش شد.');
     }
 
@@ -118,6 +128,11 @@ class UnionMemberController extends Controller
 
         $unionMember->delete();
 
+        if ($request->boolean('board_editor')) {
+            return redirect()->to(route('admin.unions.edit', $unionMember->union_id).'#union-board-management')
+                ->with('success', 'عضو هیئت‌مدیره حذف شد.');
+        }
+
         return redirect()->route('admin.union_members.index')->with('success', 'عضو اتحادیه با موفقیت حذف شد.');
     }
 
@@ -129,6 +144,8 @@ class UnionMemberController extends Controller
         return [
             'union_id' => $validated['union_id'],
             'full_name' => $validated['full_name'],
+            'first_name' => $validated['first_name'] ?? null,
+            'last_name' => $validated['last_name'] ?? null,
             'position' => $validated['position'] ?? null,
             'national_code' => $validated['national_code'] ?? null,
             'mobile' => $validated['mobile'] ?? null,
