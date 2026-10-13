@@ -220,7 +220,7 @@ class VideoController extends Controller
             'title' => $validated['title'],
             'slug' => $this->uniqueSlug($validated['slug'] ?: $validated['title'], $video),
             'description' => $validated['description'] ?? null,
-            'meta_keywords' => MediaKeywords::normalize($validated['meta_keywords'] ?? $video?->meta_keywords),
+            'meta_keywords' => MediaKeywords::normalize(array_key_exists('meta_keywords', $validated) ? $validated['meta_keywords'] : $video?->meta_keywords),
             'video_type' => $validated['video_type'],
             'aparat_url' => $validated['video_type'] === 'aparat' ? ($validated['aparat_url'] ?? null) : null,
             'category_id' => $validated['category_id'] ?? null,
