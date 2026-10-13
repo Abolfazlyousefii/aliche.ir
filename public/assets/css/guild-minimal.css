@@ -393,3 +393,394 @@
     transition: none;
   }
 }
+
+/* ======================================================================
+   Client-preview visual alignment for guilds.show.
+   Applies only to .guild-profile-page--hero-refresh; no shared layouts.
+   ====================================================================== */
+
+/* Four distinct shortcuts rather than one connected bar. */
+.guild-profile-page--hero-refresh .guild-profile-quickbar--sections {
+  margin-top: 16px;
+}
+.guild-profile-page--hero-refresh .guild-profile-quickbar--sections .guild-profile-quickbar__inner {
+  gap: 12px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.guild-profile-page--hero-refresh .guild-profile-quickbar--sections .guild-profile-quickbar__item,
+.guild-profile-page--hero-refresh .guild-profile-quickbar--sections .guild-profile-quickbar__item:not(:last-child) {
+  min-height: 78px;
+  padding: 13px 15px;
+  border: 1px solid #dce6ed;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: none;
+  gap: 10px;
+}
+.guild-profile-page--hero-refresh .guild-profile-quickbar--sections .guild-profile-quickbar__item:is(:hover, :focus-visible) {
+  border-color: #a7d1e9;
+  background: #f6fbfe;
+}
+.guild-profile-page--hero-refresh .guild-profile-quickbar--sections .guild-profile-quickbar__icon {
+  width: 37px;
+  height: 37px;
+  flex-basis: 37px;
+  border-radius: 7px;
+}
+.guild-profile-page--hero-refresh .guild-profile-quickbar--sections .guild-profile-quickbar__item strong {
+  font-size: 12px;
+}
+.guild-profile-page--hero-refresh .guild-profile-quickbar--sections .guild-profile-quickbar__item small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+/* An elevated light board panel floating across the bottom of the dark hero. */
+.guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero--cover {
+  overflow: visible;
+}
+.guild-profile-page--hero-refresh.guild-profile-page--with-board .guild-profile-quickbar--sections {
+  margin-top: 49px;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board {
+  transform: translateY(32px);
+  padding: 17px 22px 19px;
+  border: 1px solid #dce6ed;
+  border-radius: 11px;
+  background: #fff;
+  color: #143750;
+  box-shadow: 0 9px 25px rgba(16, 47, 69, .10);
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-head {
+  margin-bottom: 13px;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-head > div > span {
+  color: #638195;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-head h2 {
+  color: #123950;
+  font-size: 17px;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-controls button {
+  background: #f5f9fc;
+  border-color: #d9e6ee;
+  color: #245d7e;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-controls button:is(:hover, :focus-visible) {
+  background: #eaf4fb;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-member {
+  min-height: 100px;
+  padding: 10px 12px;
+  border: 1px solid #e1e9ee;
+  border-radius: 7px;
+  background: #f8fafb;
+  color: #143750;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-photo {
+  background: #e5eef3;
+  color: #5e7788;
+  border-color: #dce6ed;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-person h3 {
+  color: #143750;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-person p {
+  color: #637e8f;
+}
+
+/* About: original sanitized introduction and biography with existing president photo. */
+.guild-profile-page--hero-refresh .guild-profile-about__layout {
+  min-width: 0;
+}
+.guild-profile-page--hero-refresh .guild-profile-about__layout--with-portrait {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 146px;
+  align-items: start;
+  gap: 24px;
+}
+.guild-profile-page--hero-refresh .guild-profile-about__copy {
+  min-width: 0;
+  align-self: center;
+}
+.guild-profile-page--hero-refresh .guild-profile-about__portrait {
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #f5f8fa;
+  border: 1px solid #e0e8ed;
+  border-radius: 6px;
+}
+.guild-profile-page--hero-refresh .guild-profile-about__portrait img {
+  display: block;
+  width: 100%;
+  height: 174px;
+  object-fit: cover;
+  object-position: center 20%;
+}
+.guild-profile-page--hero-refresh .guild-profile-about__portrait figcaption {
+  padding: 8px 9px;
+  color: #183b51;
+  font-size: 11px;
+  line-height: 1.7;
+  text-align: center;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+.guild-profile-page--hero-refresh .guild-profile-about__portrait figcaption span {
+  display: block;
+  color: #647d8c;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+/* News: lead story on the right, compact story rows on the left (RTL grid).
+   The panel still supports normal/async paging and a single-lead fallback. */
+.guild-profile-page--hero-refresh .guild-profile-news-section .guild-profile-news-result--split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr);
+  align-items: stretch;
+  column-gap: 19px;
+  row-gap: 15px;
+}
+.guild-profile-page--hero-refresh .guild-profile-news-result--split > .guild-profile-news-feature {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e3ebf0;
+  border-radius: 9px;
+  background: #fbfcfd;
+}
+.guild-profile-page--hero-refresh .guild-profile-news-result--split .guild-profile-news-feature__media {
+  flex: 0 0 auto;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: clamp(190px, 21vw, 280px);
+  overflow: hidden;
+}
+.guild-profile-page--hero-refresh .guild-profile-news-result--split .guild-profile-news-feature__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: cover;
+}
+.guild-profile-page--hero-refresh .guild-profile-news-result--split .guild-profile-news-feature__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 15px 18px 20px;
+}
+.guild-profile-page--hero-refresh .guild-profile-news-result--split > .guild-profile-news-rows {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  align-content: start;
+  min-width: 0;
+  margin: 0;
+  border-top: 1px solid #e9eef2;
+}
+.guild-profile-page--hero-refresh .guild-profile-news-result--split .guild-profile-news-rows .latest-news-card {
+  min-height: 0;
+  gap: 10px;
+  padding: 10px 3px;
+  align-items: center;
+}
+.guild-profile-page--hero-refresh .guild-profile-news-result--split .guild-profile-news-rows .latest-news-thumb-link {
+  flex: 0 0 108px;
+  width: 108px;
+  max-width: 108px;
+  height: 68px;
+}
+.guild-profile-page--hero-refresh .guild-profile-news-result--split .guild-profile-news-rows .latest-news-card-body h3 {
+  font-size: 11.5px;
+  line-height: 1.75;
+  -webkit-line-clamp: 2;
+}
+.guild-profile-page--hero-refresh .guild-profile-news-result--split .guild-profile-news-rows .latest-news-card-body p {
+  display: none;
+}
+.guild-profile-page--hero-refresh .guild-profile-news-result--split > .guild-profile-news-pagination {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin-top: 0;
+}
+
+/* Gallery: equal-size image frames and captions BELOW (not over) media. */
+.guild-profile-page--hero-refresh .guild-profile-gallery {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 14px;
+}
+.guild-profile-page--hero-refresh .guild-profile-gallery > a {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  border: 1px solid #e2e9ee;
+  border-radius: 7px;
+  background: #fff;
+  color: #143750;
+  box-shadow: none;
+}
+.guild-profile-page--hero-refresh .guild-profile-gallery > a::after {
+  display: none;
+  content: none;
+}
+.guild-profile-page--hero-refresh .guild-profile-gallery > a img {
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  height: clamp(150px, 17vw, 205px);
+  min-height: 0;
+  max-width: 100%;
+  object-fit: cover;
+  border-radius: 6px 6px 0 0;
+}
+.guild-profile-page--hero-refresh .guild-profile-gallery > a > span {
+  position: static;
+  display: block;
+  flex: 1;
+  padding: 10px 12px;
+  color: #183b51;
+  font-size: 11.5px;
+  font-weight: 650;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+  background: #fff;
+}
+.guild-profile-page--hero-refresh .guild-profile-gallery > a.is-video::before {
+  content: "▶";
+  position: absolute;
+  top: 60px;
+  left: calc(50% - 18px);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding-inline-start: 2px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .92);
+  color: #184765;
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* Contact: three balanced columns, with social links aligned below. */
+.guild-profile-page--hero-refresh .guild-profile-contact-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 11px;
+  align-items: stretch;
+}
+.guild-profile-page--hero-refresh .guild-profile-contact-card {
+  height: 100%;
+  min-width: 0;
+  padding: 12px 13px;
+  border-radius: 9px !important;
+  background: #fff !important;
+}
+.guild-profile-page--hero-refresh .guild-profile-contact-card > span {
+  width: 39px;
+  height: 39px;
+  border-radius: 8px;
+}
+.guild-profile-page--hero-refresh .guild-profile-contact-card strong {
+  font-size: 11.5px;
+}
+.guild-profile-page--hero-refresh .guild-profile-contact-card p {
+  font-size: 10.5px;
+  overflow-wrap: anywhere;
+}
+.guild-profile-page--hero-refresh .guild-profile-socials {
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: 13px;
+}
+.guild-profile-page--hero-refresh .guild-profile-social {
+  min-height: 35px;
+  padding: 6px 11px;
+  border-radius: 7px;
+  font-size: 10.5px;
+  background: #fff;
+}
+
+@media (max-width: 991.98px) {
+  .guild-profile-page--hero-refresh .guild-profile-news-section .guild-profile-news-result--split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .guild-profile-page--hero-refresh .guild-profile-news-result--split > .guild-profile-news-feature,
+  .guild-profile-page--hero-refresh .guild-profile-news-result--split > .guild-profile-news-rows,
+  .guild-profile-page--hero-refresh .guild-profile-news-result--split > .guild-profile-news-pagination {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
+@media (max-width: 767.98px) {
+  .guild-profile-page--hero-refresh .guild-profile-contact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .guild-profile-page--hero-refresh .guild-profile-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .guild-profile-page--hero-refresh .guild-profile-quickbar--sections .guild-profile-quickbar__inner {
+    gap: 9px;
+  }
+  .guild-profile-page--hero-refresh .guild-profile-quickbar--sections .guild-profile-quickbar__item {
+    padding: 10px;
+  }
+}
+@media (max-width: 575.98px) {
+  .guild-profile-page--hero-refresh .guild-profile-about__layout--with-portrait {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  .guild-profile-page--hero-refresh .guild-profile-about__portrait {
+    width: min(150px, 100%);
+  }
+  .guild-profile-page--hero-refresh .guild-profile-about__portrait img {
+    height: 170px;
+  }
+  .guild-profile-page--hero-refresh .guild-profile-contact-grid,
+  .guild-profile-page--hero-refresh .guild-profile-gallery {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .guild-profile-page--hero-refresh .guild-profile-quickbar--sections .guild-profile-quickbar__item {
+    min-height: 70px;
+    flex-direction: row;
+    text-align: start;
+    gap: 7px;
+  }
+  .guild-profile-page--hero-refresh .guild-profile-quickbar--sections .guild-profile-quickbar__icon {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+  }
+  .guild-profile-page--hero-refresh .guild-profile-news-result--split .guild-profile-news-rows .latest-news-thumb-link {
+    flex-basis: 90px;
+    width: 90px;
+    max-width: 90px;
+    height: 65px;
+  }
+  .guild-profile-page--hero-refresh .guild-profile-hero__board {
+    transform: translateY(21px);
+    padding: 14px;
+  }
+  .guild-profile-page--hero-refresh.guild-profile-page--with-board .guild-profile-quickbar--sections {
+    margin-top: 32px;
+  }
+  .guild-profile-page--hero-refresh .guild-profile-hero__board-member {
+    padding: 8px;
+  }
+}
