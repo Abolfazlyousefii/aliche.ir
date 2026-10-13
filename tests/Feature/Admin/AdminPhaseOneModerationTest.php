@@ -174,7 +174,7 @@ class AdminPhaseOneModerationTest extends TestCase
         );
     }
 
-    public function test_publishing_old_pending_post_from_approval_queue_uses_actual_time(): void
+    public function test_publishing_pending_post_from_approval_queue_preserves_saved_date(): void
     {
         $this->travelTo(now()->startOfMinute());
         $user = $this->withPermissions(['posts.publish']);
@@ -185,13 +185,14 @@ class AdminPhaseOneModerationTest extends TestCase
             'published_at' => now()->subDays(5),
         ]);
 
+        $chosenAt = $post->published_at->copy();
         $this->actingAs($user)
             ->patch(route('admin.pending_approvals.publish', ['posts', $post->id]))
             ->assertRedirect();
 
         $post->refresh();
         $this->assertSame('published', $post->status);
-        $this->assertSame(now()->format('Y-m-d H:i:s'), $post->published_at->format('Y-m-d H:i:s'));
+        $this->assertSame($chosenAt->format('Y-m-d H:i:s'), $post->published_at->format('Y-m-d H:i:s'));
         $this->get(route('posts.index'))->assertOk()->assertSee($post->title);
     }
 

@@ -190,14 +190,12 @@ class Post extends Model
     }
 
     /**
-     * Keep a future publication schedule; a stale date on an unpublished draft
-     * must not make a newly published story appear old in the news archive.
+     * Preserve the editor's publication date, including deliberate backdates.
+     * Only an undated story receives the current time when it is published.
      */
     public function publicationDateForPublishing(): \Illuminate\Support\Carbon
     {
-        return $this->published_at?->isFuture()
-            ? $this->published_at
-            : now();
+        return $this->published_at ?? now();
     }
 
     public function canBeApproved(): bool

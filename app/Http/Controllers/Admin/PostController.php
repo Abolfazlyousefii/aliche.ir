@@ -299,7 +299,7 @@ class PostController extends Controller
             // Drafts have no automatic publication date. An explicit date remains
             // available for future scheduling or a deliberate manual backdate.
             'published_at' => ($validated['published_at'] ?? null)
-                ?: ($post?->status === 'published' ? $post->published_at : null),
+                ?: $post?->published_at,
             'rejected_reason' => $validated['rejected_reason'] ?? null,
             'meta_title' => $validated['meta_title'] ?? null,
             'meta_description' => $validated['meta_description'] ?? null,

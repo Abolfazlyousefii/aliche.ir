@@ -133,7 +133,7 @@ class PostAdminWorkflowTest extends TestCase
         $this->get(route('posts.index'))->assertOk()->assertDontSee($post->title);
     }
 
-    public function test_old_draft_published_directly_gets_actual_publication_time(): void
+    public function test_pending_news_keeps_its_saved_date_on_direct_publication(): void
     {
         $this->travelTo(now()->startOfMinute());
         $this->signInAsSuperAdmin();
@@ -147,12 +147,13 @@ class PostAdminWorkflowTest extends TestCase
             'is_active' => true,
         ]);
 
+        $chosenAt = $post->published_at->copy();
         $this->patch(route('admin.posts.publish', $post))
             ->assertRedirect();
 
         $post->refresh();
         $this->assertSame('published', $post->status);
-        $this->assertSame(now()->format('Y-m-d H:i:s'), $post->published_at->format('Y-m-d H:i:s'));
+        $this->assertSame($chosenAt->format('Y-m-d H:i:s'), $post->published_at->format('Y-m-d H:i:s'));
         $this->get(route('posts.show', $post->slug))
             ->assertOk()
             ->assertSee(jalali_date($post->published_at));
@@ -185,7 +186,7 @@ class PostAdminWorkflowTest extends TestCase
         $this->get(route('posts.index'))->assertOk()->assertSee($post->title);
     }
 
-    public function test_publishing_an_old_draft_by_editing_to_published_uses_today_when_date_empty(): void
+    public function test_editing_pending_news_displays_and_preserves_its_saved_date(): void
     {
         $this->travelTo(now()->startOfMinute());
         $this->signInAsSuperAdmin();
@@ -198,9 +199,10 @@ class PostAdminWorkflowTest extends TestCase
             'is_active' => true,
         ]);
 
+        $chosenAt = $post->published_at->copy();
         $this->get(route('admin.posts.edit', $post))
             ->assertOk()
-            ->assertSee('name="published_at" type="text" data-jalali-datepicker value=""', false);
+            ->assertSee('name="published_at" type="text" data-jalali-datepicker value="'.jalali_input_datetime($chosenAt).'"', false);
 
         $this->put(route('admin.posts.update', $post), $this->postPayload([
             'title' => $post->title,
@@ -211,7 +213,7 @@ class PostAdminWorkflowTest extends TestCase
 
         $post->refresh();
         $this->assertSame('published', $post->status);
-        $this->assertSame(now()->format('Y-m-d H:i:s'), $post->published_at->format('Y-m-d H:i:s'));
+        $this->assertSame($chosenAt->format('Y-m-d H:i:s'), $post->published_at->format('Y-m-d H:i:s'));
     }
 
     public function test_explicit_jalali_backdate_is_honored_on_direct_publication(): void
