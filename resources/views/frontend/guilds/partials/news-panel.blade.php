@@ -8,7 +8,7 @@
     $end = min($last, $start + 5);
 @endphp
 
-<div class="guild-profile-news-result" data-guild-news-result>
+<div class="guild-profile-news-result{{ $others->isNotEmpty() ? ' guild-profile-news-result--split' : '' }}" data-guild-news-result>
     @if($featured)
         @php($featuredUrl = route('posts.show', $featured->slug))
         <article class="guild-profile-news-feature">
