@@ -1,136 +1,164 @@
-/* Union detail: hero-only refresh.
-   The original news, board, commissions, services, gallery and contact layouts
-   are intentionally unaffected. Kept at the historical guild-minimal.css path
-   so hosts only need to replace the same publicly served stylesheet. */
-.guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero--light {
+/* Guild profile: cover-image hero and union-scoped board carousel.
+   Intentionally ONLY targets the hero: news, commissions, services, gallery,
+   about and contact keep their existing markup and stylesheet rules. */
+.guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero--cover {
+  position: relative;
+  isolation: isolate;
+  display: block;
   min-height: 0;
-  background: #fff;
-  color: #16394d;
-  border-bottom: 1px solid #e3e9ed;
-  box-shadow: none;
+  overflow: hidden;
+  border-bottom: 0;
+  background: #192733;
+  color: #fff;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__backdrop,
+.guild-profile-page--hero-refresh .guild-profile-hero__overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__backdrop { z-index: 0; }
+.guild-profile-page--hero-refresh .guild-profile-hero__backdrop img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__overlay {
+  z-index: 1;
+  background: rgba(0, 0, 0, .74);
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__inner--v4 {
+  position: relative;
+  z-index: 2;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(275px, 335px);
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
   align-items: center;
-  gap: clamp(20px, 3vw, 34px);
-  padding-block: 22px 25px;
+  gap: clamp(24px, 4vw, 55px);
+  min-height: 0;
+  padding-block: clamp(35px, 5vw, 58px) 30px;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__content {
   min-width: 0;
   max-width: none;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-breadcrumb {
-  margin-bottom: 15px;
-  color: #687e8b;
+  margin-bottom: 21px;
+  color: rgba(255, 255, 255, .72);
   font-size: 11px;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-breadcrumb a {
-  color: #526b7a;
+  color: rgba(255, 255, 255, .85);
+}
+.guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-breadcrumb a:hover {
+  color: #fff;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-kicker {
-  display: inline-block;
-  margin-bottom: 7px;
+  display: inline-flex;
+  margin-bottom: 11px;
   padding: 0;
   border: 0;
   border-radius: 0;
-  background: transparent;
+  background: none;
+  color: rgba(255, 255, 255, .8);
   box-shadow: none;
   backdrop-filter: none;
-  color: #687e8b;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-kicker i {
   display: none;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__content h1 {
+  max-width: 750px;
   margin: 0;
-  max-width: none;
-  font-size: clamp(21px, 2vw, 26px);
-  line-height: 1.7;
-  font-weight: 700;
-  color: #16394d;
+  color: #fff;
+  font-size: clamp(25px, 2.8vw, 37px);
+  line-height: 1.58;
+  font-weight: 800;
+  overflow-wrap: anywhere;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__content > p {
-  max-width: 530px;
-  margin: 8px 0 0;
-  font-size: 12px;
+  max-width: 620px;
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, .82);
+  font-size: 13px;
   line-height: 2;
-  color: #687e8b;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__actions {
-  margin-top: 14px;
-  gap: 8px;
+  margin-top: 22px;
+  gap: 9px;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__actions .guild-profile-btn,
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__actions .guild-profile-btn--light {
-  min-height: 36px;
-  padding: 7px 12px;
-  background: #fff;
-  border: 1px solid #d9e3e9;
-  border-radius: 3px;
+  min-height: 40px;
+  padding: 9px 15px;
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .37);
+  border-radius: 5px;
   box-shadow: none;
-  color: #16394d;
+  color: #fff;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 650;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__actions .guild-profile-btn:hover,
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__actions .guild-profile-btn:focus-visible {
-  background: #f6f8fa;
-  border-color: #b9cbd5;
-  color: #16394d;
+  background: rgba(255, 255, 255, .23);
+  border-color: rgba(255, 255, 255, .66);
+  color: #fff;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal {
+  width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  flex-wrap: nowrap;
-  justify-content: center;
   align-items: stretch;
-  gap: 10px;
-  min-width: 0;
-  width: 100%;
+  justify-content: center;
+  gap: 14px;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person {
   display: flex;
   flex: none;
   align-items: center;
-  min-width: 0;
-  gap: 16px;
+  gap: 18px;
   padding: 0;
   border: 0;
   border-radius: 0;
-  box-shadow: none;
   background: transparent;
+  box-shadow: none;
+  min-width: 0;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person + .guild-profile-person {
   border: 0;
-  border-top: 1px solid #e3e9ed;
-  padding: 10px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, .25);
+  padding: 12px 0 0;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__portrait {
   position: relative;
+  flex: 0 0 174px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  flex: 0 0 140px;
-  width: 140px;
-  height: 170px;
-  min-width: 0;
+  align-items: center;
+  width: 174px;
+  height: 210px;
   margin: 0;
   overflow: hidden;
-  border: 1px solid #e3e9ed;
-  border-radius: 2px;
-  background: #f3f6f7;
-  color: #758895;
-  font-size: 11px;
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 5px;
+  background: #44515a;
+  color: #f2f4f5;
+  font-size: 12px;
   font-weight: 400;
+  line-height: 1.75;
   text-align: center;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person--executive .guild-profile-person__portrait {
-  flex-basis: 58px;
-  width: 58px;
-  height: 74px;
+  flex-basis: 66px;
+  width: 66px;
+  height: 86px;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__portrait img {
   position: absolute;
@@ -138,70 +166,230 @@
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: 0;
   object-fit: cover;
-  object-position: center 20%;
+  object-position: center 18%;
+  border-radius: 0;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__portrait > span[hidden] {
   display: none;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__copy {
   min-width: 0;
-  flex: 1 1 0;
+  flex: 1;
   overflow-wrap: anywhere;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__role {
-  margin-bottom: 5px;
-  color: #687e8b;
-  font-size: 11px;
+  color: rgba(255, 255, 255, .78);
+  font-size: 12px;
   font-weight: 500;
+  margin-bottom: 8px;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__copy h2 {
   margin: 0;
-  color: #16394d;
-  font-size: 16px;
-  line-height: 1.8;
-  font-weight: 700;
+  color: #fff;
+  font-size: clamp(17px, 1.8vw, 23px);
+  line-height: 1.6;
+  font-weight: 800;
+}
+.guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person--executive .guild-profile-person__copy h2 {
+  font-size: 15px;
+}
+.guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-person__actions {
+  margin-top: 12px;
 }
 .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-person__actions a {
-  border: 1px solid #e3e9ed;
-  border-radius: 3px;
-  background: #fff;
-  color: #16394d;
+  max-width: 100%;
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, .3);
+  color: #fff;
+  background: rgba(255, 255, 255, .12);
+  box-shadow: none;
+  overflow-wrap: anywhere;
+}
+.guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-person__actions a:hover {
+  background: rgba(255, 255, 255, .23);
+  color: #fff;
+}
+/* Board is within the cover hero; no selectors touch the original sections below. */
+.guild-profile-page--hero-refresh .guild-profile-hero__board {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  padding-top: 20px;
+  padding-bottom: 30px;
+  border-top: 1px solid rgba(255, 255, 255, .23);
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 15px;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-head > div > span {
+  display: block;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, .65);
+  font-size: 11px;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-head h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-controls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-controls button {
+  display: grid;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, .32);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+  cursor: pointer;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-controls button:hover,
+.guild-profile-page--hero-refresh .guild-profile-hero__board-controls button:focus-visible {
+  background: rgba(255, 255, 255, .2);
+  outline-offset: 2px;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-controls button.swiper-button-disabled,
+.guild-profile-page--hero-refresh .guild-profile-hero__board-controls button.swiper-button-lock {
+  opacity: .4;
+  cursor: default;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-controls svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-slider {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-slider .swiper-slide {
+  box-sizing: border-box;
+  min-width: 0;
+  height: auto;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 112px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, .09);
   box-shadow: none;
 }
-@media (max-width: 900px) {
+.guild-profile-page--hero-refresh .guild-profile-hero__board-photo {
+  position: relative;
+  flex: 0 0 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 86px;
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: 3px;
+  overflow: hidden;
+  background: #44515a;
+  color: #fff;
+  font-size: 10px;
+  text-align: center;
+  padding: 4px;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-photo img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  object-fit: cover;
+  object-position: center 20%;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-photo > span[hidden] {
+  display: none;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-person {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-person h3 {
+  margin: 0 0 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.75;
+}
+.guild-profile-page--hero-refresh .guild-profile-hero__board-person p {
+  margin: 0;
+  color: rgba(255, 255, 255, .76);
+  font-size: 11px;
+  line-height: 1.75;
+}
+@media (max-width: 959.98px) {
   .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__inner--v4 {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
+    grid-template-columns: 1fr;
+    gap: 26px;
+    padding-block: 30px 26px;
   }
   .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal {
-    max-width: 460px;
+    max-width: 575px;
   }
 }
 @media (max-width: 575.98px) {
   .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__inner--v4 {
-    padding-block: 17px 22px;
-    gap: 16px;
+    gap: 22px;
+    padding-block: 26px 23px;
   }
   .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__content h1 {
-    font-size: 21px;
+    font-size: 25px;
   }
   .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person {
-    gap: 12px;
-    padding: 0;
+    gap: 13px;
   }
   .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__portrait {
-    flex-basis: 106px;
-    width: 106px;
-    height: 134px;
+    flex-basis: 116px;
+    width: 116px;
+    height: 148px;
   }
   .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person--executive .guild-profile-person__portrait {
-    flex-basis: 52px;
-    width: 52px;
-    height: 66px;
+    flex-basis: 55px;
+    width: 55px;
+    height: 70px;
   }
   .guild-profile-page--hero-refresh.guild-profile-page--v4 .guild-profile-hero__leaders--minimal .guild-profile-person__copy h2 {
-    font-size: 14px;
+    font-size: 18px;
+  }
+  .guild-profile-page--hero-refresh .guild-profile-hero__board-head h2 {
+    font-size: 16px;
+  }
+  .guild-profile-page--hero-refresh .guild-profile-hero__board {
+    padding-bottom: 24px;
+  }
+  .guild-profile-page--hero-refresh .guild-profile-hero__board-member {
+    min-height: 108px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .guild-profile-page--hero-refresh .guild-profile-hero__board-member {
+    transition: none;
   }
 }

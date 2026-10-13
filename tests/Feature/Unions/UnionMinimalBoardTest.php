@@ -19,7 +19,7 @@ class UnionMinimalBoardTest extends TestCase
     use BuildsAdminPayloads;
     use RefreshDatabase;
 
-    public function test_board_is_below_hero_and_shows_only_own_active_members_in_order(): void
+    public function test_board_is_inside_hero_and_shows_only_own_active_members_in_order(): void
     {
         $own = $this->union('board-visible-one', ['members_enabled' => true, 'manager_name' => 'رئیس اصلی']);
         $other = $this->union('board-visible-two', ['members_enabled' => true]);
@@ -36,13 +36,18 @@ class UnionMinimalBoardTest extends TestCase
         $response = $this->get(route('guilds.show', $own->slug));
         $response->assertOk()
             ->assertSee('guild-profile-page--hero-refresh', false)
-            ->assertSeeInOrder(['id="guild-manager"', 'id="guild-board"', 'اولین عضو', 'آخرین عضو'], false)
+            ->assertSeeInOrder(['guild-profile-hero__inner--v4', 'id="guild-board"', 'اولین عضو', 'آخرین عضو'], false)
+            ->assertSee('data-guild-board-slider', false)
+            ->assertSee('swiper-wrapper', false)
+            ->assertDontSee('guild-profile-member__business', false)
             ->assertDontSee('عضو غیرفعال')->assertDontSee('عضو تعلیق')
             ->assertDontSee('عضو اتحادیه دیگر')
             ->assertDontSee('guild-profile-member__business', false);
+
+        $this->assertSame(1, substr_count($response->getContent(), 'id="guild-board"'));
     }
 
-    public function test_hero_refresh_preserves_original_news_and_board_placement_and_only_styles_hero(): void
+    public function test_covered_hero_puts_board_before_news_and_leaves_news_layout_intact(): void
     {
         $union = $this->union('hero-only-preserves-layout', [
             'manager_name' => 'رئیس اصلی', 'manager_position' => 'رئیس اتحادیه',
@@ -54,14 +59,17 @@ class UnionMinimalBoardTest extends TestCase
         UnionMember::query()->create(['union_id' => $union->id,
             'full_name' => 'عضو اصلی', 'position' => 'دبیر', 'status' => 'active', 'is_active' => true]);
 
-        $this->get(route('guilds.show', $union->slug))
-            ->assertOk()
+        $response = $this->get(route('guilds.show', $union->slug));
+        $response->assertOk()
             ->assertSee('guild-profile-page--hero-refresh', false)
             ->assertSee('assets/css/guild-minimal.css', false)
             ->assertSee('guild-profile-quickbar', false)
-            ->assertSeeInOrder(['id="guild-manager"', 'id="guild-news"', 'id="guild-board"'], false)
+            ->assertSeeInOrder(['id="guild-manager"', 'id="guild-board"', 'id="guild-news"'], false)
+            ->assertSee('guild-profile-news-feature', false)
             ->assertSee('خبر صفحه اتحادیه')
             ->assertSee('عضو اصلی');
+
+        $this->assertSame(1, substr_count($response->getContent(), 'id="guild-board"'));
 
         $css = file_get_contents(base_path('public/assets/css/guild-minimal.css'));
         $this->assertNotFalse($css);
@@ -70,6 +78,70 @@ class UnionMinimalBoardTest extends TestCase
         $this->assertStringNotContainsString('.guild-profile-quickbar', $css);
         $this->assertStringNotContainsString('.guild-profile-members', $css);
         $this->assertSame($css, file_get_contents(base_path('public_html/assets/css/guild-minimal.css')));
+    }
+
+    public function test_union_cover_president_data_and_swiper_are_dynamic_per_union(): void
+    {
+        $own = $this->union('cover-board-own', [
+            'title' => 'اتحادیه اصلی تست', 'members_enabled' => true,
+            'cover_image' => 'unions/own-cover.jpg',
+            'manager_name' => 'پریسا ساعی',
+            'manager_position' => 'رئیس هیئت‌مدیره',
+            'manager_image' => 'unions/president-own.jpg',
+        ]);
+        $other = $this->union('cover-board-other', [
+            'title' => 'اتحادیه دیگر تست', 'members_enabled' => true,
+            'cover_image' => 'unions/other-cover.jpg',
+            'manager_name' => 'رئیس دیگر',
+        ]);
+
+        foreach ([
+            [$own->id, 'مهتاب بختیاری', 1],
+            [$own->id, 'شهرام همتی', 2],
+            [$other->id, 'عضو دیگر', 0],
+        ] as [$unionId, $name, $order]) {
+            UnionMember::query()->create([
+                'union_id' => $unionId, 'full_name' => $name,
+                'position' => 'عضو هیئت‌مدیره', 'sort_order' => $order,
+                'status' => 'active', 'is_active' => true,
+            ]);
+        }
+
+        $this->get(route('guilds.show', $own->slug))
+            ->assertOk()
+            ->assertSee('guild-profile-hero__backdrop', false)
+            ->assertSee('unions/own-cover.jpg')
+            ->assertDontSee('unions/other-cover.jpg')
+            ->assertSee('اتحادیه اصلی تست')
+            ->assertSee('پریسا ساعی')
+            ->assertSee('رئیس هیئت‌مدیره')
+            ->assertSee('unions/president-own.jpg')
+            ->assertSeeInOrder(['id="guild-board"', 'مهتاب بختیاری', 'شهرام همتی'], false)
+            ->assertDontSee('عضو دیگر')
+            ->assertDontSee('رئیس دیگر')
+            ->assertSee('new Swiper(slider', false);
+    }
+
+    public function test_missing_cover_and_portraits_render_neutral_fallbacks_without_extra_sections(): void
+    {
+        $union = $this->union('missing-union-photos', [
+            'members_enabled' => true,
+            'manager_name' => 'رئیس بدون تصویر',
+            'cover_image' => null,
+            'manager_image' => null,
+        ]);
+        UnionMember::query()->create([
+            'union_id' => $union->id, 'full_name' => 'عضو بدون تصویر',
+            'position' => 'عضو', 'status' => 'active', 'is_active' => true,
+        ]);
+
+        $this->get(route('guilds.show', $union->slug))
+            ->assertOk()
+            ->assertSee('رئیس بدون تصویر')
+            ->assertSee('عضو بدون تصویر')
+            ->assertSee('تصویر ثبت نشده')
+            ->assertSee('guild-profile-hero__overlay', false)
+            ->assertDontSee('guild-profile-hero__backdrop', false);
     }
 
     public function test_no_board_is_rendered_without_real_active_members(): void
