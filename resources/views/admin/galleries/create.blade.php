@@ -21,6 +21,11 @@
         <input type="hidden" name="sort_order" value="{{ old('sort_order', 0) }}">
         <div class="col-md-4"><label class="form-label" for="is_active">فعال</label><select class="form-control" id="is_active" name="is_active"><option value="1" @selected(old('is_active', '1') === '1')>فعال</option><option value="0" @selected(old('is_active') === '0')>غیرفعال</option></select></div>
         <div class="col-12"><label class="form-label" for="description">توضیحات</label><textarea class="form-control js-rich-editor" id="description" name="description" rows="4">{{ old('description') }}</textarea></div>
+        <div class="col-12">
+            <label class="form-label" for="meta_keywords">کلیدواژه‌ها</label>
+            <textarea class="form-control" id="meta_keywords" name="meta_keywords" rows="2" maxlength="1000" placeholder="اصناف گرگان، اتحادیه‌ها، نشست خبری">{{ old('meta_keywords') }}</textarea>
+            <small class="text-muted d-block mt-1">کلیدواژه‌ها را با ویرگول فارسی یا انگلیسی جدا کنید. اختیاری؛ برای نمایش برچسب‌ها و اطلاعات سئوی همین محتوا.</small>
+        </div>
         <div class="col-12"><label class="form-label" for="rejected_reason">دلیل رد</label><textarea class="form-control" id="rejected_reason" name="rejected_reason" rows="2">{{ old('rejected_reason') }}</textarea></div>
         <div class="col-md-6">
             <label class="form-label" for="cover_image">تصویر کاور</label>
