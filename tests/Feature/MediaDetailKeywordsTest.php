@@ -43,7 +43,7 @@ class MediaDetailKeywordsTest extends TestCase
             ->assertSee('name="keywords"', false)
             ->assertSee('گالری صنفی')
             ->assertSee('گرگان')
-            ->assertDontSee('ویدئو')
+            ->assertDontSee('نشست خبری')
             ->assertDontSee('<script>alert(1)</script>', false);
         $this->assertSame(['گالری صنفی', 'گرگان', '<script>alert(1)</script>'], $gallery->tags);
 
