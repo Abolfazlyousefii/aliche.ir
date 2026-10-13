@@ -943,10 +943,10 @@
 <section class="multimedia-section" id="multimedia">
 <div class="site-container">
 <div class="media-header" data-tab-group="media">
-<h2>{{ $sectionTitle('videos', 'چندرسانه‌ای') }}</h2>
+<h2 data-media-heading>{{ $sectionTitle('videos', 'ویدئوها') }}</h2>
 <div class="media-tab-group">
-<button class="media-tab active" data-tab-target="media-video" type="button">ویدیوها</button>
-<button class="media-tab" data-tab-target="media-image" type="button">تصاویر</button>
+<button class="media-tab active" data-tab-target="media-video" data-media-title="{{ $sectionTitle('videos', 'ویدئوها') }}" type="button">ویدیوها</button>
+<button class="media-tab" data-tab-target="media-image" data-media-title="{{ $sectionTitle('galleries', 'گالری') }}" type="button">تصاویر</button>
 </div>
 </div>
 <div class="tab-panels" data-tab-panels="media">
