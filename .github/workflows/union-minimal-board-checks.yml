@@ -1,0 +1,49 @@
+name: Union minimal profile checks
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  union-profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3, dom, xml, gd, fileinfo, zip
+          coverage: none
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Prepare isolated testing runtime
+        run: |
+          mkdir -p storage/framework/{views,cache/data,sessions,testing} storage/logs bootstrap/cache
+          cp .env.example .env
+          php artisan key:generate --ansi
+      - name: Syntax check relevant PHP files
+        run: |
+          php -l app/Models/UnionMember.php
+          php -l app/Http/Controllers/Admin/UnionMemberController.php
+          php -l app/Http/Controllers/Admin/UnionController.php
+          php -l app/Http/Requests/Admin/StoreUnionMemberRequest.php
+          php -l app/Http/Requests/Admin/UpdateUnionMemberRequest.php
+          php -l database/migrations/2026_10_13_230000_add_union_member_names.php
+          php -l tests/Feature/Unions/UnionMinimalBoardTest.php
+      - name: Test in isolated in-memory SQLite (never production DB)
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+        run: |
+          vendor/bin/phpunit tests/Feature/Unions/UnionMinimalBoardTest.php
+          vendor/bin/phpunit tests/Feature/Unions/GuildPageRegressionTest.php
+          vendor/bin/phpunit tests/Feature/Unions/GuildProfileV4Test.php
+          vendor/bin/phpunit tests/Feature/Unions/UnionAdminRegressionTest.php
+          vendor/bin/phpunit tests/Feature/Unions/UnionExecutiveAdminTest.php
+          vendor/bin/phpunit tests/Feature/Unions/UnionAdminDynamicIntegrityTest.php
+      - name: Compile Blade templates
+        run: php artisan view:cache
