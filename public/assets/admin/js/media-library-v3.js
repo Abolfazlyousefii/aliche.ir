@@ -294,6 +294,18 @@
                 run(Array.from(event.dataTransfer?.files || []));
             });
         }
+        const grid = one('[data-ml3-grid]');
+        all('[data-admin-media-view]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const isList = button.dataset.adminMediaView === 'list';
+                grid.classList.toggle('is-list', isList);
+                all('[data-admin-media-view]').forEach((other) => {
+                    const selected = other === button;
+                    other.setAttribute('aria-pressed', String(selected));
+                    other.classList.toggle('is-active', selected);
+                });
+            });
+        });
         render();
     });
 })(typeof window !== 'undefined' ? window : globalThis);
