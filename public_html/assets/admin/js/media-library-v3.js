@@ -295,7 +295,107 @@
                 run(Array.from(event.dataTransfer?.files || []));
             });
         }
+        // Automatically fetch the next 24 server-rendered cards near the end
+        // of the document. The public scroll endpoint uses the same filters,
+        // permissions and Blade partial as the original response.
         const grid = one('[data-ml3-grid]');
+        const scrollFooter = one('[data-ml3-scroll]');
+        const scrollStatus = one('[data-ml3-scroll-status]');
+        const loadButton = one('[data-ml3-scroll-more]');
+        const sentinel = one('[data-ml3-scroll-sentinel]');
+        const scrollTotal = Number(scrollFooter?.dataset.total || 0);
+        let nextUrl = scrollFooter?.dataset.nextUrl || null;
+        let loadingNext = false;
+        let scrollFailed = false;
+        let observer = null;
+        const fetchedPages = new Set();
+
+        const scrollState = () => {
+            if (!scrollFooter) return;
+            const shown = cards().length;
+            scrollFooter.classList.toggle('is-loading', loadingNext);
+            if (loadingNext) {
+                scrollStatus.textContent = 'در حال بارگذاری تصاویر بیشتر…';
+            } else if (scrollFailed) {
+                scrollStatus.textContent = 'ارتباط با سرور برقرار نشد؛ برای تلاش مجدد دکمه زیر را بزنید.';
+            } else if (!nextUrl) {
+                scrollStatus.textContent = 'تمام تصاویر بارگذاری شدند (' +
+                    shown.toLocaleString('fa-IR') + ' تصویر).';
+            } else {
+                scrollStatus.textContent = shown.toLocaleString('fa-IR') + ' از ' +
+                    scrollTotal.toLocaleString('fa-IR') + ' تصویر نمایش داده شده است؛ برای ادامه اسکرول کنید.';
+            }
+            // The manual load button is available when IntersectionObserver is
+            // unsupported or when a request fails; no numbered pagination.
+            loadButton.hidden = !nextUrl || (Boolean(observer) && !scrollFailed);
+            loadButton.disabled = loadingNext;
+        };
+
+        const requestMore = async () => {
+            if (!nextUrl || loadingNext || scrollFailed || deleting) return;
+            const target = new URL(nextUrl, root.location.href);
+            if (target.origin !== root.location.origin ||
+                target.pathname !== root.location.pathname ||
+                fetchedPages.has(target.href)) {
+                scrollFailed = true;
+                observer?.unobserve(sentinel);
+                scrollState();
+                return;
+            }
+            loadingNext = true;
+            scrollState();
+            target.searchParams.set('media_scroll', '1');
+            try {
+                const response = await fetch(target.href, {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                const data = await response.json();
+                if (!data || typeof data.html !== 'string' ||
+                    !Object.hasOwn(data, 'next_page_url')) {
+                    throw new Error('Invalid media scroll response');
+                }
+                fetchedPages.add(new URL(nextUrl, root.location.href).href);
+                const temporary = document.createElement('template');
+                temporary.innerHTML = data.html;
+                const existing = new Set(visibleIds());
+                temporary.content.querySelectorAll('[data-ml3-item]').forEach((item) => {
+                    const id = item.dataset.ml3Item;
+                    if (!id || existing.has(id)) return;
+                    existing.add(id);
+                    grid.appendChild(item);
+                });
+                nextUrl = data.next_page_url || null;
+                scrollFooter.dataset.nextUrl = nextUrl || '';
+                render(); // Reapply stored selections for newly appended items.
+            } catch (error) {
+                scrollFailed = true;
+                observer?.unobserve(sentinel);
+            } finally {
+                loadingNext = false;
+                scrollState();
+            }
+        };
+
+        if (scrollFooter && loadButton && sentinel) {
+            if (typeof root.IntersectionObserver === 'function') {
+                observer = new root.IntersectionObserver((entries) => {
+                    if (entries.some((entry) => entry.isIntersecting)) void requestMore();
+                }, { root: null, rootMargin: '450px 0px', threshold: 0 });
+                if (nextUrl) observer.observe(sentinel);
+            }
+            loadButton.addEventListener('click', () => {
+                if (loadingNext) return;
+                scrollFailed = false;
+                if (observer && nextUrl) observer.observe(sentinel);
+                void requestMore();
+            });
+            scrollState();
+        }
+
         all('[data-admin-media-view]').forEach((button) => {
             button.addEventListener('click', () => {
                 const isList = button.dataset.adminMediaView === 'list';
