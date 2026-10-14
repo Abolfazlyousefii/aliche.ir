@@ -123,3 +123,21 @@ body.ml3-dialog-open { overflow: hidden; }
  .ml3-detail-edit label:has(textarea) { grid-column: 1; }
  .ml3-dialog-body { padding: 13px; }
 }
+
+/* Accessible grid/list view controls */
+.ml3-heading-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.ml3-view-controls { display: inline-flex; align-items: center; padding: 3px; border: 1px solid #d6e4ec; background: #fff; border-radius: 9px; gap: 2px; }
+.ml3-view-controls button { min-height: 33px; border: 0; padding: 5px 11px; background: transparent; color: #617789; border-radius: 7px; font-size: 12px; }
+.ml3-view-controls button.is-active { background: #edf6fa; color: #146384; font-weight: 750; }
+.ml3-grid.is-list { display: flex; flex-direction: column; gap: 7px; }
+.ml3-grid.is-list .ml3-tile { display: flex; align-items: center; gap: 10px; min-height: 82px; padding: 7px; }
+.ml3-grid.is-list .ml3-image-button { display: flex; flex-direction: row; flex: 1; min-width: 0; align-items: center; gap: 10px; height: 74px; }
+.ml3-grid.is-list .ml3-image-button img { flex: 0 0 100px; width: 100px; height: 70px; max-height: 70px; border-radius: 5px; }
+.ml3-grid.is-list .ml3-item-name { flex: 1; white-space: normal; overflow-wrap: anywhere; font-size: 12px; }
+.ml3-grid.is-list .ml3-tile-controls { flex: 0 0 auto; border: 0; background: #fff; gap: 12px; }
+@media (max-width: 550px) {
+ .ml3-heading-actions { width: 100%; }
+ .ml3-grid.is-list .ml3-image-button img { flex-basis: 68px; width: 68px; height: 65px; }
+ .ml3-grid.is-list .ml3-tile-controls { gap: 5px; }
+ .ml3-grid.is-list .ml3-select-label > span { display: none; }
+}
