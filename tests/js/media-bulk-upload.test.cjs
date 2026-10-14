@@ -37,7 +37,7 @@ test('one selection of sixty images is sent as sixty safe sequential media reque
 
     assert.equal(maxInflight, 1);
     assert.equal(result.uploaded, 60);
-    assert.deepEqual(result.failures, []);
+    assert.equal(result.failures.length, 0);
     assert.equal(selected.length, 60);
     assert.deepEqual(selected, Array.from({ length: 60 }, (_, i) => i + 1));
     assert.equal(progress[59].total, 60);
