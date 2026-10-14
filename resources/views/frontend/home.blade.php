@@ -10,6 +10,7 @@
     };
     $plain = fn ($value, $limit = 120) => plain_text($value, $limit);
 
+    $sectionEnabled = fn (string $key): bool => (bool) ($sectionVisibility[$key] ?? true);
     $sectionByKey = fn (string $key) => ($homeSections ?? $sections ?? collect())->firstWhere('key', $key);
     $sectionTitle = fn (string $key, string $fallback) => filled($sectionByKey($key)?->title) ? $sectionByKey($key)->title : $fallback;
     $sectionSubtitle = fn (string $key, string $fallback = '') => filled($sectionByKey($key)?->subtitle) ? $sectionByKey($key)->subtitle : $fallback;
@@ -230,7 +231,25 @@
         @endif
     @endforeach
 
-    /* Homepage unions directory + latest union news. Scoped to this section. */
+    /* When one component of the hero is hidden, keep the other well formed. */
+    .home-main .hero-grid.hero-grid-no-quick {
+        grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+    }
+    .home-main .hero-grid.hero-grid-no-slider {
+        display: block;
+        min-height: 0;
+    }
+    .home-main .hero-grid.hero-grid-no-slider .quick-menu {
+        width: 100%;
+        height: auto;
+        min-height: 0;
+    }
+    .home-main .hero-grid.hero-grid-no-slider .quick-menu-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 8px;
+    }
+        /* Homepage unions directory + latest union news. Scoped to this section. */
     .home-union-news {
         padding-block: 48px;
         background: #fff;
@@ -587,8 +606,10 @@
 
 @section('content')
 <main class="home-main">
+@if($sectionEnabled('hero_slider') || $sectionEnabled('quick_menu'))
 <section class="hero-section site-container">
-<div class="hero-grid">
+<div class="hero-grid {{ !$sectionEnabled('quick_menu') ? 'hero-grid-no-quick' : '' }} {{ !$sectionEnabled('hero_slider') ? 'hero-grid-no-slider' : '' }}">
+@if($sectionEnabled('quick_menu'))
 <aside aria-label="دسترسی‌های عمودی" class="quick-menu">
 <ul class="quick-menu-list">
 @foreach($quickItems as $item)
@@ -613,6 +634,8 @@
 @endforeach
 </ul>
 </aside>
+@endif
+@if($sectionEnabled('hero_slider'))
 <div aria-label="اسلایدر خبرهای اصلی" class="hero-slider swiper" dir="ltr">
 <div class="swiper-wrapper">
 @foreach($heroItems as $item)
@@ -645,9 +668,13 @@
 </article>
 @endforeach
 </div>
+@endif
 </div>
 </section>
 
+@endif
+
+@if($sectionEnabled('electronic_services'))
 <section class="site-container howto-section home-services-refined">
 <div class="section-heading home-refined-heading">
 <div>
@@ -668,8 +695,10 @@
 @endforelse
 </div>
 </section>
+@endif
 
 
+@if($sectionEnabled('important_news'))
 <section class="latest-news-section section-white" id="latest-news">
 <div class="site-container">
 <div class="latest-news-shell">
@@ -703,7 +732,9 @@
 </div>
 </div>
 </section>
+@endif
 
+@if($sectionEnabled('advertisements'))
 <section class="home-ad-banners site-container">
 @php
     $bannerAdItems = collect($bannerAdvertisements ?? collect())->take(4);
@@ -726,7 +757,9 @@
 @endif
 @endforeach
 </section>
+@endif
 
+@if($sectionEnabled('unions'))
 <section class="home-union-news" id="representatives" aria-labelledby="home-union-news-title" data-home-unions-section>
 <div class="site-container">
 <div class="home-union-news__heading">
@@ -819,7 +852,9 @@
 </div>
 </div>
 </section>
+@endif
 
+@if($sectionEnabled('systems'))
 <section class="commissions-section ds-tint-block office-services-section home-systems-section" id="commissions">
 <div class="site-container">
 <div class="section-heading systems-section-heading">
@@ -853,6 +888,8 @@
 </div>
 </div>
 </section>
+@endif
+@if($sectionEnabled('commissions'))
 <section class="commissions-real home-commissions-section" id="commissions-real">
 <div class="site-container">
 <div class="section-heading commissions-section-heading">
@@ -878,8 +915,10 @@
 </div>
 </div>
 </section>
+@endif
 
 @if($tourismPanels->isNotEmpty())
+@if($sectionEnabled('tourism'))
 <section class="tourism-section" id="tourism">
 <div class="site-container">
 <div class="tourism-tab-controls" data-tab-group="tourism">
@@ -938,18 +977,25 @@
 </div>
 </section>
 @endif
+@endif
 
 
+@if($sectionEnabled('videos') || $sectionEnabled('galleries'))
 <section class="multimedia-section" id="multimedia">
 <div class="site-container">
 <div class="media-header" data-tab-group="media">
-<h2 data-media-heading>{{ $sectionTitle('videos', 'ویدئوها') }}</h2>
+<h2 data-media-heading>{{ $sectionEnabled('videos') ? $sectionTitle('videos', 'ویدئوها') : $sectionTitle('galleries', 'گالری تصاویر') }}</h2>
 <div class="media-tab-group">
+@if($sectionEnabled('videos'))
 <button class="media-tab active" data-tab-target="media-video" data-media-title="{{ $sectionTitle('videos', 'ویدئوها') }}" type="button">ویدیوها</button>
-<button class="media-tab" data-tab-target="media-image" data-media-title="{{ $sectionTitle('galleries', 'گالری') }}" type="button">تصاویر</button>
+@endif
+@if($sectionEnabled('galleries'))
+<button class="media-tab {{ !$sectionEnabled('videos') ? 'active' : '' }}" data-tab-target="media-image" data-media-title="{{ $sectionTitle('galleries', 'گالری') }}" type="button">تصاویر</button>
+@endif
 </div>
 </div>
 <div class="tab-panels" data-tab-panels="media">
+@if($sectionEnabled('videos'))
 <div class="tab-panel active" data-tab-panel="media-video">
       <div class="media-grid">
 @forelse(($latestVideos ?? collect())->take(5) as $video)
@@ -967,7 +1013,9 @@
       </div>
       <a class="media-view-all" href="{{ $videosUrl }}">مشاهده همه ویدیوها</a>
 </div>
-<div class="tab-panel" data-tab-panel="media-image">
+@endif
+@if($sectionEnabled('galleries'))
+<div class="tab-panel {{ !$sectionEnabled('videos') ? 'active' : '' }}" data-tab-panel="media-image">
 <div class="media-grid">
 @forelse(($latestGalleries ?? collect())->take(8) as $gallery)
 <a href="{{ route('galleries.show', $gallery->slug) }}" class="media-card">
@@ -983,11 +1031,15 @@
 </div>
 <a class="media-view-all" href="{{ $galleriesUrl }}">مشاهده همه تصاویر</a>
 </div>
+@endif
 </div>
 </div>
 </section>
 
 
+@endif
+
+@if($sectionEnabled('chamber_members'))
 <section class="chamber-members-home" id="chamber-members">
 <div class="site-container">
 <div class="section-heading chamber-members-heading members-section-heading">
@@ -1032,6 +1084,7 @@
 </div>
 </div>
 </section>
+@endif
 
 </main>
 
