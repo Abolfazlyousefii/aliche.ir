@@ -70,9 +70,15 @@
 <div class="site-container">
 <div class="footer-main">
 <div class="footer-col footer-brand-col">
-<img alt="{{ $siteTitle }}" src="{{ $logo }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ asset('assets/img/asnaf-seal.svg') }}';"/>
-<h3>{{ $siteTitle }}</h3>
-<div>{!! $description !!}</div>
+<div class="footer-brand-identity">
+    <span class="footer-logo-frame">
+        <img alt="{{ $siteTitle }}" src="{{ $logo }}" loading="lazy" decoding="async" width="84" height="84" onerror="this.onerror=null;this.src='{{ asset('assets/img/asnaf-seal.svg') }}';"/>
+    </span>
+    <div class="footer-brand-copy">
+        <h3>{{ $siteTitle }}</h3>
+        <div class="footer-brand-description">{!! $description !!}</div>
+    </div>
+</div>
 </div>
 @foreach($footerGroups as $column)
 @php
@@ -81,7 +87,7 @@
 <div class="footer-col footer-accordion" data-footer-accordion="quick-links">
 <button class="footer-accordion-toggle" type="button" aria-expanded="false" aria-controls="{{ $panelId }}"><span>{{ $column['title'] }}</span><span class="footer-accordion-symbol" aria-hidden="true"></span></button>
 <div class="footer-accordion-panel" id="{{ $panelId }}">
-<ul>
+<ul class="footer-quick-links">
 @foreach($column['links'] as $item)
 <li><a href="{{ $item['url'] }}" target="{{ $item['target'] ?? '_self' }}" @if(($item['target'] ?? '_self') === '_blank') rel="noopener" @endif><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg><span>{{ $item['title'] }}</span></a></li>
 @endforeach
