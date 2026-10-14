@@ -15,8 +15,16 @@
         }
         return deleted;
     };
+    // Only affects the loaded thumbnails; selections on other pages stay intact.
+    const toggleVisibleDeleteIds = (selectedIds, visibleIds) => {
+        const ids = [...new Set(visibleIds.map(String))];
+        if (!ids.length) return selectedIds;
+        const allSelected = ids.every((id) => selectedIds.has(id));
+        ids.forEach((id) => allSelected ? selectedIds.delete(id) : selectedIds.add(id));
+        return selectedIds;
+    };
     if (typeof module !== 'undefined' && module.exports) {
-        module.exports = { forgetDeletedIds };
+        module.exports = { forgetDeletedIds, toggleVisibleDeleteIds };
     }
     if (typeof document === 'undefined') return;
     // Prevent the two legacy media-picker implementations in admin.js from
@@ -628,8 +636,7 @@
                 if (!state.deleteMode || state.deleting) return;
                 const visible = $('[data-mm2-id]', grid).map((item) => item.dataset.mm2Id);
                 if (!visible.length) return;
-                const allMarked = visible.every((id) => state.deleteIds.has(id));
-                visible.forEach((id) => allMarked ? state.deleteIds.delete(id) : state.deleteIds.add(id));
+                toggleVisibleDeleteIds(state.deleteIds, visible);
                 render();
             });
             $('[data-mm2-clear-delete]', modal).addEventListener('click', () => {
