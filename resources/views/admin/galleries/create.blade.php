@@ -40,7 +40,19 @@
             <small class="text-muted d-block mt-1">اگر کاور جدا انتخاب نشود، اولین تصویر گالری به‌صورت خودکار کاور می‌شود.</small>
             <div id="coverMediaPreview" class="mt-2"></div>
         </div>
-        <div class="col-md-6"><label class="form-label" for="images">تصاویر گالری</label><input class="form-control" id="images" name="images[]" type="file" accept="image/*" multiple data-skip-media-picker><small class="text-muted">امکان انتخاب چند تصویر وجود دارد. حداکثر حجم هر تصویر ۴ مگابایت است.</small></div>
+        <div class="col-md-6">
+            <label class="form-label" for="images">تصاویر گالری</label>
+            <input class="form-control" id="images" name="images[]" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/*" multiple data-skip-media-picker @if(request()->user()->hasPermission('media.upload')) data-gallery-bulk-upload @endif>
+            @if(request()->user()->hasPermission('media.upload'))
+                <small class="text-muted d-block mt-1">می‌توانید یک‌باره ۶۰ تصویر یا بیشتر انتخاب کنید. هر تصویر (حداکثر ۵ مگابایت) جداگانه در کتابخانه آپلود و خودکار به انتخاب‌های گالری اضافه می‌شود.</small>
+                <div class="mt-2" data-gallery-bulk-status role="status" aria-live="polite">هنوز تصویری برای آپلود انتخاب نشده است.</div>
+                <progress class="admin-picker-bulk-progress mt-2" data-gallery-bulk-progress value="0" max="100" hidden style="width:100%;height:12px"></progress>
+                <ul class="text-danger small mt-2" data-gallery-bulk-errors></ul>
+                <button type="button" class="admin-secondary-btn mt-2" data-gallery-bulk-retry hidden>تلاش مجدد برای تصاویر ناموفق</button>
+            @else
+                <small class="text-muted d-block mt-1">انتخاب چند فایل به روش معمول امکان‌پذیر است. آپلود مرحله‌ای به مجوز «آپلود رسانه» نیاز دارد.</small>
+            @endif
+        </div>
 
         <div class="col-12">
             <label class="form-label" for="gallery_media_ids">انتخاب از کتابخانه تصاویر</label>
