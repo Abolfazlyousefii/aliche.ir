@@ -4,6 +4,9 @@
     // Kept independent of the DOM for regression tests and consistent cleanup.
     const forgetDeletedIds = (ids, state) => {
         const deleted = new Set(ids.map(String));
+        for (const selection of state.genericSelections || []) {
+            selection.ids = selection.ids.filter((id) => !deleted.has(String(id)));
+        }
         for (const id of deleted) {
             state.activeIds?.delete(id);
             state.deleteIds?.delete(id);
@@ -35,6 +38,7 @@
         deleteMode: false, deleteIds: new Set(), pendingDeleteIds: [],
     };
     let modal, grid, count, preview, apply, loadMore, uploadForm, searchTimer;
+    const genericSelections = new Set();
     const isUploadAllowed = !!root.adminMediaCanUpload;
     const isDeleteAllowed = !!root.adminMediaCanDelete;
     const visibleSelection = () => state.active ? Array.from(state.active.ids) : [];
@@ -403,6 +407,7 @@
             deleteIds: state.deleteIds,
             items: state.items,
             selected: state.selected,
+            genericSelections,
         });
         $('.mm2-tile-container', grid).forEach((container) => {
             if (deleted.has($('[data-mm2-id]', container)?.dataset.mm2Id)) container.remove();
@@ -665,13 +670,14 @@
             box.innerHTML = '<button type="button" class="admin-secondary-btn">انتخاب از کتابخانه</button><div class="mm2-generic-items"></div>';
             input.insertAdjacentElement('afterend', box);
             const items = $('.mm2-generic-items', box);
-            let ids = [];
+            const selection = { ids: [] };
+            genericSelections.add(selection);
             $('button', box).addEventListener('click', () => open({
-                multiple, selectedIds: ids,
+                multiple, selectedIds: selection.ids,
                 onApply: (next) => {
-                    ids = next;
+                    selection.ids = next;
                     items.replaceChildren();
-                    ids.forEach((id) => {
+                    selection.ids.forEach((id) => {
                         const item = getItem(id);
                         const hidden = document.createElement('input');
                         hidden.type = 'hidden'; hidden.name = name; hidden.value = id;
