@@ -72,6 +72,9 @@
         @endphp
         <link href="{{ asset('assets/admin/css/form-workspace.css') }}?v={{ is_file($formWorkspaceCss) ? filemtime($formWorkspaceCss) : '1' }}" rel="stylesheet">
     @endif
+    @if(request()->routeIs('admin.media.index'))
+        <link rel="stylesheet" href="{{ asset('assets/admin/css/media-library-v3.css') }}?v={{ filemtime(public_path('assets/admin/css/media-library-v3.css')) }}">
+    @endif
 </head>
 <body class="admin-phase2">
     <a class="admin-skip-link" href="#adminMainContent">رفتن به محتوای اصلی</a>

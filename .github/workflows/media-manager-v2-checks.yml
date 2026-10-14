@@ -9,11 +9,14 @@ on:
       - 'app/Services/MediaDeletionService.php'
       - 'app/Models/Media.php'
       - 'resources/views/admin/galleries/**'
+      - 'resources/views/admin/media/index.blade.php'
       - 'resources/views/admin/layouts/app.blade.php'
       - 'public/assets/admin/**'
       - 'tests/Feature/Admin/GalleryBulkMediaTest.php'
       - 'tests/Feature/Admin/MediaManagerDeletionTest.php'
+      - 'tests/Feature/Admin/MediaLibraryPageV3Test.php'
       - 'tests/js/media-manager-delete.test.cjs'
+      - 'tests/js/media-library-v3.test.cjs'
       - 'tests/js/media-bulk-upload.test.cjs'
       - '.github/workflows/media-manager-v2-checks.yml'
   push:
@@ -25,6 +28,7 @@ on:
       - 'app/Services/MediaDeletionService.php'
       - 'app/Models/Media.php'
       - 'resources/views/admin/galleries/**'
+      - 'resources/views/admin/media/index.blade.php'
       - 'public/assets/admin/**'
       - '.github/workflows/media-manager-v2-checks.yml'
   workflow_dispatch:
@@ -58,9 +62,10 @@ jobs:
           php -l app/Services/MediaDeletionService.php
           node --check public/assets/admin/js/media-bulk-upload.js
           node --check public/assets/admin/js/media-manager-v2.js
+          node --check public/assets/admin/js/media-library-v3.js
           node --check public/assets/admin/js/admin.js
       - name: Node upload queue tests
-        run: node --test tests/js/media-bulk-upload.test.cjs tests/js/media-manager-delete.test.cjs
+        run: node --test tests/js/media-bulk-upload.test.cjs tests/js/media-manager-delete.test.cjs tests/js/media-library-v3.test.cjs
       - name: Gallery integration tests (never production database)
         env:
           APP_ENV: testing
@@ -69,7 +74,7 @@ jobs:
           CACHE_STORE: array
           SESSION_DRIVER: array
           QUEUE_CONNECTION: sync
-        run: vendor/bin/phpunit tests/Feature/Admin/GalleryBulkMediaTest.php tests/Feature/Admin/MediaManagerDeletionTest.php
+        run: vendor/bin/phpunit tests/Feature/Admin/GalleryBulkMediaTest.php tests/Feature/Admin/MediaManagerDeletionTest.php tests/Feature/Admin/MediaLibraryPageV3Test.php
       - name: Compile Blade views
         env:
           APP_ENV: testing

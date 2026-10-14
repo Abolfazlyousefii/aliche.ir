@@ -18,12 +18,23 @@ class MediaController extends Controller
 {
     public function index(Request $request): View
     {
-        $search = trim((string) $request->query('search'));
+        $search = trim((string) $request->query('search', ''));
+        $sort = (string) $request->query('sort', 'newest');
         $media = Media::query()->with('uploader')
-            ->when($search, fn ($q) => $q->where(fn ($q) => $q->where('title', 'like', "%$search%")->orWhere('original_name', 'like', "%$search%")->orWhere('alt_text', 'like', "%$search%")))
-            ->when($request->query('mime'), fn ($q, $mime) => $q->where('mime_type', 'like', "$mime%"))
-            ->orderBy('created_at', $request->query('sort') === 'oldest' ? 'asc' : 'desc')
-            ->paginate(24)->withQueryString();
+            ->when($search !== '', fn ($q) => $q->where(fn ($q) => $q
+                ->where('title', 'like', "%{$search}%")
+                ->orWhere('original_name', 'like', "%{$search}%")
+                ->orWhere('alt_text', 'like', "%{$search}%")))
+            ->when($request->query('mime') === 'image/', fn ($q) => $q->images());
+
+        match ($sort) {
+            'oldest' => $media->orderBy('created_at')->orderBy('id'),
+            'largest' => $media->orderByDesc('size')->orderByDesc('id'),
+            'smallest' => $media->orderBy('size')->orderByDesc('id'),
+            default => $media->orderByDesc('created_at')->orderByDesc('id'),
+        };
+
+        $media = $media->paginate(24)->withQueryString();
 
         return view('admin.media.index', compact('media', 'search'));
     }

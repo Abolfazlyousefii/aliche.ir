@@ -119,8 +119,8 @@ class GalleryBulkMediaTest extends TestCase
             ->assertSee('data-mm2-gallery-form', false)
             ->assertSee('data-mm2-workspace', false);
         $this->get(route('admin.media.index'))->assertOk()
-            ->assertSee('data-media-dropzone', false)
-            ->assertSee('data-media-bulk-progress', false)
+            ->assertSee('data-ml3-upload', false)
+            ->assertSee('data-ml3-upload-progress', false)
             ->assertSee('multiple', false);
     }
 
