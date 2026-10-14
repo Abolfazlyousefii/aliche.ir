@@ -47,11 +47,14 @@ class HomeController extends Controller
 
     public function index(AdvertisementService $advertisementService, MenuService $menus, SettingService $settings, DailyNewsService $dailyNewsService): View
     {
-        $sections = HomeSection::query()
-            ->active()
+        // Keep the visibility of all saved sections, not just active ones.
+        // A missing legacy section defaults to visible for compatibility.
+        $allSections = HomeSection::query()
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
+        $sectionVisibility = $allSections->pluck('is_active', 'key')->all();
+        $sections = $allSections->filter(fn (HomeSection $section) => $section->is_active)->values();
 
         $latestPosts = $this->latestPosts();
 
@@ -314,6 +317,7 @@ class HomeController extends Controller
         $advertisements = $bannerAdvertisements;
 
         return view('frontend.home', compact(
+            'sectionVisibility',
             'sections',
             'importantPosts',
             'importantNewsPosts',
