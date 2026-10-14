@@ -1058,6 +1058,11 @@
     border-radius: 0;
   }
 
+  .single-post-page .post-featured-img {
+    height: auto;
+    aspect-ratio: 16 / 10;
+  }
+
   .single-post-page .post-lead {
     padding-right: 13px;
     font-size: 16px;
