@@ -3,6 +3,8 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Gallery;
+use App\Models\Commission;
+use App\Models\CommissionSession;
 use App\Models\Media;
 use App\Models\Permission;
 use App\Models\Role;
@@ -167,6 +169,74 @@ class MediaManagerDeletionTest extends TestCase
         $this->assertDatabaseHas('media', ['id' => $media->id]);
         $this->assertDatabaseHas('gallery_images', ['id' => $image->id]);
         Storage::disk('public')->assertExists($media->path);
+    }
+
+    private function commissionSessionWith(array $attributes): CommissionSession
+    {
+        $commission = Commission::query()->create([
+            'title' => 'کمیسیون آزمون حذف رسانه',
+            'slug' => 'test-commission-'.strtolower(\Illuminate\Support\Str::random(8)),
+            'status' => 'draft',
+        ]);
+
+        return CommissionSession::query()->create([
+            'commission_id' => $commission->id,
+            'title' => 'صورت‌جلسه آزمون',
+            'status' => 'draft',
+            ...$attributes,
+        ]);
+    }
+
+    public function test_commission_session_minutes_file_blocks_permanent_media_deletion(): void
+    {
+        $medium = $this->medium('minutes-reference');
+        $this->commissionSessionWith(['minutes_file' => $medium->path]);
+
+        $this->deleteJson(route('admin.media.destroy', $medium))
+            ->assertStatus(409)->assertJsonPath('status', 'blocked');
+
+        $this->assertDatabaseHas('media', ['id' => $medium->id]);
+        Storage::disk('public')->assertExists($medium->path);
+    }
+
+    public function test_commission_session_json_images_and_attachments_block_deletion_even_for_current_gallery(): void
+    {
+        $medium = $this->medium('json-reference');
+        $gallery = Gallery::query()->create([
+            'title' => 'گالری آزمایشی', 'slug' => 'gallery-commission-ref',
+            'status' => 'draft', 'cover_image' => $medium->path,
+        ]);
+        $galleryImage = $gallery->images()->create([
+            'image' => $medium->path, 'sort_order' => 10,
+        ]);
+        $this->commissionSessionWith([
+            'attachments' => [['name' => 'test.jpg', 'path' => $medium->path]],
+            'images' => [['name' => 'test.jpg', 'path' => $medium->path]],
+        ]);
+
+        $this->deleteJson(route('admin.media.destroy', $medium).'?gallery_id='.$gallery->id)
+            ->assertStatus(409)->assertJsonPath('status', 'blocked');
+
+        $this->assertDatabaseHas('gallery_images', ['id' => $galleryImage->id]);
+        $this->assertSame($medium->path, $gallery->fresh()->cover_image);
+        Storage::disk('public')->assertExists($medium->path);
+    }
+
+    public function test_escaped_json_media_path_in_commission_session_blocks_delete(): void
+    {
+        $medium = $this->medium('nested-dir-photo', 'media/2026/10/nested-dir-photo.jpg');
+        $session = $this->commissionSessionWith(['description' => 'صورت‌جلسه']);
+
+        // Some legacy JSON serializers persist paths with escaped slashes.
+        $escaped = str_replace('/', '\\/', $medium->path);
+        \Illuminate\Support\Facades\DB::table('commission_sessions')
+            ->where('id', $session->id)->update([
+                'images' => json_encode([['path' => $escaped]], JSON_UNESCAPED_SLASHES),
+            ]);
+
+        $this->deleteJson(route('admin.media.destroy', $medium))
+            ->assertStatus(409)->assertJsonPath('status', 'blocked');
+        Storage::disk('public')->assertExists($medium->path);
     }
 
     public function test_bulk_delete_preserves_used_and_external_files_but_deletes_free_images(): void
