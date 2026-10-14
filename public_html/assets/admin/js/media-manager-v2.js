@@ -33,7 +33,7 @@
     const selectedDetails = () => {
         const ids = visibleSelection();
         count.textContent = ids.length.toLocaleString('fa-IR') + ' تصویر انتخاب‌شده';
-        apply.disabled = !ids.length || !!state.queue?.isBusy();
+        apply.disabled = !!state.queue?.isBusy();
         apply.textContent = state.active?.multiple ? 'افزودن تصاویر انتخاب‌شده' : 'انتخاب تصویر';
         // Render a compact selection strip; the rest remains in the grid.
         preview.replaceChildren();
