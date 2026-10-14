@@ -156,7 +156,6 @@
         });
         all('[data-ml3-close]').forEach((button) => button.addEventListener('click', () => close(detailModal)));
         all('[data-ml3-cancel-delete]').forEach((button) => button.addEventListener('click', () => close(confirmModal)));
-        one('[data-ml3-copy]', detailModal || page);
         details?.addEventListener('click', async (event) => {
             const button = event.target.closest('[data-ml3-copy]');
             if (!button) return;
@@ -269,14 +268,17 @@
                 status.textContent = files.length.toLocaleString('fa-IR') + ' تصویر برای آپلود آماده است…';
                 void queue.run(files);
             };
+            let stagedFiles = [];
             input?.addEventListener('change', () => {
-                const files = Array.from(input.files || []);
-                input.value = '';
-                run(files);
+                stagedFiles = Array.from(input.files || []);
+                status.textContent = stagedFiles.length
+                    ? stagedFiles.length.toLocaleString('fa-IR') + ' تصویر انتخاب شده؛ برای ارسال، «شروع آپلود» را بزنید.'
+                    : 'فایلی انتخاب نشده است.';
             });
             uploadForm.addEventListener('submit', (event) => {
                 event.preventDefault();
-                const files = Array.from(input.files || []);
+                const files = stagedFiles.length ? [...stagedFiles] : Array.from(input.files || []);
+                stagedFiles = [];
                 input.value = '';
                 if (files.length) run(files);
                 else if (!queue.isBusy()) status.textContent = 'ابتدا تصاویر موردنظر را انتخاب کنید.';
