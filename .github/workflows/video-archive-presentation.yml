@@ -1,0 +1,55 @@
+name: Video archive presentation checks
+
+on:
+  pull_request:
+    paths:
+      - 'resources/views/frontend/videos/**'
+      - 'public/assets/css/video-archive.css'
+      - 'public_html/assets/css/video-archive.css'
+      - 'tests/Feature/Frontend/VideoArchivePresentationTest.php'
+      - '.github/workflows/video-archive-presentation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'resources/views/frontend/videos/**'
+      - 'public/assets/css/video-archive.css'
+      - '.github/workflows/video-archive-presentation.yml'
+  workflow_dispatch:
+
+jobs:
+  video-archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, gd, fileinfo, xml, zip
+          coverage: none
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Configure isolated test environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+          mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache
+      - name: Check CSS copies and PHP syntax
+        run: |
+          cmp public/assets/css/video-archive.css public_html/assets/css/video-archive.css
+          php -l tests/Feature/Frontend/VideoArchivePresentationTest.php
+      - name: Test archive presentation and search
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          QUEUE_CONNECTION: sync
+        run: vendor/bin/phpunit tests/Feature/Frontend/VideoArchivePresentationTest.php
+      - name: Compile all Blade views
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+        run: php artisan view:cache
