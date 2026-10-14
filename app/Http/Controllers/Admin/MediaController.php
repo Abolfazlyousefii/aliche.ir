@@ -176,7 +176,13 @@ class MediaController extends Controller
 
     public function destroy(Request $request, Media $medium, MediaDeletionService $deletion): RedirectResponse|JsonResponse
     {
-        $outcome = $deletion->delete((int) $medium->getKey());
+        $validated = $request->validate(['gallery_id' => ['nullable', 'integer', 'exists:galleries,id']]);
+        $galleryId = isset($validated['gallery_id']) ? (int) $validated['gallery_id'] : null;
+        if ($galleryId) {
+            abort_unless($request->user()->hasPermission('galleries.edit'), 403);
+        }
+
+        $outcome = $deletion->delete((int) $medium->getKey(), $galleryId);
 
         if ($request->expectsJson()) {
             $http = match ($outcome['status']) {
@@ -200,18 +206,26 @@ class MediaController extends Controller
         $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1', 'max:50'],
             'ids.*' => ['required', 'integer', 'min:1'],
+            'gallery_id' => ['nullable', 'integer', 'exists:galleries,id'],
         ]);
 
         // Process one independent, permission-checked item at a time.
         // A referenced image never causes unrelated, safe images to be removed.
+        $galleryId = isset($validated['gallery_id']) ? (int) $validated['gallery_id'] : null;
+        if ($galleryId) {
+            abort_unless($request->user()->hasPermission('galleries.edit'), 403);
+        }
+
         $outcomes = collect($validated['ids'])
             ->map(fn ($id) => (int) $id)
             ->unique()
-            ->map(fn ($id) => $deletion->delete($id))
+            ->map(fn ($id) => $deletion->delete($id, $galleryId))
             ->values();
 
         return response()->json([
             'deleted' => $outcomes->where('status', 'deleted')->pluck('id')->all(),
+            'detached_gallery_image_ids' => $outcomes->where('status', 'deleted')
+                ->flatMap(fn ($result) => $result['detached_gallery_image_ids'] ?? [])->values()->all(),
             'blocked' => $outcomes->where('status', 'blocked')->values()->all(),
             'missing' => $outcomes->where('status', 'missing')->values()->all(),
             'failed' => $outcomes->where('status', 'failed')->values()->all(),
