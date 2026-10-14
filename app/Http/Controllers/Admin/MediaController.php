@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Media;
 use App\Rules\SafeImageUpload;
+use App\Services\MediaDeletionService;
 use App\Services\MediaLibraryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -173,14 +174,47 @@ class MediaController extends Controller
         return back()->with('success', 'اطلاعات رسانه ذخیره شد.');
     }
 
-    public function destroy(Media $medium): RedirectResponse
+    public function destroy(Request $request, Media $medium, MediaDeletionService $deletion): RedirectResponse|JsonResponse
     {
-        if ($medium->inUse()) {
-            return back()->with('error', 'این رسانه در محتوا استفاده شده و حذف نشد.');
-        }
-        $medium->delete();
-        app(MediaLibraryService::class)->deleteFiles($medium);
+        $outcome = $deletion->delete((int) $medium->getKey());
 
-        return back()->with('success', 'رسانه حذف شد.');
+        if ($request->expectsJson()) {
+            $http = match ($outcome['status']) {
+                'deleted' => 200,
+                'blocked' => 409,
+                'missing' => 404,
+                default => 500,
+            };
+
+            return response()->json($outcome, $http);
+        }
+
+        return back()->with(
+            $outcome['status'] === 'deleted' ? 'success' : 'error',
+            $outcome['message']
+        );
+    }
+
+    public function bulkDestroy(Request $request, MediaDeletionService $deletion): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:50'],
+            'ids.*' => ['required', 'integer', 'min:1'],
+        ]);
+
+        // Process one independent, permission-checked item at a time.
+        // A referenced image never causes unrelated, safe images to be removed.
+        $outcomes = collect($validated['ids'])
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->map(fn ($id) => $deletion->delete($id))
+            ->values();
+
+        return response()->json([
+            'deleted' => $outcomes->where('status', 'deleted')->pluck('id')->all(),
+            'blocked' => $outcomes->where('status', 'blocked')->values()->all(),
+            'missing' => $outcomes->where('status', 'missing')->values()->all(),
+            'failed' => $outcomes->where('status', 'failed')->values()->all(),
+        ]);
     }
 }
