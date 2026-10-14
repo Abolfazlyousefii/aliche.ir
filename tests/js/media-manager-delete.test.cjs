@@ -69,3 +69,20 @@ test('bulk selection controls and small photo-scoped delete icon are present', (
     assert.match(css, /\.mm2-grid \.mm2-tile-container > \.mm2-tile-delete\s*\{[^}]*position:\s*absolute;/);
     assert.match(css, /\.mm2-grid\.is-managing \.mm2-tile-delete\s*\{\s*display:\s*none/);
 });
+
+
+test('gallery-specific permanent delete sends edit context, and removes detached cards', () => {
+    assert.ok(source.includes("galleryId: select.closest('form[data-mm2-gallery-form]')"));
+    assert.ok(source.includes("'?gallery_id=' + encodeURIComponent(galleryId)"));
+    assert.ok(source.includes("gallery_id: Number(galleryId)"));
+    assert.ok(source.includes("detached_gallery_image_ids"));
+    assert.ok(source.includes("$$('[data-mm2-existing-id]', workspace)"));
+    assert.ok(source.includes("const purgeDeletedFromForms = (ids, detachedImageIds = [])"));
+});
+
+test('successful deletion cleanup iterates all affected elements rather than only first match', () => {
+    assert.ok(source.includes("$$('[data-mm2-id]', grid).forEach"));
+    assert.ok(source.includes("$$('select[name=\"gallery_media_ids[]\"], select[name=\"cover_image_media_id\"]').forEach"));
+    assert.ok(source.includes("$$('.mm2-generic-items input[type=\"hidden\"]').forEach"));
+    assert.ok(!source.includes("$('.mm2-tile-container', grid).forEach"));
+});
