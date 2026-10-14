@@ -18,7 +18,9 @@ test('successful deletion evicts only confirmed IDs, including selection and cac
     const deleteIds = new Set(['11', '12']);
     const items = new Map([['11', { title: 'One' }], ['12', { title: 'Two' }], ['13', { title: 'Three' }]]);
     const selected = new Map(items);
-    forgetDeletedIds([11, '12'], { activeIds: selectedIds, deleteIds, items, selected });
+    const generic = { ids: ['11', '13'] };
+    forgetDeletedIds([11, '12'], { activeIds: selectedIds, deleteIds, items, selected, genericSelections: new Set([generic]) });
+    assert.deepEqual(generic.ids, ['13']);
 
     assert.deepEqual([...selectedIds], ['13']);
     assert.deepEqual([...deleteIds], []);
