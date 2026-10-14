@@ -28,6 +28,7 @@
         $adminUiV2Css = base_path('public/assets/admin/css/admin-ui-v2.css');
     @endphp
     <link href="{{ asset('assets/admin/css/admin-ui-v2.css') }}?v={{ is_file($adminUiV2Css) ? filemtime($adminUiV2Css) : '1' }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/media-manager-v2.css') }}?v={{ filemtime(public_path('assets/admin/css/media-manager-v2.css')) }}">
     @if(request()->routeIs(
         'admin.unions.index',
         'admin.union_members.index',
@@ -117,7 +118,6 @@
     <script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js" referrerpolicy="origin"></script>
     <script>window.adminRichTextUploadUrl = @json(route('admin.rich_text.upload')); window.adminMediaPickerUrl = @json(route('admin.media.picker')); window.adminMediaUploadUrl = @json(route('admin.media.store')); window.adminMediaMaxUploadKB = @json(config('media.max_upload_kilobytes', 5120)); window.adminMediaCanUpload = @json(request()->user()?->hasPermission('media.upload') ?? false);</script>
     <script src="{{ asset('assets/admin/js/media-bulk-upload.js') }}?v={{ filemtime(public_path('assets/admin/js/media-bulk-upload.js')) }}"></script>
-    <link rel="stylesheet" href="{{ asset('assets/admin/css/media-manager-v2.css') }}?v={{ filemtime(public_path('assets/admin/css/media-manager-v2.css')) }}">
     <script src="{{ asset('assets/admin/js/media-manager-v2.js') }}?v={{ filemtime(public_path('assets/admin/js/media-manager-v2.js')) }}"></script>
     <script src="{{ asset('assets/admin/js/admin.js') }}?v={{ filemtime(public_path('assets/admin/js/admin.js')) }}"></script>
     @php
