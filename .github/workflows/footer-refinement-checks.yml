@@ -1,0 +1,62 @@
+name: Footer presentation checks
+
+on:
+  pull_request:
+    paths:
+      - 'resources/views/frontend/partials/footer.blade.php'
+      - 'resources/views/frontend/partials/styles.blade.php'
+      - 'public/assets/css/footer-refinement.css'
+      - 'public_html/assets/css/footer-refinement.css'
+      - 'tests/Feature/Frontend/FooterPresentationTest.php'
+      - 'tests/js/footer-refinement.test.cjs'
+      - '.github/workflows/footer-refinement-checks.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'resources/views/frontend/partials/footer.blade.php'
+      - 'resources/views/frontend/partials/styles.blade.php'
+      - 'public/assets/css/footer-refinement.css'
+      - '.github/workflows/footer-refinement-checks.yml'
+  workflow_dispatch:
+
+jobs:
+  footer-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, gd, fileinfo, xml, zip
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Prepare isolated Laravel test environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+          mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache
+      - name: Validate source CSS and footer layout tests
+        run: |
+          cmp public/assets/css/footer-refinement.css public_html/assets/css/footer-refinement.css
+          node --test tests/js/footer-refinement.test.cjs
+          php -l tests/Feature/Frontend/FooterPresentationTest.php
+      - name: Test public footer on home and news archive
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          QUEUE_CONNECTION: sync
+        run: vendor/bin/phpunit tests/Feature/Frontend/FooterPresentationTest.php
+      - name: Compile Blade views
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+        run: php artisan view:cache
