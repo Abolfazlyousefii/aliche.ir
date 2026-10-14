@@ -36,14 +36,12 @@
       <div class="video-single-body">
         <div class="video-meta">
           <span>📅 {{ jalali_date($video->published_at) ?: jalali_date($video->created_at) }}</span>
-          <span>🎞 {{ $video->type_label }}</span>
           @if($video->union)<span>🏢 {{ $video->union->display_title }}</span>@endif
         </div>
         <h2>{{ $video->title }}</h2>
         <p>{{ plain_text($video->description) ?: 'توضیحی برای این ویدیو ثبت نشده است.' }}</p>
         <div class="video-tags">
           <span class="post-tag">ویدیو</span>
-          <span class="post-tag">{{ $video->type_label }}</span>
           @if($video->union)<span class="post-tag">{{ $video->union->display_title }}</span>@endif
         </div>
       @if($video->tags !== [])
@@ -65,7 +63,7 @@
               <div class="vri-thumb"><img src="{{ $relatedVideo->cover_image_url }}" alt="{{ $relatedVideo->title }}" loading="lazy" decoding="async"/><span class="vri-play-icon"></span></div>
               <div class="vri-body">
                 <strong>{{ $relatedVideo->title }}</strong>
-                <span>{{ $relatedVideo->type_label }}</span>
+                <span>مشاهده ویدئو</span>
               </div>
             </a>
           @empty
