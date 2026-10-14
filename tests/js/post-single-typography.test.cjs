@@ -47,3 +47,25 @@ test('styles target the news single view without renaming shared headings', () =
     assert.match(blade, /<h2 id="post-keywords-title">برچسب‌های این خبر<\/h2>/);
     assert.match(blade, /assets\/css\/post-single\.css/);
 });
+
+
+test('minimal editorial refinement removes heavy decoration without changing news typography', () => {
+    const refinement = css.split('Minimal editorial refinement')[1];
+    assert.ok(refinement, 'Missing news-only refinement layer');
+    assert.match(rule(refinement, '.single-post-page .post-hero-media'), /box-shadow:\s*none\s*;/);
+    assert.match(rule(refinement, '.single-post-page .latest-news-card.sidebar-card'), /box-shadow:\s*none\s*!important\s*;/);
+    assert.match(rule(refinement, '.single-post-page .post-heading-link'), /background:\s*#f2f6f8\s*;/);
+    assert.match(rule(refinement, '.single-post-page .post-keywords-section .post-tag'), /border-radius:\s*5px\s*;/);
+    assert.match(rule(refinement, '.single-post-page .post-keywords-section .post-tag::before'), /content:\s*none\s*;/);
+    assert.match(rule(refinement, '.single-post-page .latest-news-index'), /background:\s*transparent\s*;/);
+    assert.doesNotMatch(refinement, /\.single-post-page \.single-post-title\s*\{[^}]*font-size:\s*30px/);
+});
+
+test('refined mobile image preserves natural ratio and approved heading sizes', () => {
+    const refinement = css.split('Minimal editorial refinement')[1];
+    const mobile = refinement.slice(refinement.indexOf('@media (max-width: 767.98px)'));
+    assert.match(rule(mobile, '.single-post-page .single-post-title'), /font-size:\s*25px\s*;/);
+    assert.match(rule(mobile, '.single-post-page .post-keywords-section h2'), /font-size:\s*15px\s*;/);
+    assert.match(rule(mobile, '.single-post-page .post-featured-img'), /height:\s*auto\s*;/);
+    assert.match(rule(mobile, '.single-post-page .post-featured-img'), /aspect-ratio:\s*16\s*\/\s*10\s*;/);
+});
