@@ -115,7 +115,8 @@
     <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js" referrerpolicy="origin"></script>
-    <script>window.adminRichTextUploadUrl = @json(route('admin.rich_text.upload')); window.adminMediaPickerUrl = @json(route('admin.media.picker')); window.adminMediaUploadUrl = @json(route('admin.media.store'));</script>
+    <script>window.adminRichTextUploadUrl = @json(route('admin.rich_text.upload')); window.adminMediaPickerUrl = @json(route('admin.media.picker')); window.adminMediaUploadUrl = @json(route('admin.media.store')); window.adminMediaMaxUploadKB = @json(config('media.max_upload_kilobytes', 5120));</script>
+    <script src="{{ asset('assets/admin/js/media-bulk-upload.js') }}?v={{ filemtime(public_path('assets/admin/js/media-bulk-upload.js')) }}"></script>
     <script src="{{ asset('assets/admin/js/admin.js') }}?v={{ filemtime(public_path('assets/admin/js/admin.js')) }}"></script>
     @php
         $adminNavigationJs = base_path('public/assets/admin/js/navigation.js');
