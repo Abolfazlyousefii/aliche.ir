@@ -223,10 +223,10 @@
             pane.hidden = pane.dataset.mm2Pane !== tab);
     };
 
-    const open = ({ multiple = false, selectedIds = [], onApply, selectedItems = [] }) => {
+    const open = ({ multiple = false, selectedIds = [], onApply, selectedItems = [], galleryId = null }) => {
         if (!modal) return;
         const ids = selectedIds.map(String).filter(Boolean);
-        state.active = { multiple, ids: new Set(multiple ? ids : ids.slice(-1)), onApply };
+        state.active = { multiple, ids: new Set(multiple ? ids : ids.slice(-1)), onApply, galleryId };
         state.deleteMode = false;
         state.deleteIds.clear();
         state.pendingDeleteIds = [];
@@ -270,6 +270,7 @@
         const existing = Array.from(select.selectedOptions);
         open({
             multiple: select.multiple,
+            galleryId: select.closest('form[data-mm2-gallery-form]')?.dataset.mm2GalleryId || null,
             selectedIds: existing.map((option) => option.value),
             selectedItems: existing.map((option) => ({
                 id: option.value, url: option.dataset.url,
@@ -411,7 +412,8 @@
         state.pendingDeleteIds = filtered;
         const number = filtered.length.toLocaleString('fa-IR');
         $('[data-mm2-confirm-message]', modal).textContent =
-            'آیا مطمئن هستید که ' + number + ' تصویر برای حذف دائمی از کتابخانه بررسی شود؟';
+            'آیا مطمئن هستید که ' + number + ' تصویر برای همیشه از کتابخانه و هاست پاک شود؟' +
+            (state.active?.galleryId ? ' تصاویر متعلق به همین گالری نیز از آن جدا می‌شوند.' : '');
         const names = $('[data-mm2-confirm-list]', modal);
         names.replaceChildren();
         filtered.slice(0, 8).forEach((id) => {
@@ -429,7 +431,9 @@
         $('[data-mm2-confirm-delete]', modal).focus();
     };
 
-    const purgeDeletedFromForms = (ids) => {
+    const purgeDeletedFromForms = (ids, detachedImageIds = []) => {
+        // Keep a record of URLs *before* evicting the media from the picker.
+        const deletedUrls = ids.map((id) => getItem(id)?.url).filter(Boolean);
         const deleted = forgetDeletedIds(ids, {
             activeIds: state.active?.ids,
             deleteIds: state.deleteIds,
@@ -437,22 +441,50 @@
             selected: state.selected,
             genericSelections,
         });
-        $('.mm2-tile-container', grid).forEach((container) => {
-            if (deleted.has($('[data-mm2-id]', container)?.dataset.mm2Id)) container.remove();
+        $$('[data-mm2-id]', grid).forEach((tile) => {
+            if (deleted.has(tile.dataset.mm2Id)) tile.closest('.mm2-tile-container')?.remove();
         });
-        // A deleted (unattached) image must not remain in any unsaved form.
-        $('select[name="gallery_media_ids[]"], select[name="cover_image_media_id"]').forEach((select) => {
+
+        $$('select[name="gallery_media_ids[]"], select[name="cover_image_media_id"]').forEach((select) => {
             let changed = false;
             Array.from(select.options).forEach((option) => {
                 if (deleted.has(option.value)) { option.remove(); changed = true; }
             });
             if (changed) select.dispatchEvent(new Event('change', { bubbles: true }));
         });
-        $('.mm2-generic-items input[type="hidden"]').forEach((input) => {
+
+        $$('.mm2-generic-items input[type="hidden"]').forEach((input) => {
             if (deleted.has(input.value)) {
                 const next = input.nextElementSibling;
                 if (next?.matches('img')) next.remove();
                 input.remove();
+            }
+        });
+
+        const detached = new Set(detachedImageIds.map(String));
+        $$('form[data-mm2-gallery-form]').forEach((form) => {
+            const workspace = $('[data-mm2-workspace]', form);
+            if (!workspace) return;
+            $$('[data-mm2-existing-id]', workspace).forEach((card) => {
+                if (detached.has(card.dataset.mm2ExistingId)) card.remove();
+            });
+            if (detached.size) {
+                syncWorkspace(form);
+                syncOrder(form);
+            }
+            // The backend can replace a deleted gallery cover with its next image.
+            const coverPreview = $('#coverMediaPreview', form);
+            const coverImage = $('img', coverPreview || form);
+            if (coverImage && deletedUrls.some((url) => coverImage.src === url)) {
+                const replacement = $('[data-mm2-item]:not([hidden]) img', workspace);
+                coverPreview.replaceChildren();
+                if (replacement) {
+                    const image = document.createElement('img');
+                    image.src = replacement.src;
+                    image.alt = 'تصویر کاور';
+                    image.className = 'mm2-cover-image';
+                    coverPreview.appendChild(image);
+                }
             }
         });
         state.total = Math.max(0, state.total - deleted.size);
@@ -477,19 +509,21 @@
                 let body;
                 try {
                     const single = chunk.length === 1;
+                    const galleryId = state.active?.galleryId || null;
+                    const singleUrl = root.adminMediaDeleteUrl.replace('__MEDIA_ID__', encodeURIComponent(chunk[0]));
                     const url = single
-                        ? root.adminMediaDeleteUrl.replace('__MEDIA_ID__', encodeURIComponent(chunk[0]))
+                        ? (galleryId ? singleUrl + '?gallery_id=' + encodeURIComponent(galleryId) : singleUrl)
                         : root.adminMediaBulkDeleteUrl;
                     response = await fetch(url, {
                         method: 'DELETE',
                         credentials: 'same-origin',
                         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
-                        body: single ? undefined : JSON.stringify({ ids: chunk.map(Number) }),
+                        body: single ? undefined : JSON.stringify({ ids: chunk.map(Number), ...(galleryId ? { gallery_id: Number(galleryId) } : {}) }),
                     });
                     body = await response.json();
                     if (single && body?.status) {
                         body = body.status === 'deleted'
-                            ? { deleted: [body.id], blocked: [], missing: [], failed: [] }
+                            ? { deleted: [body.id], detached_gallery_image_ids: body.detached_gallery_image_ids || [], blocked: [], missing: [], failed: [] }
                             : { deleted: [], blocked: body.status === 'blocked' ? [body] : [],
                                 missing: body.status === 'missing' ? [body] : [],
                                 failed: body.status === 'failed' ? [body] : [] };
@@ -512,7 +546,7 @@
                 for (const category of ['blocked', 'missing', 'failed']) {
                     results[category].push(...(body[category] || []));
                 }
-                purgeDeletedFromForms(body.deleted || []);
+                purgeDeletedFromForms(body.deleted || [], body.detached_gallery_image_ids || []);
             }
             const report = [
                 results.deleted.length.toLocaleString('fa-IR') + ' حذف موفق',
