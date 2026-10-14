@@ -16,7 +16,7 @@ use Throwable;
 
 class MediaController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $search = trim((string) $request->query('search', ''));
         $sort = (string) $request->query('sort', 'newest');
@@ -35,6 +35,21 @@ class MediaController extends Controller
         };
 
         $media = $media->paginate(24)->withQueryString();
+
+        // Keep server-rendered cards, permissions and filtering identical
+        // for the initial page and subsequent batches.
+        if ($request->boolean('media_scroll') && $request->expectsJson()) {
+            return response()->json([
+                'html' => view('admin.media.partials.tiles', [
+                    'media' => $media,
+                    'canDelete' => $request->user()->hasPermission('media.delete'),
+                    'canEdit' => $request->user()->hasPermission('media.edit'),
+                ])->render(),
+                'next_page_url' => $media->nextPageUrl(),
+                'current_page' => $media->currentPage(),
+                'total' => $media->total(),
+            ]);
+        }
 
         return view('admin.media.index', compact('media', 'search'));
     }
