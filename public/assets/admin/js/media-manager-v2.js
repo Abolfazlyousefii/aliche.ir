@@ -1,6 +1,20 @@
 /* Unified, accessible Media Manager V2. Uses existing Laravel media routes. */
 (function (root) {
     'use strict';
+    // Kept independent of the DOM for regression tests and consistent cleanup.
+    const forgetDeletedIds = (ids, state) => {
+        const deleted = new Set(ids.map(String));
+        for (const id of deleted) {
+            state.activeIds?.delete(id);
+            state.deleteIds?.delete(id);
+            state.items?.delete(id);
+            state.selected?.delete(id);
+        }
+        return deleted;
+    };
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = { forgetDeletedIds };
+    }
     if (typeof document === 'undefined') return;
     // Prevent the two legacy media-picker implementations in admin.js from
     // attaching a second modal to the same controls.
@@ -17,14 +31,17 @@
     const state = {
         items: new Map(), selected: new Map(), active: null, page: 0, pages: 1,
         total: 0, search: '', type: 'all', sort: 'newest', loading: false,
-        request: null, queryId: 0, queue: null,
+        request: null, queryId: 0, queue: null, deleting: false,
+        deleteMode: false, deleteIds: new Set(), pendingDeleteIds: [],
     };
     let modal, grid, count, preview, apply, loadMore, uploadForm, searchTimer;
     const isUploadAllowed = !!root.adminMediaCanUpload;
+    const isDeleteAllowed = !!root.adminMediaCanDelete;
     const visibleSelection = () => state.active ? Array.from(state.active.ids) : [];
     const getItem = (id) => state.selected.get(String(id)) || state.items.get(String(id));
     const close = () => {
-        if (state.queue?.isBusy()) return;
+        if (state.queue?.isBusy() || state.deleting) return;
+        if (state.pendingDeleteIds.length) { cancelDeleteConfirmation(); return; }
         modal.hidden = true;
         document.body.classList.remove('mm2-modal-open');
         state.request?.abort();
@@ -33,7 +50,7 @@
     const selectedDetails = () => {
         const ids = visibleSelection();
         count.textContent = ids.length.toLocaleString('fa-IR') + ' تصویر انتخاب‌شده';
-        apply.disabled = !!state.queue?.isBusy();
+        apply.disabled = !!state.queue?.isBusy() || state.deleting || state.deleteMode;
         apply.textContent = state.active?.multiple ? 'افزودن تصاویر انتخاب‌شده' : 'انتخاب تصویر';
         // Render a compact selection strip; the rest remains in the grid.
         preview.replaceChildren();
@@ -67,12 +84,26 @@
         items.forEach((el) => {
             const selected = !!state.active?.ids.has(el.dataset.mm2Id);
             el.classList.toggle('is-selected', selected);
-            el.setAttribute('aria-pressed', String(selected));
+            const deleteMarked = state.deleteMode && state.deleteIds.has(el.dataset.mm2Id);
+            el.classList.toggle('is-delete-marked', deleteMarked);
+            el.setAttribute('aria-pressed', String(state.deleteMode ? deleteMarked : selected));
         });
         selectedDetails();
         $('[data-mm2-library-count]', modal).textContent =
             state.items.size.toLocaleString('fa-IR') + ' از ' + state.total.toLocaleString('fa-IR') + ' تصویر';
         loadMore.hidden = state.page >= state.pages || state.loading;
+        if (isDeleteAllowed) {
+            $('[data-mm2-manage-toggle]', modal).setAttribute('aria-pressed', String(state.deleteMode));
+            $('[data-mm2-manage-toggle]', modal).textContent = state.deleteMode ? 'خروج از حالت حذف' : 'مدیریت حذف تصاویر';
+            const button = $('[data-mm2-bulk-delete]', modal);
+            const number = state.deleteIds.size;
+            button.hidden = !state.deleteMode;
+            button.disabled = !number || state.deleting;
+            button.textContent = 'حذف ' + number.toLocaleString('fa-IR') + ' تصویر از کتابخانه';
+            $('[data-mm2-delete-count]', modal).textContent = state.deleteMode
+                ? number.toLocaleString('fa-IR') + ' تصویر برای حذف مشخص شده است.'
+                : '';
+        }
     };
 
     const addItems = (items) => {
@@ -80,6 +111,8 @@
             if (!item || !item.id) return;
             const id = String(item.id);
             state.items.set(id, item);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'mm2-tile-container';
             const el = document.createElement('button');
             el.type = 'button';
             el.className = 'mm2-tile';
@@ -87,9 +120,19 @@
             el.innerHTML = '<img src="' + esc(item.thumbnail || item.url) + '" alt="' + esc(item.alt || item.title || '') +
                 '" loading="lazy"><span class="mm2-tile-check">✓</span><small>' +
                 esc(item.title || item.original_name || 'تصویر') + '</small>';
+            wrapper.appendChild(el);
+            if (isDeleteAllowed) {
+                const del = document.createElement('button');
+                del.type = 'button';
+                del.className = 'mm2-tile-delete';
+                del.dataset.mm2DeleteId = id;
+                del.textContent = 'حذف';
+                del.setAttribute('aria-label', 'حذف دائمی ' + (item.title || item.original_name || 'تصویر'));
+                wrapper.appendChild(del);
+            }
             const old = $('[data-mm2-id="' + id + '"]', grid);
-            if (old) old.replaceWith(el);
-            else grid.appendChild(el);
+            if (old) old.closest('.mm2-tile-container')?.replaceWith(wrapper);
+            else grid.appendChild(wrapper);
         });
     };
 
@@ -152,6 +195,10 @@
         if (!modal) return;
         const ids = selectedIds.map(String).filter(Boolean);
         state.active = { multiple, ids: new Set(multiple ? ids : ids.slice(-1)), onApply };
+        state.deleteMode = false;
+        state.deleteIds.clear();
+        state.pendingDeleteIds = [];
+        if (isDeleteAllowed) $('[data-mm2-delete-feedback]', modal).textContent = '';
         selectedItems.forEach((item) => {
             if (item?.id && item?.url) state.selected.set(String(item.id), item);
         });
@@ -318,6 +365,144 @@
         });
     };
 
+    const cancelDeleteConfirmation = () => {
+        if (state.deleting) return;
+        state.pendingDeleteIds = [];
+        const dialog = $('[data-mm2-confirm]', modal);
+        if (dialog) dialog.hidden = true;
+    };
+
+    const showDeleteConfirmation = (ids) => {
+        if (!isDeleteAllowed || state.queue?.isBusy() || state.deleting) return;
+        const filtered = [...new Set(ids.map(String))].filter((id) => /^\d+$/.test(id));
+        if (!filtered.length) return;
+        state.pendingDeleteIds = filtered;
+        const number = filtered.length.toLocaleString('fa-IR');
+        $('[data-mm2-confirm-message]', modal).textContent =
+            'آیا مطمئن هستید که ' + number + ' تصویر برای حذف دائمی از کتابخانه بررسی شود؟';
+        const names = $('[data-mm2-confirm-list]', modal);
+        names.replaceChildren();
+        filtered.slice(0, 8).forEach((id) => {
+            const item = getItem(id);
+            const li = document.createElement('li');
+            li.textContent = item?.title || item?.original_name || 'رسانه شماره ' + id;
+            names.appendChild(li);
+        });
+        if (filtered.length > 8) {
+            const li = document.createElement('li');
+            li.textContent = 'و ' + (filtered.length - 8).toLocaleString('fa-IR') + ' تصویر دیگر';
+            names.appendChild(li);
+        }
+        $('[data-mm2-confirm]', modal).hidden = false;
+        $('[data-mm2-confirm-delete]', modal).focus();
+    };
+
+    const purgeDeletedFromForms = (ids) => {
+        const deleted = forgetDeletedIds(ids, {
+            activeIds: state.active?.ids,
+            deleteIds: state.deleteIds,
+            items: state.items,
+            selected: state.selected,
+        });
+        $('.mm2-tile-container', grid).forEach((container) => {
+            if (deleted.has($('[data-mm2-id]', container)?.dataset.mm2Id)) container.remove();
+        });
+        // A deleted (unattached) image must not remain in any unsaved form.
+        $('select[name="gallery_media_ids[]"], select[name="cover_image_media_id"]').forEach((select) => {
+            let changed = false;
+            Array.from(select.options).forEach((option) => {
+                if (deleted.has(option.value)) { option.remove(); changed = true; }
+            });
+            if (changed) select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        $('.mm2-generic-items input[type="hidden"]').forEach((input) => {
+            if (deleted.has(input.value)) {
+                const next = input.nextElementSibling;
+                if (next?.matches('img')) next.remove();
+                input.remove();
+            }
+        });
+        state.total = Math.max(0, state.total - deleted.size);
+        render();
+    };
+
+    const executeConfirmedDelete = async () => {
+        const ids = [...state.pendingDeleteIds];
+        if (!isDeleteAllowed || !ids.length || state.deleting || state.queue?.isBusy()) return;
+        state.deleting = true;
+        $('[data-mm2-confirm-delete]', modal).disabled = true;
+        $('[data-mm2-cancel-delete]', modal).disabled = true;
+        const status = $('[data-mm2-delete-feedback]', modal);
+        const results = { deleted: [], blocked: [], missing: [], failed: [] };
+        try {
+            const csrf = $('meta[name="csrf-token"]')?.content || '';
+            for (let start = 0; start < ids.length; start += 10) {
+                const chunk = ids.slice(start, start + 10);
+                status.textContent = 'در حال بررسی حذف ' + Math.min(start + chunk.length, ids.length).toLocaleString('fa-IR') +
+                    ' از ' + ids.length.toLocaleString('fa-IR') + ' تصویر…';
+                let response;
+                let body;
+                try {
+                    const single = chunk.length === 1;
+                    const url = single
+                        ? root.adminMediaDeleteUrl.replace('__MEDIA_ID__', encodeURIComponent(chunk[0]))
+                        : root.adminMediaBulkDeleteUrl;
+                    response = await fetch(url, {
+                        method: 'DELETE',
+                        credentials: 'same-origin',
+                        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                        body: single ? undefined : JSON.stringify({ ids: chunk.map(Number) }),
+                    });
+                    body = await response.json();
+                    if (single && body?.status) {
+                        body = body.status === 'deleted'
+                            ? { deleted: [body.id], blocked: [], missing: [], failed: [] }
+                            : { deleted: [], blocked: body.status === 'blocked' ? [body] : [],
+                                missing: body.status === 'missing' ? [body] : [],
+                                failed: body.status === 'failed' ? [body] : [] };
+                    } else if (!response.ok || !Array.isArray(body?.deleted)) {
+                        throw new Error(body?.message || 'پاسخ سرور معتبر نیست.');
+                    }
+                } catch (error) {
+                    // No blind retry of destructive requests: the server might
+                    // have completed them before the connection was lost.
+                    results.failed.push(...chunk.map((id) => ({
+                        id: Number(id), message: 'نتیجه حذف مشخص نیست؛ کتابخانه را بازخوانی کنید.',
+                    })));
+                    if (response?.status === 419 || response?.status === 403) {
+                        status.textContent = 'نشست کاربری یا دسترسی حذف معتبر نیست؛ صفحه را بازخوانی کنید.';
+                        break;
+                    }
+                    continue;
+                }
+                results.deleted.push(...(body.deleted || []));
+                for (const category of ['blocked', 'missing', 'failed']) {
+                    results[category].push(...(body[category] || []));
+                }
+                purgeDeletedFromForms(body.deleted || []);
+            }
+            const report = [
+                results.deleted.length.toLocaleString('fa-IR') + ' حذف موفق',
+                results.blocked.length.toLocaleString('fa-IR') + ' محافظت‌شده',
+                results.missing.length.toLocaleString('fa-IR') + ' ناموجود',
+                results.failed.length.toLocaleString('fa-IR') + ' ناموفق یا نامشخص',
+            ].join('؛ ');
+            const explanations = [...results.blocked, ...results.failed].slice(0, 5)
+                .map((entry) => (getItem(entry.id)?.title || 'تصویر ' + entry.id) + ': ' + entry.message);
+            status.textContent = report + (explanations.length ? ' — ' + explanations.join(' | ') : '');
+            state.deleteIds.clear();
+        } finally {
+            state.deleting = false;
+            state.pendingDeleteIds = [];
+            $('[data-mm2-confirm]', modal).hidden = true;
+            $('[data-mm2-confirm-delete]', modal).disabled = false;
+            $('[data-mm2-cancel-delete]', modal).disabled = false;
+            render();
+            // Refresh server state after the batch, without losing gallery selection.
+            void loadPage(true);
+        }
+    };
+
     const initModal = () => {
         modal = document.createElement('div');
         modal.className = 'mm2-modal';
@@ -332,6 +517,9 @@
             '<div class="mm2-filters"><input type="search" data-mm2-search aria-label="جستجوی تصاویر" placeholder="جستجو در نام، عنوان و توضیحات…">' +
             '<select data-mm2-type aria-label="فرمت"><option value="all">همه فرمت‌ها</option><option value="jpg">JPG</option><option value="png">PNG</option><option value="webp">WebP</option><option value="gif">GIF</option></select>' +
             '<select data-mm2-sort aria-label="مرتب‌سازی"><option value="newest">جدیدترین</option><option value="oldest">قدیمی‌ترین</option><option value="largest">حجم بیشتر</option></select></div>' +
+            (isDeleteAllowed ? '<div class="mm2-delete-toolbar"><button type="button" class="admin-secondary-btn" data-mm2-manage-toggle aria-pressed="false">مدیریت حذف تصاویر</button>' +
+                '<span data-mm2-delete-count></span><button type="button" class="admin-danger-btn" data-mm2-bulk-delete hidden>حذف تصاویر انتخاب‌شده</button></div>' +
+                '<p class="mm2-delete-feedback" data-mm2-delete-feedback role="status" aria-live="polite"></p>' : '') +
             '<div class="mm2-grid" role="group" aria-label="فهرست تصاویر"></div>' +
             '<div class="mm2-load-row"><span data-mm2-library-count></span><span data-mm2-load-state aria-live="polite"></span>' +
             '<button type="button" data-mm2-more>تصاویر بیشتر</button></div></div>' +
@@ -347,6 +535,14 @@
             '<div class="mm2-selected-list"></div><button class="admin-secondary-btn" type="button" data-mm2-clear>پاک کردن انتخاب‌ها</button></aside></div>' +
             '<footer class="mm2-footer"><span>تصاویر آپلودشده در کتابخانه می‌مانند؛ ثبت در گالری پس از ذخیره فرم است.</span>' +
             '<button type="button" class="admin-primary-btn" data-mm2-apply>افزودن تصاویر انتخاب‌شده</button></footer>' +
+            (isDeleteAllowed ? '<div data-mm2-confirm class="mm2-delete-confirm" hidden>' +
+                '<section role="alertdialog" aria-modal="true" aria-labelledby="mm2ConfirmTitle" aria-describedby="mm2ConfirmMessage">' +
+                '<h3 id="mm2ConfirmTitle">تأیید حذف دائمی رسانه</h3>' +
+                '<p id="mm2ConfirmMessage" data-mm2-confirm-message></p><ul data-mm2-confirm-list></ul>' +
+                '<p class="mm2-delete-warning">این عملیات قابل بازگشت نیست؛ تصاویر استفاده‌شده در سایت حذف نخواهند شد.</p>' +
+                '<div class="mm2-delete-confirm-actions"><button type="button" class="admin-secondary-btn" data-mm2-cancel-delete>انصراف</button>' +
+                '<button type="button" class="admin-danger-btn" data-mm2-confirm-delete>بله، حذف دائمی</button></div>' +
+                '</section></div>' : '') +
             '</section>';
         document.body.appendChild(modal);
         grid = $('.mm2-grid', modal);
@@ -361,9 +557,19 @@
         });
         $$('[data-mm2-tab]', modal).forEach((button) => button.addEventListener('click', () => setTab(button.dataset.mm2Tab)));
         grid.addEventListener('click', (event) => {
+            const deleteButton = event.target.closest('[data-mm2-delete-id]');
+            if (deleteButton && isDeleteAllowed) {
+                showDeleteConfirmation([deleteButton.dataset.mm2DeleteId]);
+                return;
+            }
             const card = event.target.closest('[data-mm2-id]');
             if (!card || !state.active) return;
             const id = card.dataset.mm2Id;
+            if (state.deleteMode) {
+                state.deleteIds.has(id) ? state.deleteIds.delete(id) : state.deleteIds.add(id);
+                render();
+                return;
+            }
             if (state.active.multiple) {
                 state.active.ids.has(id) ? state.active.ids.delete(id) : state.active.ids.add(id);
             } else {
@@ -373,7 +579,7 @@
             render();
         });
         apply.addEventListener('click', () => {
-            if (!state.active || state.queue?.isBusy()) return;
+            if (!state.active || state.queue?.isBusy() || state.deleting || state.deleteMode) return;
             state.active.onApply?.(visibleSelection());
             close();
         });
@@ -382,6 +588,18 @@
             render();
         });
         loadMore.addEventListener('click', () => void loadPage());
+        if (isDeleteAllowed) {
+            $('[data-mm2-manage-toggle]', modal).addEventListener('click', () => {
+                if (state.queue?.isBusy() || state.deleting) return;
+                state.deleteMode = !state.deleteMode;
+                state.deleteIds.clear();
+                render();
+            });
+            $('[data-mm2-bulk-delete]', modal).addEventListener('click', () =>
+                showDeleteConfirmation([...state.deleteIds]));
+            $('[data-mm2-cancel-delete]', modal).addEventListener('click', cancelDeleteConfirmation);
+            $('[data-mm2-confirm-delete]', modal).addEventListener('click', () => void executeConfirmedDelete());
+        }
         $('[data-mm2-search]', modal).addEventListener('input', (event) => {
             clearTimeout(searchTimer);
             searchTimer = setTimeout(() => { state.search = event.target.value.trim(); void loadPage(true); }, 250);
