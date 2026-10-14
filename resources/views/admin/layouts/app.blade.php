@@ -75,6 +75,12 @@
     @if(request()->routeIs('admin.media.index'))
         <link rel="stylesheet" href="{{ asset('assets/admin/css/media-library-v3.css') }}?v={{ filemtime(public_path('assets/admin/css/media-library-v3.css')) }}">
     @endif
+    @if(request()->routeIs('admin.videos.create', 'admin.videos.edit'))
+        @php
+            $videoUnionCss = base_path('public/assets/admin/css/video-union-search.css');
+        @endphp
+        <link rel="stylesheet" href="{{ asset('assets/admin/css/video-union-search.css') }}?v={{ is_file($videoUnionCss) ? filemtime($videoUnionCss) : '1' }}">
+    @endif
 </head>
 <body class="admin-phase2">
     <a class="admin-skip-link" href="#adminMainContent">رفتن به محتوای اصلی</a>
@@ -170,6 +176,12 @@
             $formWorkspaceJs = base_path('public/assets/admin/js/form-workspace.js');
         @endphp
         <script src="{{ asset('assets/admin/js/form-workspace.js') }}?v={{ is_file($formWorkspaceJs) ? filemtime($formWorkspaceJs) : '1' }}"></script>
+    @endif
+    @if(request()->routeIs('admin.videos.create', 'admin.videos.edit'))
+        @php
+            $videoUnionJs = base_path('public/assets/admin/js/video-union-search.js');
+        @endphp
+        <script src="{{ asset('assets/admin/js/video-union-search.js') }}?v={{ is_file($videoUnionJs) ? filemtime($videoUnionJs) : '1' }}"></script>
     @endif
     @stack('scripts')
 </body>
