@@ -43,3 +43,29 @@ test('permanent delete uses server-authorized routes and CSRF and never retries 
     ]) assert.ok(source.includes(snippet), 'missing "' + snippet + '"');
     assert.ok(!source.includes('setInterval('));
 });
+
+
+test('infinite scrolling loads batches near viewport, never recreates grid and preserves selection', () => {
+    for (const snippet of [
+        'root.IntersectionObserver',
+        "rootMargin: '450px 0px'",
+        "target.searchParams.set('media_scroll', '1')",
+        "cache: 'no-store'",
+        'loadingNext',
+        'fetchedPages',
+        'data-ml3-scroll-more',
+        'data-ml3-scroll-sentinel',
+        "grid.appendChild(item)",
+        'render(); // Reapply stored selections',
+    ]) assert.ok(source.includes(snippet), 'missing progressive loading guard: ' + snippet);
+    assert.ok(!source.includes('location.href = data.next_page_url'));
+});
+
+test('failed incremental requests retain existing images and expose a manual retry', () => {
+    assert.ok(source.includes('scrollFailed = true'));
+    assert.ok(source.includes('observer?.unobserve(sentinel)'));
+    assert.ok(source.includes('scrollFailed = false'));
+    assert.ok(source.includes('loadButton.addEventListener'));
+    assert.ok(source.includes("response.ok"));
+    assert.ok(source.includes('loadButton.hidden = !nextUrl'));
+});
