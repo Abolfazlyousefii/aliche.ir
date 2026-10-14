@@ -82,7 +82,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderPreview = () => {
         galleryPreview.innerHTML = '';
         Array.from(gallerySelect.selectedOptions || []).forEach((option) => {
-            galleryPreview.insertAdjacentHTML('beforeend', `<div class="col-6 col-md-3"><img src="${option.dataset.url}" alt="${option.text}" class="img-fluid rounded" style="height:90px;width:100%;object-fit:cover"></div>`);
+            const item = document.createElement('div');
+            item.className = 'col-6 col-md-3';
+            const img = document.createElement('img');
+            img.src = option.dataset.url || '';
+            img.alt = option.textContent || 'تصویر انتخاب‌شده';
+            img.className = 'img-fluid rounded';
+            img.style.cssText = 'height:90px;width:100%;object-fit:cover';
+            item.appendChild(img);
+            galleryPreview.appendChild(item);
         });
     };
     gallerySelect.addEventListener('change', renderPreview);
