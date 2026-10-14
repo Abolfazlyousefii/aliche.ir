@@ -1,7 +1,7 @@
 /* Dedicated admin media library: page-scoped selection and permanent deletion. */
 (function (root) {
     'use strict';
-    const storageKey = 'asnaf.media.library.selected.v3';
+    const storagePrefix = 'asnaf.media.library.selected.v3.';
     const uniqueIds = (ids) => [...new Set((ids || []).map(String).filter((id) => /^[1-9]\d*$/.test(id)))];
     const togglePageSelection = (ids, page) => {
         const next = new Set(uniqueIds(ids));
@@ -19,6 +19,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const page = document.querySelector('[data-media-library-v3]');
         if (!page) return;
+        const storageKey = storagePrefix + page.dataset.userId;
         const one = (selector, scope = page) => scope.querySelector(selector);
         const all = (selector, scope = page) => Array.from(scope.querySelectorAll(selector));
         const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
