@@ -90,3 +90,56 @@ test('server validation messages for failed uploads are user-readable', () => {
     assert.equal(messageFrom({ errors: { 'files.0': ['فایل تصویر معتبر نیست.'] } }), 'فایل تصویر معتبر نیست.');
     assert.equal(messageFrom({ message: 'آپلود رد شد' }), 'آپلود رد شد');
 });
+
+
+test('transient server failure retries only the current image and reports one final success', async () => {
+    let attempts = 0;
+    const events = [];
+    const result = await uploadFiles([photo(7)], {
+        sendOne: async () => {
+            attempts++;
+            if (attempts < 3) {
+                const error = new Error('Temporary upstream failure');
+                error.retryable = true;
+                throw error;
+            }
+            return { id: 7, url: '/photo7.jpg' };
+        },
+        delay: async () => {},
+        onRetry: (data) => events.push(data.attempt),
+    });
+    assert.equal(attempts, 3);
+    assert.equal(result.uploaded, 1);
+    assert.equal(result.failures.length, 0);
+    assert.deepEqual(events, [1, 2]);
+});
+
+test('a UI selection callback throwing does not misreport a server success or reupload it', async () => {
+    let requests = 0;
+    const result = await uploadFiles([photo(9)], {
+        sendOne: async () => {
+            requests++;
+            return { id: 9, url: '/photo9.jpg' };
+        },
+        onUploaded: () => { throw new Error('UI render failed'); },
+    });
+    assert.equal(requests, 1);
+    assert.equal(result.uploaded, 1);
+    assert.equal(result.failures.length, 0);
+    assert.equal(result.uiWarnings.length, 1);
+});
+
+test('validation failures are not automatically retried', async () => {
+    let requests = 0;
+    const result = await uploadFiles([photo(12)], {
+        sendOne: async () => {
+            requests++;
+            const error = new Error('422 invalid image');
+            error.retryable = false;
+            throw error;
+        },
+    });
+    assert.equal(requests, 1);
+    assert.equal(result.uploaded, 0);
+    assert.equal(result.failures.length, 1);
+});
