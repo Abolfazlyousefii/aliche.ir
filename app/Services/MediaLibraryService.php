@@ -133,6 +133,22 @@ class MediaLibraryService
         $mime = (string) $info['mime'];
         [$originalWidth, $originalHeight] = $info;
 
+        // The original file is already MIME-validated and pixel-limited.
+        // Decoding a compressed high-resolution image can exceed PHP's memory
+        // even when the upload is smaller than 5 MB. Preserve it rather than
+        // risk terminating the entire batch with an out-of-memory fatal.
+        if ($this->wouldExceedGdMemory((int) $originalWidth, (int) $originalHeight)) {
+            Log::notice('Media image kept in original format due to GD memory budget.', [
+                'mime' => $mime, 'width' => $originalWidth, 'height' => $originalHeight,
+            ]);
+            $path = $directory.'/'.Str::uuid().'.'.self::MIME_EXTENSIONS[$mime];
+            $this->putOrFail($disk, $path, file_get_contents($file->getRealPath()));
+
+            return ['path' => $path, 'paths' => [$path], 'mime' => $mime,
+                'extension' => self::MIME_EXTENSIONS[$mime],
+                'width' => $originalWidth, 'height' => $originalHeight];
+        }
+
         // GD flattens animated GIFs; retaining the original is the safe optimization fallback.
         if ($mime === 'image/gif') {
             $path = $directory.'/'.Str::uuid().'.gif';
@@ -192,6 +208,31 @@ class MediaLibraryService
         }
 
         return ['path' => $path, 'paths' => $paths, 'mime' => $outputMime, 'extension' => $extension, 'width' => $targetWidth, 'height' => $targetHeight];
+    }
+
+    private function wouldExceedGdMemory(int $width, int $height): bool
+    {
+        $limit = trim((string) ini_get('memory_limit'));
+        if ($limit === '' || $limit === '-1' || ! preg_match('/^([0-9]+)\\s*([KMG]?)$/i', $limit, $parts)) {
+            return false;
+        }
+
+        $multiplier = match (strtoupper($parts[2])) {
+            'G' => 1024 ** 3,
+            'M' => 1024 ** 2,
+            'K' => 1024,
+            default => 1,
+        };
+        $maximum = ((int) $parts[1]) * $multiplier;
+        $available = max(0, $maximum - memory_get_usage(true));
+
+        // Source image, resized output and variants can coexist temporarily.
+        // A safety margin also covers GD/libwebp encoder buffers and PHP.
+        $targetWidth = min($width, max(1, (int) config('media.max_width', 1920)));
+        $targetHeight = (int) max(1, round($height * ($targetWidth / max(1, $width))));
+        $estimate = ($width * $height * 6) + ($targetWidth * $targetHeight * 6) + (32 * 1024 * 1024);
+
+        return $estimate > $available;
     }
 
     private function createImageResource(string $path, string $mime): \GdImage
