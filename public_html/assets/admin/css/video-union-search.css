@@ -106,3 +106,5 @@
     .video-union-picker .vus-popup { z-index: 500; }
     .video-union-picker .vus-list { max-height: min(42vh, 270px); }
 }
+
+.video-union-picker .vus-popup.opens-up { top: auto; bottom: calc(100% + 5px); }
