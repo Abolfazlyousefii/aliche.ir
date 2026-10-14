@@ -121,10 +121,14 @@ class Media extends Model
 
         // Eloquent JSON may escape slashes and Unicode while rich text stores
         // the plain path. An explicit LIKE escape works on both MySQL and SQLite.
+        $escapedPath = str_replace('/', '\\/', $path);
         $representations = array_unique([
             $path,
-            str_replace('/', '\\/', $path),
+            $escapedPath,
             substr(json_encode($path, JSON_THROW_ON_ERROR), 1, -1),
+            // JSON serializing a path that is already escaped doubles its
+            // backslashes; preserve these legacy references before deleting.
+            substr(json_encode($escapedPath, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES), 1, -1),
         ]);
         $patterns = array_map(fn ($value) => '%'.strtr($value, ['!' => '!!', '%' => '!%', '_' => '!_']).'%', $representations);
 
