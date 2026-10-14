@@ -60,9 +60,11 @@ class MediaDeletionService
                     return $this->result($id, 'blocked', 'این تصویر در بخش دیگری از سایت استفاده شده است.');
                 }
 
+                $detachedImageIds = [];
                 if ($gallery) {
-                    GalleryImage::query()->where('gallery_id', $gallery->id)
-                        ->where('image', $medium->path)->delete();
+                    $detachedImageIds = GalleryImage::query()->where('gallery_id', $gallery->id)
+                        ->where('image', $medium->path)->pluck('id')->all();
+                    GalleryImage::query()->whereIn('id', $detachedImageIds)->delete();
 
                     if ($gallery->cover_image === $medium->path) {
                         // Choose the first remaining gallery image, or clear
@@ -76,7 +78,8 @@ class MediaDeletionService
                 $medium->delete();
                 app(MediaLibraryService::class)->deleteFiles($medium);
 
-                return $this->result($id, 'deleted', 'تصویر از کتابخانه حذف شد.');
+                return $this->result($id, 'deleted', 'تصویر از کتابخانه حذف شد.')
+                    + ['detached_gallery_image_ids' => $detachedImageIds];
             });
         } catch (Throwable $exception) {
             report($exception);
