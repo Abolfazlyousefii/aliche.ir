@@ -87,7 +87,7 @@
         const items = $$('.mm2-grid [data-mm2-id]', modal);
         items.forEach((el) => {
             const selected = !!state.active?.ids.has(el.dataset.mm2Id);
-            el.classList.toggle('is-selected', selected);
+            el.classList.toggle('is-selected', !state.deleteMode && selected);
             const deleteMarked = state.deleteMode && state.deleteIds.has(el.dataset.mm2Id);
             el.classList.toggle('is-delete-marked', deleteMarked);
             el.setAttribute('aria-pressed', String(state.deleteMode ? deleteMarked : selected));
@@ -97,16 +97,28 @@
             state.items.size.toLocaleString('fa-IR') + ' از ' + state.total.toLocaleString('fa-IR') + ' تصویر';
         loadMore.hidden = state.page >= state.pages || state.loading;
         if (isDeleteAllowed) {
-            $('[data-mm2-manage-toggle]', modal).setAttribute('aria-pressed', String(state.deleteMode));
-            $('[data-mm2-manage-toggle]', modal).textContent = state.deleteMode ? 'خروج از حالت حذف' : 'مدیریت حذف تصاویر';
+            const toolbar = $('[data-mm2-delete-toolbar]', modal);
+            toolbar.classList.toggle('is-managing', state.deleteMode);
+            grid.classList.toggle('is-managing', state.deleteMode);
+            const toggle = $('[data-mm2-manage-toggle]', modal);
+            toggle.setAttribute('aria-pressed', String(state.deleteMode));
+            toggle.textContent = state.deleteMode ? 'پایان مدیریت حذف' : 'حذف گروهی تصاویر';
+            const visible = $('[data-mm2-id]', grid).map((node) => node.dataset.mm2Id);
+            const selectedVisible = visible.filter((id) => state.deleteIds.has(id)).length;
+            const selectVisible = $('[data-mm2-select-visible]', modal);
+            selectVisible.hidden = !state.deleteMode;
+            selectVisible.disabled = !visible.length || state.deleting;
+            selectVisible.textContent = visible.length > 0 && selectedVisible === visible.length
+                ? 'لغو انتخاب تصاویر نمایان' : 'انتخاب همه تصاویر نمایان (' + visible.length.toLocaleString('fa-IR') + ')';
+            $('[data-mm2-clear-delete]', modal).hidden = !state.deleteMode;
             const button = $('[data-mm2-bulk-delete]', modal);
             const number = state.deleteIds.size;
             button.hidden = !state.deleteMode;
             button.disabled = !number || state.deleting;
-            button.textContent = 'حذف ' + number.toLocaleString('fa-IR') + ' تصویر از کتابخانه';
+            button.textContent = 'حذف دائمی ' + number.toLocaleString('fa-IR') + ' تصویر';
             $('[data-mm2-delete-count]', modal).textContent = state.deleteMode
-                ? number.toLocaleString('fa-IR') + ' تصویر برای حذف مشخص شده است.'
-                : '';
+                ? number.toLocaleString('fa-IR') + ' انتخاب برای حذف (از تمام صفحه‌های پیمایش‌شده)'
+                : 'حذف دائمی فقط برای تصاویر بدون استفاده مجاز است.';
         }
     };
 
@@ -117,6 +129,9 @@
             state.items.set(id, item);
             const wrapper = document.createElement('div');
             wrapper.className = 'mm2-tile-container';
+            // Safeguard the overlay position if the browser still has an old CSS file.
+            wrapper.style.position = 'relative';
+            wrapper.style.minWidth = '0';
             const el = document.createElement('button');
             el.type = 'button';
             el.className = 'mm2-tile';
@@ -130,7 +145,12 @@
                 del.type = 'button';
                 del.className = 'mm2-tile-delete';
                 del.dataset.mm2DeleteId = id;
-                del.textContent = 'حذف';
+                del.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">' +
+                    '<path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M10 4h4m-8 3 1 13h10l1-13M10 10v7m4-7v7"/></svg>';
+                del.style.position = 'absolute';
+                del.style.top = '8px';
+                del.style.left = '8px';
+                del.setAttribute('title', 'حذف دائمی رسانه');
                 del.setAttribute('aria-label', 'حذف دائمی ' + (item.title || item.original_name || 'تصویر'));
                 wrapper.appendChild(del);
             }
@@ -522,8 +542,12 @@
             '<div class="mm2-filters"><input type="search" data-mm2-search aria-label="جستجوی تصاویر" placeholder="جستجو در نام، عنوان و توضیحات…">' +
             '<select data-mm2-type aria-label="فرمت"><option value="all">همه فرمت‌ها</option><option value="jpg">JPG</option><option value="png">PNG</option><option value="webp">WebP</option><option value="gif">GIF</option></select>' +
             '<select data-mm2-sort aria-label="مرتب‌سازی"><option value="newest">جدیدترین</option><option value="oldest">قدیمی‌ترین</option><option value="largest">حجم بیشتر</option></select></div>' +
-            (isDeleteAllowed ? '<div class="mm2-delete-toolbar"><button type="button" class="admin-secondary-btn" data-mm2-manage-toggle aria-pressed="false">مدیریت حذف تصاویر</button>' +
-                '<span data-mm2-delete-count></span><button type="button" class="admin-danger-btn" data-mm2-bulk-delete hidden>حذف تصاویر انتخاب‌شده</button></div>' +
+            (isDeleteAllowed ? '<div class="mm2-delete-toolbar" data-mm2-delete-toolbar role="group" aria-label="عملیات حذف رسانه">' +
+                '<button type="button" class="admin-secondary-btn" data-mm2-manage-toggle aria-pressed="false">حذف گروهی تصاویر</button>' +
+                '<span data-mm2-delete-count></span>' +
+                '<button type="button" class="admin-secondary-btn" data-mm2-select-visible hidden>انتخاب همه تصاویر نمایان</button>' +
+                '<button type="button" class="admin-secondary-btn" data-mm2-clear-delete hidden>پاک کردن انتخاب حذف</button>' +
+                '<button type="button" class="admin-danger-btn" data-mm2-bulk-delete hidden disabled>حذف دائمی تصاویر</button></div>' +
                 '<p class="mm2-delete-feedback" data-mm2-delete-feedback role="status" aria-live="polite"></p>' : '') +
             '<div class="mm2-grid" role="group" aria-label="فهرست تصاویر"></div>' +
             '<div class="mm2-load-row"><span data-mm2-library-count></span><span data-mm2-load-state aria-live="polite"></span>' +
@@ -597,6 +621,19 @@
             $('[data-mm2-manage-toggle]', modal).addEventListener('click', () => {
                 if (state.queue?.isBusy() || state.deleting) return;
                 state.deleteMode = !state.deleteMode;
+                state.deleteIds.clear();
+                render();
+            });
+            $('[data-mm2-select-visible]', modal).addEventListener('click', () => {
+                if (!state.deleteMode || state.deleting) return;
+                const visible = $('[data-mm2-id]', grid).map((item) => item.dataset.mm2Id);
+                if (!visible.length) return;
+                const allMarked = visible.every((id) => state.deleteIds.has(id));
+                visible.forEach((id) => allMarked ? state.deleteIds.delete(id) : state.deleteIds.add(id));
+                render();
+            });
+            $('[data-mm2-clear-delete]', modal).addEventListener('click', () => {
+                if (!state.deleteMode || state.deleting) return;
                 state.deleteIds.clear();
                 render();
             });
