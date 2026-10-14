@@ -82,6 +82,7 @@ class Media extends Model
             [Advertisement::class, 'image'], [ChamberMember::class, 'photo'],
             [CongratulationMessage::class, 'manager_image'],
             [ElectronicService::class, 'image'], [Commission::class, 'image'],
+            [CommissionSession::class, 'minutes_file'],
         ];
 
         // A conservative substring check intentionally accepts false positives:
@@ -111,16 +112,29 @@ class Media extends Model
             [Announcement::class, ['body']],
             [ElectronicService::class, ['body']],
             [Commission::class, ['description', 'attachments']],
+            [CommissionSession::class, ['description', 'attachments', 'images']],
             [System::class, ['description']],
             [TourismPlace::class, ['description', 'gallery']],
             [GuildUnion::class, ['description', 'settings', 'president_buttons']],
             [HomeSection::class, ['content', 'settings']],
         ];
 
+        // Eloquent JSON may escape slashes and Unicode while rich text stores
+        // the plain path. An explicit LIKE escape works on both MySQL and SQLite.
+        $representations = array_unique([
+            $path,
+            str_replace('/', '\\/', $path),
+            substr(json_encode($path, JSON_THROW_ON_ERROR), 1, -1),
+        ]);
+        $patterns = array_map(fn ($value) => '%'.strtr($value, ['!' => '!!', '%' => '!%', '_' => '!_']).'%', $representations);
+
         foreach ($embeddedReferences as [$model, $columns]) {
-            $used = $model::query()->where(function (Builder $query) use ($columns, $path) {
+            $used = $model::query()->where(function (Builder $query) use ($columns, $patterns) {
                 foreach ($columns as $column) {
-                    $query->orWhere($column, 'like', '%'.$path.'%');
+                    $wrapped = $query->getQuery()->getGrammar()->wrap($column);
+                    foreach ($patterns as $pattern) {
+                        $query->orWhereRaw($wrapped." LIKE ? ESCAPE '!'", [$pattern]);
+                    }
                 }
             })->exists();
 
