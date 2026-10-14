@@ -8,7 +8,7 @@
     <div class="d-flex gap-2 flex-wrap"><a class="admin-secondary-btn" href="{{ route('admin.galleries.show', $gallery) }}">مشاهده</a><a class="admin-secondary-btn" href="{{ route('admin.galleries.index') }}">بازگشت</a></div>
 </div>
 
-<form class="admin-panel-card admin-form" data-mm2-gallery-form action="{{ route('admin.galleries.update', $gallery) }}" method="POST" enctype="multipart/form-data">
+<form class="admin-panel-card admin-form" data-mm2-gallery-form data-mm2-gallery-id="{{ $gallery->id }}" action="{{ route('admin.galleries.update', $gallery) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     <div class="row g-3">
