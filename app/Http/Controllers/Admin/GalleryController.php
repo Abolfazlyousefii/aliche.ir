@@ -254,24 +254,31 @@ class GalleryController extends Controller
         $startOrder = (int) $gallery->images()->max('sort_order');
         $existingPaths = $gallery->images()->pluck('image')->all();
 
-        Media::query()
+        // whereIn() does not guarantee request order. Preserve the order in
+        // which the user selected media, including newly uploaded batches.
+        $imagesById = Media::query()
             ->whereIn('id', $mediaIds)
             ->images()
             ->get()
-            ->each(function (Media $media, int $index) use ($gallery, &$existingPaths, $startOrder) {
-                if (in_array($media->path, $existingPaths, true)) {
-                    return;
-                }
+            ->keyBy('id');
 
-                GalleryImage::create([
-                    'gallery_id' => $gallery->id,
-                    'image' => $media->path,
-                    'caption' => $media->caption ?: $media->title,
-                    'sort_order' => $startOrder + (($index + 1) * 10),
-                ]);
+        $nextOrder = $startOrder;
+        foreach ($mediaIds as $mediaId) {
+            $media = $imagesById->get($mediaId);
+            if (! $media || in_array($media->path, $existingPaths, true)) {
+                continue;
+            }
 
-                $existingPaths[] = $media->path;
-            });
+            $nextOrder += 10;
+            GalleryImage::create([
+                'gallery_id' => $gallery->id,
+                'image' => $media->path,
+                'caption' => $media->caption ?: $media->title,
+                'sort_order' => $nextOrder,
+            ]);
+
+            $existingPaths[] = $media->path;
+        }
     }
 
     private function syncExistingImages(Request $request, Gallery $gallery): void
