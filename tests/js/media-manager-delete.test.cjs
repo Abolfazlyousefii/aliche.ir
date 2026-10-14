@@ -11,7 +11,7 @@ const source = fs.readFileSync(
 const sandbox = { module: { exports: {} }, globalThis: {} };
 vm.runInNewContext(source, sandbox, { filename: 'media-manager-v2.js' });
 
-const { forgetDeletedIds } = sandbox.module.exports;
+const { forgetDeletedIds, toggleVisibleDeleteIds } = sandbox.module.exports;
 
 test('successful deletion evicts only confirmed IDs, including selection and cache', () => {
     const selectedIds = new Set(['11', '12', '13']);
@@ -43,4 +43,29 @@ test('delete controls use distinct selection mode and explicit confirmation', ()
         'data-mm2-confirm-delete', 'data-mm2-delete-id', 'pendingDeleteIds',
         'X-CSRF-TOKEN', 'adminMediaBulkDeleteUrl',
     ]) assert.ok(source.includes(pattern), 'missing ' + pattern);
+});
+
+
+test('select-all marks loaded images and keeps marks from other pages', () => {
+    const marked = new Set(['101']);
+    toggleVisibleDeleteIds(marked, ['201', '202', '203']);
+    assert.deepEqual([...marked], ['101', '201', '202', '203']);
+    toggleVisibleDeleteIds(marked, ['201', '202', '203']);
+    assert.deepEqual([...marked], ['101']);
+    toggleVisibleDeleteIds(marked, []);
+    assert.deepEqual([...marked], ['101']);
+});
+
+test('bulk selection controls and small photo-scoped delete icon are present', () => {
+    const css = fs.readFileSync(
+        path.resolve(__dirname, '../../public/assets/admin/css/media-manager-v2.css'),
+        'utf8'
+    );
+    for (const selector of [
+        'data-mm2-select-visible', 'data-mm2-clear-delete', 'data-mm2-delete-toolbar',
+        'is-managing', 'mm2-tile-delete', 'toggleVisibleDeleteIds',
+    ]) assert.ok(source.includes(selector), 'missing UI control ' + selector);
+    assert.match(css, /\.mm2-grid > \.mm2-tile-container\s*\{[^}]*position:\s*relative;/);
+    assert.match(css, /\.mm2-grid \.mm2-tile-container > \.mm2-tile-delete\s*\{[^}]*position:\s*absolute;/);
+    assert.match(css, /\.mm2-grid\.is-managing \.mm2-tile-delete\s*\{\s*display:\s*none/);
 });
