@@ -76,6 +76,20 @@
         <p class="text-muted small mt-2 mb-0">غیرفعال‌سازی فقط سکشن را از صفحه اصلی مخفی می‌کند و اطلاعات یا ترتیب آن حذف نمی‌شود.</p>
     @endif
 </form>
+<style>
+/* Section-order visibility controls; confined to this admin screen. */
+.admin-home-visibility { display: inline-flex; align-items: center; gap: 9px; white-space: nowrap; }
+.admin-home-switch { display: inline-flex; position: relative; align-items: center; cursor: pointer; margin: 0; }
+.admin-home-switch input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; margin: 0; }
+.admin-home-switch-track { display: block; position: relative; width: 39px; height: 23px; border-radius: 999px; background: #cbd5e1; transition: background .15s ease; pointer-events: none; }
+.admin-home-switch-track::after { content: ""; position: absolute; top: 3px; right: 3px; width: 17px; height: 17px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.13); transition: transform .15s ease; }
+.admin-home-switch input:checked + .admin-home-switch-track { background: #167a9e; }
+.admin-home-switch input:checked + .admin-home-switch-track::after { transform: translateX(-16px); }
+.admin-home-switch input:focus-visible + .admin-home-switch-track { outline: 3px solid #70b7d5; outline-offset: 3px; }
+#homeSectionsSortable tr.home-section-disabled td { background-color: #f8fafc; }
+#homeSectionsSortable tr.home-section-disabled td strong { color: #64748b; }
+@media (prefers-reduced-motion: reduce) { .admin-home-switch-track, .admin-home-switch-track::after { transition: none; } }
+</style>
 @endsection
 
 @push('scripts')
@@ -166,17 +180,4 @@
 </script>
 @endpush
 
-<style>
-/* Section-order visibility controls; confined to this admin screen. */
-.admin-home-visibility { display: inline-flex; align-items: center; gap: 9px; white-space: nowrap; }
-.admin-home-switch { display: inline-flex; position: relative; align-items: center; cursor: pointer; margin: 0; }
-.admin-home-switch input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; margin: 0; }
-.admin-home-switch-track { display: block; position: relative; width: 39px; height: 23px; border-radius: 999px; background: #cbd5e1; transition: background .15s ease; pointer-events: none; }
-.admin-home-switch-track::after { content: ""; position: absolute; top: 3px; right: 3px; width: 17px; height: 17px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.13); transition: transform .15s ease; }
-.admin-home-switch input:checked + .admin-home-switch-track { background: #167a9e; }
-.admin-home-switch input:checked + .admin-home-switch-track::after { transform: translateX(-16px); }
-.admin-home-switch input:focus-visible + .admin-home-switch-track { outline: 3px solid #70b7d5; outline-offset: 3px; }
-#homeSectionsSortable tr.home-section-disabled td { background-color: #f8fafc; }
-#homeSectionsSortable tr.home-section-disabled td strong { color: #64748b; }
-@media (prefers-reduced-motion: reduce) { .admin-home-switch-track, .admin-home-switch-track::after { transition: none; } }
-</style>
+
