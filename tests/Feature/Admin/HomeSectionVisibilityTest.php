@@ -14,6 +14,8 @@ class HomeSectionVisibilityTest extends TestCase
     {
         parent::setUp();
         $this->signInAsSuperAdmin();
+        // Migrations seed the default homepage sections; isolate our scenarios.
+        HomeSection::query()->delete();
     }
 
     private function section(string $key, bool $active = true, int $sort = 10): HomeSection
