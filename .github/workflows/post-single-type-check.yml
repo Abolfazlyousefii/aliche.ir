@@ -1,0 +1,28 @@
+name: Post single typography checks
+
+on:
+  pull_request:
+    paths:
+      - 'public/assets/css/post-single.css'
+      - 'resources/views/frontend/posts/show.blade.php'
+      - 'tests/js/post-single-typography.test.cjs'
+      - '.github/workflows/post-single-type-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'public/assets/css/post-single.css'
+      - 'tests/js/post-single-typography.test.cjs'
+      - '.github/workflows/post-single-type-check.yml'
+  workflow_dispatch:
+
+jobs:
+  typography:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check news single typography and breakpoints
+        run: node --test tests/js/post-single-typography.test.cjs
