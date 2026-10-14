@@ -60,7 +60,7 @@ class Media extends Model
         return Str::startsWith((string) $this->path, ['assets/', 'http://', 'https://', '/']);
     }
 
-    public function inUse(): bool
+    public function inUse(?int $exceptGalleryId = null): bool
     {
         if ($this->postsAsFeatured()->exists() || $this->postsInGallery()->exists()) {
             return true;
@@ -73,7 +73,6 @@ class Media extends Model
 
         $references = [
             [Post::class, 'featured_image'], [PostGallery::class, 'image'],
-            [Gallery::class, 'cover_image'], [GalleryImage::class, 'image'],
             [GuildUnion::class, 'logo'], [GuildUnion::class, 'cover_image'],
             [GuildUnion::class, 'manager_image'], [GuildUnion::class, 'executive_image'], [GuildUnion::class, 'price_list_image'],
             [UnionMember::class, 'image'], [UnionType::class, 'image'],
@@ -88,6 +87,18 @@ class Media extends Model
         // A conservative substring check intentionally accepts false positives:
         // preventing an unsafe deletion is preferable to deleting a shared
         // legacy URL whose stored representation differs by prefix/host.
+        // Deleting from the *current* gallery is allowed only when all other
+        // references have been checked. Its own cover/images are detached by
+        // the deletion service, never by simply ignoring the database links.
+        if (Gallery::query()->when($exceptGalleryId, fn (Builder $q) => $q->whereKeyNot($exceptGalleryId))
+            ->where('cover_image', 'like', '%'.$path.'%')->exists()) {
+            return true;
+        }
+        if (GalleryImage::query()->when($exceptGalleryId, fn (Builder $q) => $q->where('gallery_id', '!=', $exceptGalleryId))
+            ->where('image', 'like', '%'.$path.'%')->exists()) {
+            return true;
+        }
+
         foreach ($references as [$model, $column]) {
             if ($model::query()->where($column, 'like', '%'.$path.'%')->exists()) {
                 return true;
