@@ -311,10 +311,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="admin-media-picker-body">
                 <main class="admin-media-picker-main">
                     <form class="admin-picker-upload" data-picker-upload>
-                        <input id="adminPickerFiles" class="admin-wp-upload-input" name="files[]" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
-                        <label class="admin-picker-dropzone" for="adminPickerFiles"><strong>فایل‌ها را اینجا رها کنید یا انتخاب کنید</strong><small>JPG، PNG، WebP و GIF</small></label>
-                        <div class="admin-picker-upload-actions"><span data-picker-upload-status>آمادهٔ آپلود</span><button class="admin-secondary-btn" type="submit">آپلود</button></div>
-                        <div class="admin-picker-progress" data-picker-progress hidden><span></span></div>
+                        <input id="adminPickerFiles" class="admin-wp-upload-input" name="files[]" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/jpeg,image/png,image/webp,image/gif,image/avif" multiple>
+                        <label class="admin-picker-dropzone" for="adminPickerFiles"><strong>فایل‌ها را اینجا رها کنید یا انتخاب کنید</strong><small>انتخاب همزمان ۶۰ عکس یا بیشتر؛ هر فایل تا ۵ مگابایت</small></label>
+                        <div class="admin-picker-upload-actions"><span data-picker-upload-status role="status" aria-live="polite">آمادهٔ آپلود</span><button class="admin-secondary-btn" type="submit">آپلود گروهی</button><button class="admin-secondary-btn" type="button" data-picker-upload-retry hidden>تلاش مجدد برای ناموفق‌ها</button></div>
+                        <progress class="admin-picker-bulk-progress" data-picker-progress value="0" max="100" hidden></progress>
+                        <ul class="text-danger small" data-picker-upload-errors></ul>
                     </form>
                     <div class="admin-picker-toolbar">
                         <input class="form-control" type="search" placeholder="جست‌وجو در عنوان، نام فایل، متن جایگزین و توضیح…" data-picker-search>
@@ -411,15 +412,33 @@ document.addEventListener('DOMContentLoaded', () => {
     ['dragenter', 'dragover'].forEach((name) => dropzone.addEventListener(name, (event) => { event.preventDefault(); dropzone.classList.add('is-dragover'); }));
     ['dragleave', 'drop'].forEach((name) => dropzone.addEventListener(name, (event) => { event.preventDefault(); dropzone.classList.remove('is-dragover'); }));
     dropzone.addEventListener('drop', (event) => { uploadInput.files = event.dataTransfer.files; uploadForm.requestSubmit(); });
+    const uploadStatus = uploadForm.querySelector('[data-picker-upload-status]');
+    const pickerUploadQueue = window.adminBatchMediaUpload.createQueue({
+        input: uploadInput,
+        status: uploadStatus,
+        progress: uploadForm.querySelector('[data-picker-progress]'),
+        errors: uploadForm.querySelector('[data-picker-upload-errors]'),
+        retry: uploadForm.querySelector('[data-picker-upload-retry]'),
+        button: uploadForm.querySelector('button[type="submit"]'),
+        onUploaded: (item) => {
+            state.items.set(String(item.id), item);
+            state.selected.set(String(item.id), item);
+            if (state.active) {
+                if (state.active.multiple) {
+                    state.active.selectedIds.add(String(item.id));
+                } else {
+                    state.active.selectedIds = new Set([String(item.id)]);
+                }
+            }
+            state.total += 1;
+            renderItems();
+        },
+    });
     uploadForm.addEventListener('submit', (event) => {
-        event.preventDefault(); if (!uploadUrl || !uploadInput.files.length) return;
-        const status = uploadForm.querySelector('[data-picker-upload-status]'); const progress = uploadForm.querySelector('[data-picker-progress]'); const bar = progress.querySelector('span');
-        const body = new FormData(); [...uploadInput.files].forEach((file) => body.append('files[]', file));
-        const xhr = new XMLHttpRequest(); xhr.open('POST', uploadUrl); xhr.responseType = 'json'; xhr.setRequestHeader('Accept', 'application/json'); xhr.setRequestHeader('X-CSRF-TOKEN', document.querySelector('meta[name="csrf-token"]')?.content || '');
-        progress.hidden = false; bar.style.width = '0%'; status.textContent = 'در حال آپلود…';
-        xhr.upload.onprogress = (e) => { if (e.lengthComputable) bar.style.width = `${Math.round(e.loaded / e.total * 100)}%`; };
-        xhr.onload = () => { const uploaded = xhr.response?.items || []; if (xhr.status < 200 || xhr.status >= 300) { status.textContent = xhr.response?.message || 'آپلود ناموفق بود.'; return; } uploaded.forEach((item) => { state.items.set(String(item.id), item); state.active?.selectedIds.add(String(item.id)); }); state.total += uploaded.length; uploadInput.value = ''; status.textContent = `${uploaded.length.toLocaleString('fa-IR')} تصویر آپلود شد.`; renderItems(); };
-        xhr.onerror = () => { status.textContent = 'ارتباط هنگام آپلود قطع شد.'; }; xhr.onloadend = () => { setTimeout(() => { progress.hidden = true; }, 600); }; xhr.send(body);
+        event.preventDefault();
+        const files = Array.from(uploadInput.files || []);
+        uploadInput.value = '';
+        if (files.length && uploadUrl) void pickerUploadQueue.run(files);
     });
 
     document.querySelectorAll('[data-media-select-target]').forEach((button) => button.addEventListener('click', () => {

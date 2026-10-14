@@ -1,0 +1,92 @@
+name: Gallery bulk media upload checks
+
+on:
+  pull_request:
+    paths:
+      - 'app/Http/Controllers/Admin/GalleryController.php'
+      - 'resources/views/admin/galleries/**'
+      - 'resources/views/admin/media/index.blade.php'
+      - 'resources/views/admin/layouts/app.blade.php'
+      - 'public/assets/admin/js/admin.js'
+      - 'public_html/assets/admin/js/admin.js'
+      - 'public/assets/admin/js/media-bulk-upload.js'
+      - 'public_html/assets/admin/js/media-bulk-upload.js'
+      - 'tests/Feature/Admin/GalleryBulkMediaTest.php'
+      - 'tests/js/media-bulk-upload.test.cjs'
+      - '.github/workflows/gallery-bulk-media-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gallery-bulk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3, dom, xml, gd, fileinfo, zip
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Prepare isolated Laravel test environment
+        run: |
+          mkdir -p storage/framework/{views,cache/data,sessions,testing} storage/logs bootstrap/cache
+          cp .env.example .env
+          php artisan key:generate --ansi
+      - name: JS syntax and isolated Node behavior tests
+        run: |
+          node --check public/assets/admin/js/admin.js
+          node --check public_html/assets/admin/js/admin.js
+          node --check public/assets/admin/js/media-bulk-upload.js
+          node --check public_html/assets/admin/js/media-bulk-upload.js
+          node --test tests/js/media-bulk-upload.test.cjs
+          cmp public/assets/admin/js/admin.js public_html/assets/admin/js/admin.js
+          cmp public/assets/admin/js/media-bulk-upload.js public_html/assets/admin/js/media-bulk-upload.js
+      - name: PHP syntax and isolated SQLite integration
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+        run: |
+          php -l app/Http/Controllers/Admin/GalleryController.php
+          php -l tests/Feature/Admin/GalleryBulkMediaTest.php
+          vendor/bin/phpunit tests/Feature/Admin/GalleryBulkMediaTest.php
+          vendor/bin/phpunit tests/Feature/Admin/MediaPickerTest.php
+          vendor/bin/phpunit tests/Feature/Admin/MediaUploadRegressionTest.php
+          vendor/bin/phpunit tests/Feature/Admin/MediaControllersCrudRegressionTest.php
+      - name: Compile Blade templates
+        run: php artisan view:cache
+      - name: Compare existing complete suite against PR base (information only)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        shell: bash
+        run: |
+          set +e
+          vendor/bin/phpunit --colors=never > /tmp/gallery-head-suite.log 2>&1
+          head_status=$?
+          git worktree add --detach /tmp/gallery-baseline "$BASE_SHA"
+          ln -s "$GITHUB_WORKSPACE/vendor" /tmp/gallery-baseline/vendor
+          cp .env /tmp/gallery-baseline/.env
+          mkdir -p /tmp/gallery-baseline/storage/framework/{views,cache/data,sessions,testing} /tmp/gallery-baseline/storage/logs /tmp/gallery-baseline/bootstrap/cache
+          (cd /tmp/gallery-baseline && vendor/bin/phpunit --colors=never > /tmp/gallery-base-suite.log 2>&1)
+          base_status=$?
+          echo "Full suite: base exit=$base_status; head exit=$head_status"
+          for side in base head; do
+            echo "======== $side suite ========"
+            grep -E '^(There was|There were|Tests: |OK \()' "/tmp/gallery-${side}-suite.log" | tail -n 15 || true
+          done
+          exit 0
