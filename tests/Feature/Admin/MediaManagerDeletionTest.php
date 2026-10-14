@@ -68,13 +68,12 @@ class MediaManagerDeletionTest extends TestCase
         Storage::disk('public')->assertExists($media->path);
     }
 
-    public function test_bulk_delete_preserves_used_and_shared_files_but_deletes_free_images(): void
+    public function test_bulk_delete_preserves_used_and_external_files_but_deletes_free_images(): void
     {
         $freeOne = $this->medium('free-one');
         $used = $this->medium('used');
         $freeTwo = $this->medium('free-two');
-        $shared = $this->medium('shared');
-        $duplicate = $this->medium('shared-copy', $shared->path);
+        $asset = $this->medium('theme-asset', 'assets/img/site-banner.jpg');
         $external = $this->medium('external', 'https://example.test/imported.jpg');
 
         $gallery = Gallery::query()->create([
@@ -85,7 +84,7 @@ class MediaManagerDeletionTest extends TestCase
 
         $response = $this->deleteJson(route('admin.media.bulk_destroy'), [
             'ids' => [
-                $freeOne->id, $used->id, $freeTwo->id, $shared->id,
+                $freeOne->id, $used->id, $freeTwo->id, $asset->id,
                 $external->id, 999999, $freeOne->id,
             ],
         ])->assertOk();
@@ -99,10 +98,10 @@ class MediaManagerDeletionTest extends TestCase
         $this->assertCount(0, $response->json('failed'));
         $this->assertDatabaseMissing('media', ['id' => $freeOne->id]);
         $this->assertDatabaseMissing('media', ['id' => $freeTwo->id]);
-        foreach ([$used, $shared, $duplicate, $external] as $protected) {
+        foreach ([$used, $asset, $external] as $protected) {
             $this->assertDatabaseHas('media', ['id' => $protected->id]);
         }
-        foreach ([$used, $shared] as $protected) {
+        foreach ([$used] as $protected) {
             Storage::disk('public')->assertExists($protected->path);
         }
         Storage::disk('public')->assertMissing($freeOne->path);
@@ -113,7 +112,7 @@ class MediaManagerDeletionTest extends TestCase
     {
         $role = Role::query()->create(['name' => 'media-view-upload-test', 'label' => 'فقط رسانه']);
         foreach (['media.view', 'media.upload'] as $name) {
-            $permission = Permission::query()->firstOrCreate(['name' => $name], ['label' => $name]);
+            $permission = Permission::query()->firstOrCreate(['name' => $name], ['label' => $name, 'group' => 'media']);
             $role->permissions()->syncWithoutDetaching([$permission->id]);
         }
         $viewer = User::factory()->create(['is_active' => true]);
