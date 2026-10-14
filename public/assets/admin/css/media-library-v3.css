@@ -141,3 +141,31 @@ body.ml3-dialog-open { overflow: hidden; }
  .ml3-grid.is-list .ml3-tile-controls { gap: 5px; }
  .ml3-grid.is-list .ml3-select-label > span { display: none; }
 }
+
+/* Progressive infinite scrolling: no numbered pagination in media library. */
+.ml3-scroll-footer {
+  min-height: 88px;
+  padding: 14px 20px 23px;
+  text-align: center;
+  color: #688295;
+  border-top: 1px solid #edf1f5;
+}
+.ml3-scroll-sentinel { width: 100%; height: 1px; pointer-events: none; }
+.ml3-scroll-status { font-size: 12px; line-height: 1.8; margin: 7px 0 11px; }
+.ml3-scroll-footer button { margin: 0 auto; min-height: 38px; }
+.ml3-scroll-footer.is-loading .ml3-scroll-status::before {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 8px;
+  border: 2px solid #cee0eb;
+  border-top-color: #237b9f;
+  border-radius: 50%;
+  animation: ml3ScrollSpin .8s linear infinite;
+}
+@keyframes ml3ScrollSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .ml3-scroll-footer.is-loading .ml3-scroll-status::before { animation: none; }
+}
