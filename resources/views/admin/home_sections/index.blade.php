@@ -166,7 +166,6 @@
 </script>
 @endpush
 
-@push('styles')
 <style>
 /* Section-order visibility controls; confined to this admin screen. */
 .admin-home-visibility { display: inline-flex; align-items: center; gap: 9px; white-space: nowrap; }
@@ -181,4 +180,3 @@
 #homeSectionsSortable tr.home-section-disabled td strong { color: #64748b; }
 @media (prefers-reduced-motion: reduce) { .admin-home-switch-track, .admin-home-switch-track::after { transition: none; } }
 </style>
-@endpush
