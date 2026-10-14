@@ -100,6 +100,7 @@
         let current = [];
         let active = -1;
         let querying = false;
+        let skipNextFocus = false;
 
         const restoreLabel = () => {
             input.value = selectedText();
@@ -127,6 +128,9 @@
             // The original select remains the only submitted form control.
             native.dispatchEvent(new Event('change', { bubbles: true }));
             close();
+            // When clicking clear/select while the input has lost focus, do
+            // not reopen the dropdown merely because focus is restored.
+            skipNextFocus = document.activeElement !== input;
             input.focus({ preventScroll: true });
         };
         const draw = (query = '') => {
@@ -160,10 +164,14 @@
             if (opened) return;
             opened = true;
             popup.hidden = false;
+            const bounds = wrapper.getBoundingClientRect();
+            const spaceBelow = root.innerHeight - bounds.bottom;
+            popup.classList.toggle('opens-up', spaceBelow < 270 && bounds.top > spaceBelow);
             input.setAttribute('aria-expanded', 'true');
             draw('');
         };
         input.addEventListener('focus', () => {
+            if (skipNextFocus) { skipNextFocus = false; return; }
             open();
             // Selecting the current label makes replacing it with a new search easy.
             if (!querying) input.select();
