@@ -110,7 +110,7 @@ class AdminPhaseOneModerationTest extends TestCase
     public function test_jalali_schedule_is_saved_and_preserved_when_published_from_queue(): void
     {
         $this->travelTo(now()->startOfMinute());
-        $user = $this->withPermissions(['announcements.create', 'announcements.view', 'announcements.publish']);
+        $user = $this->withPermissions(['announcements.create', 'announcements.view', 'announcements.edit', 'announcements.publish']);
         $start = now()->addDays(2)->startOfMinute();
         $jalaliStart = jalali_datetime($start);
 
