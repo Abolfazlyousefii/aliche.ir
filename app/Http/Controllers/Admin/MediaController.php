@@ -224,6 +224,8 @@ class MediaController extends Controller
 
         return response()->json([
             'deleted' => $outcomes->where('status', 'deleted')->pluck('id')->all(),
+            'detached_gallery_image_ids' => $outcomes->where('status', 'deleted')
+                ->flatMap(fn ($result) => $result['detached_gallery_image_ids'] ?? [])->values()->all(),
             'blocked' => $outcomes->where('status', 'blocked')->values()->all(),
             'missing' => $outcomes->where('status', 'missing')->values()->all(),
             'failed' => $outcomes->where('status', 'failed')->values()->all(),
