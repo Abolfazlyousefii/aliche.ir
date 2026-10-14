@@ -1,6 +1,18 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { uploadFiles, messageFrom } = require('../../public/assets/admin/js/media-bulk-upload.js');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const path = require('node:path');
+
+// The application uses plain browser scripts while the Vite package enables
+// ESM for .js. Evaluate this browser script as classic JS for Node unit tests.
+const sandbox = { module: { exports: {} }, globalThis: {} };
+vm.runInNewContext(
+    fs.readFileSync(path.resolve(__dirname, '../../public/assets/admin/js/media-bulk-upload.js'), 'utf8'),
+    sandbox,
+    { filename: 'media-bulk-upload.js' }
+);
+const { uploadFiles, messageFrom } = sandbox.module.exports;
 
 const photo = (id, bytes = 1024) => ({ name: `photo-${id}.jpg`, size: bytes });
 
