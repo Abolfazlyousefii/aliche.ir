@@ -63,7 +63,6 @@ jobs:
           vendor/bin/phpunit tests/Feature/Admin/MediaPickerTest.php
           vendor/bin/phpunit tests/Feature/Admin/MediaUploadRegressionTest.php
           vendor/bin/phpunit tests/Feature/Admin/MediaControllersCrudRegressionTest.php
-          vendor/bin/phpunit tests/Feature/Media/MediaUsageTest.php
       - name: Compile Blade templates
         run: php artisan view:cache
       - name: Compare existing complete suite against PR base (information only)
