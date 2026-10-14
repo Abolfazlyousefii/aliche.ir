@@ -19,7 +19,10 @@
                 <strong>پرونده‌ها را اینجا رها کنید</strong>
                 <small>یا برای انتخاب چند تصویر کلیک کنید؛ مشابه بارگذاری رسانه در وردپرس.</small>
             </label>
-            <div class="admin-wp-upload-meta"><span data-media-file-count>هیچ فایلی انتخاب نشده است.</span><button class="admin-primary-btn">آپلود رسانه</button></div>
+            <div class="admin-wp-upload-meta"><span data-media-file-count role="status" aria-live="polite">هیچ فایلی انتخاب نشده است.</span><button class="admin-primary-btn" type="submit">آپلود رسانه</button><button class="admin-secondary-btn" type="button" data-media-bulk-retry hidden>تلاش مجدد برای فایل‌های ناموفق</button></div>
+            <progress data-media-bulk-progress class="admin-picker-bulk-progress" value="0" max="100" hidden></progress>
+            <ul data-media-bulk-errors class="text-danger small mt-2"></ul>
+            <small class="text-muted">می‌توانید ۶۰ عکس یا بیشتر انتخاب کنید. فایل‌ها به نوبت ارسال می‌شوند و تصاویر موفق حفظ می‌شوند.</small>
         </form>
     </aside>
     @endif
