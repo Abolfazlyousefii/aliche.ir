@@ -167,13 +167,18 @@
                 if (status) status.textContent = failures.length
                     ? successTotal.toLocaleString('fa-IR') + ' تصویر ذخیره شد؛ ' + failures.length.toLocaleString('fa-IR') + ' ناموفق. فقط فایل‌های ناموفق را دوباره امتحان کنید.'
                     : successTotal.toLocaleString('fa-IR') + ' تصویر با موفقیت ذخیره شد.';
-                onFinished?.(result);
-                if (!failures.length) onAllSucceeded?.();
                 return result;
             } finally {
                 busy = false;
                 if (input) input.disabled = false;
                 if (button) button.disabled = false;
+                // UI can safely re-enable Apply only after the queue is idle.
+                try {
+                    if (result) onFinished?.(result);
+                    if (result && !failures.length) onAllSucceeded?.();
+                } catch (error) {
+                    if (typeof console !== 'undefined') console.error('Media queue completion UI error', error);
+                }
             }
         };
         retry?.addEventListener('click', () => {
