@@ -1,0 +1,208 @@
+/*
+ * Footer V2 refinement.
+ * Loaded after styles.css and home-layout-lock.css.
+ * Scoped to .site-footer to avoid altering navigation and other grids.
+ */
+.site-footer {
+  padding-top: 32px;
+}
+
+.site-footer .footer-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.45fr) minmax(0, 1.05fr);
+  align-items: start;
+  gap: clamp(22px, 3.1vw, 42px);
+}
+
+.site-footer .footer-brand-col {
+  min-width: 0;
+}
+
+.site-footer .footer-brand-col .footer-brand-identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.site-footer .footer-brand-col .footer-logo-frame {
+  display: grid;
+  place-items: center;
+  flex: 0 0 88px;
+  width: 88px;
+  height: 88px;
+  padding: 8px;
+  overflow: hidden;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  background: #fff;
+}
+
+.site-footer .footer-brand-col .footer-logo-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+  object-fit: contain;
+}
+
+.site-footer .footer-brand-col .footer-brand-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+}
+
+.site-footer .footer-brand-col .footer-brand-copy h3 {
+  margin: 0 0 8px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.75;
+}
+
+.site-footer .footer-brand-col .footer-brand-description,
+.site-footer .footer-brand-col .footer-brand-description p {
+  margin: 0;
+  color: rgba(255, 255, 255, .75);
+  font-size: 12px;
+  line-height: 1.95;
+  overflow-wrap: anywhere;
+}
+
+.site-footer .footer-accordion-panel ul.footer-quick-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px 15px;
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.site-footer .footer-quick-links li {
+  min-width: 0;
+  margin: 0;
+}
+
+.site-footer .footer-quick-links li a {
+  display: flex;
+  align-items: flex-start;
+  min-height: 30px;
+  gap: 5px;
+  padding: 4px 0;
+  color: rgba(255, 255, 255, .78);
+  font-size: 12px;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.site-footer .footer-quick-links li a svg {
+  flex: 0 0 12px;
+  width: 12px;
+  height: 12px;
+  margin-top: 4px;
+}
+
+.site-footer .footer-quick-links li a:hover,
+.site-footer .footer-quick-links li a:focus-visible {
+  color: #fff;
+}
+
+.site-footer .footer-contact-panel .footer-contact-item {
+  align-items: flex-start;
+}
+
+.site-footer .footer-divider {
+  margin-top: 20px;
+}
+
+.site-footer .footer-bottom {
+  padding-block: 9px 12px;
+}
+
+@media (max-width: 991.98px) {
+  .site-footer .footer-main {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+    gap: 25px;
+  }
+
+  .site-footer .footer-brand-col {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .site-footer {
+    padding-top: 24px;
+  }
+
+  .site-footer .footer-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .site-footer .footer-brand-col {
+    grid-column: auto;
+    max-width: none;
+    margin: 0 0 13px;
+  }
+
+  .site-footer .footer-brand-col .footer-brand-identity {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+    text-align: right;
+  }
+
+  .site-footer .footer-brand-col .footer-logo-frame {
+    flex-basis: 76px;
+    width: 76px;
+    height: 76px;
+    padding: 7px;
+  }
+
+  .site-footer .footer-brand-col .footer-brand-copy,
+  .site-footer .footer-brand-col .footer-brand-description,
+  .site-footer .footer-brand-col .footer-brand-description p {
+    text-align: right;
+    margin-inline: 0;
+  }
+
+  .site-footer .footer-accordion-panel[hidden] {
+    display: none !important;
+  }
+
+  .site-footer .footer-accordion-panel ul.footer-quick-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3px 12px;
+    padding: 2px 0 11px;
+  }
+
+  .site-footer .footer-quick-links li a {
+    min-height: 33px;
+    padding-block: 6px;
+  }
+
+  .site-footer .footer-divider {
+    margin-top: 14px;
+  }
+}
+
+@media (max-width: 389.98px) {
+  .site-footer .footer-brand-col .footer-logo-frame {
+    flex-basis: 68px;
+    width: 68px;
+    height: 68px;
+  }
+
+  .site-footer .footer-brand-col .footer-brand-copy h3 {
+    font-size: 13px;
+  }
+
+  .site-footer .footer-accordion-panel ul.footer-quick-links {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

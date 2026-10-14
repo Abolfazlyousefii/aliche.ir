@@ -40,3 +40,9 @@
     @endphp
     <link href="/assets/css/news-archive-pagination.css?v={{ $newsArchivePaginationStylesVersion }}" rel="stylesheet"/>
 @endif
+
+@php
+    $footerRefinementPath = public_path('assets/css/footer-refinement.css');
+    $footerRefinementVersion = is_file($footerRefinementPath) ? filemtime($footerRefinementPath) : '1';
+@endphp
+<link href="{{ asset('assets/css/footer-refinement.css') }}?v={{ $footerRefinementVersion }}" rel="stylesheet"/>
