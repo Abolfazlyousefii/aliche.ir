@@ -1,0 +1,71 @@
+name: Media Manager V2 checks
+
+on:
+  pull_request:
+    paths:
+      - 'app/Http/Controllers/Admin/GalleryController.php'
+      - 'app/Http/Controllers/Admin/MediaController.php'
+      - 'app/Services/MediaLibraryService.php'
+      - 'resources/views/admin/galleries/**'
+      - 'resources/views/admin/layouts/app.blade.php'
+      - 'public/assets/admin/**'
+      - 'tests/Feature/Admin/GalleryBulkMediaTest.php'
+      - 'tests/js/media-bulk-upload.test.cjs'
+      - '.github/workflows/media-manager-v2-checks.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'app/Http/Controllers/Admin/GalleryController.php'
+      - 'app/Http/Controllers/Admin/MediaController.php'
+      - 'app/Services/MediaLibraryService.php'
+      - 'resources/views/admin/galleries/**'
+      - 'public/assets/admin/**'
+      - '.github/workflows/media-manager-v2-checks.yml'
+  workflow_dispatch:
+
+jobs:
+  media-manager:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, dom, xml, gd, fileinfo, zip
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Set up isolated SQLite
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+          mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache
+      - name: PHP and JavaScript syntax
+        run: |
+          php -l app/Http/Controllers/Admin/MediaController.php
+          php -l app/Http/Controllers/Admin/GalleryController.php
+          php -l app/Services/MediaLibraryService.php
+          node --check public/assets/admin/js/media-bulk-upload.js
+          node --check public/assets/admin/js/media-manager-v2.js
+          node --check public/assets/admin/js/admin.js
+      - name: Node upload queue tests
+        run: node --test tests/js/media-bulk-upload.test.cjs
+      - name: Gallery integration tests (never production database)
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          QUEUE_CONNECTION: sync
+        run: vendor/bin/phpunit tests/Feature/Admin/GalleryBulkMediaTest.php
+      - name: Compile Blade views
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+        run: php artisan view:cache

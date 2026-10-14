@@ -9,6 +9,7 @@ use App\Services\MediaLibraryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Throwable;
 
@@ -76,10 +77,28 @@ class MediaController extends Controller
     {
         $request->validate([
             'files' => ['required', 'array'],
+            'upload_token' => ['nullable', 'uuid'],
             'files.*' => ['bail', 'file', new SafeImageUpload, 'max:'.config('media.max_upload_kilobytes', 5120)],
         ], [
             'files.*.max' => 'حجم هر تصویر نباید بیشتر از ۵ مگابایت باشد.',
         ]);
+        // Repeated attempts with the same upload token must not create duplicate media.
+        // Tokens are scoped to the authenticated uploader and expire after 24 hours.
+        $token = $request->input('upload_token');
+        $receiptKey = $token && count($request->file('files', [])) === 1
+            ? 'media-upload:v2:'.$request->user()->id.':'.$token
+            : null;
+        if ($receiptKey) {
+            $existingId = Cache::get($receiptKey);
+            $existing = $existingId
+                ? Media::query()->with(['uploader:id,name'])->whereKey($existingId)
+                    ->where('uploaded_by', $request->user()->id)->first()
+                : null;
+            if ($existing) {
+                return response()->json(['items' => [$this->pickerItem($existing)]], 200);
+            }
+        }
+
         $stored = collect();
         $service = app(MediaLibraryService::class);
 
@@ -106,6 +125,10 @@ class MediaController extends Controller
             }
 
             return back()->withErrors(['files' => 'پردازش تصویر انجام نشد؛ لطفاً فایل سالم دیگری انتخاب کنید.']);
+        }
+
+        if ($receiptKey && $stored->count() === 1) {
+            Cache::put($receiptKey, $stored->first()->id, now()->addDay());
         }
 
         if ($request->expectsJson()) {

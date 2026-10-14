@@ -276,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (window.adminMediaManagerV2) return;
     const pickerUrl = window.adminMediaPickerUrl;
 
     if (!pickerUrl) return;

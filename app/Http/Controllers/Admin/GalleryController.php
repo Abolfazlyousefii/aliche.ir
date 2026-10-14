@@ -83,6 +83,7 @@ class GalleryController extends Controller
 
         $this->storeGalleryImages($request, $gallery);
         $this->attachMediaImages($request, $gallery);
+        $this->syncGalleryOrder($request, $gallery);
         $this->ensureCoverImage($gallery);
 
         return redirect()->route('admin.galleries.show', $gallery)->with('success', 'گالری تصاویر با موفقیت ایجاد شد.');
@@ -127,6 +128,7 @@ class GalleryController extends Controller
         $this->syncExistingImages($request, $gallery);
         $this->storeGalleryImages($request, $gallery);
         $this->attachMediaImages($request, $gallery);
+        $this->syncGalleryOrder($request, $gallery);
         $this->ensureCoverImage($gallery->refresh());
 
         return redirect()->route('admin.galleries.show', $gallery)->with('success', 'گالری تصاویر با موفقیت ویرایش شد.');
@@ -176,6 +178,8 @@ class GalleryController extends Controller
             'existing_images' => ['nullable', 'array'],
             'gallery_media_ids' => ['nullable', 'array'],
             'gallery_media_ids.*' => ['integer', 'exists:media,id'],
+            'gallery_order' => ['nullable', 'array', 'max:500'],
+            'gallery_order.*' => ['string', 'regex:/^(existing|media):[1-9][0-9]*$/'],
         ], [], [
             'title' => 'عنوان',
             'slug' => 'نامک',
@@ -278,6 +282,46 @@ class GalleryController extends Controller
             ]);
 
             $existingPaths[] = $media->path;
+        }
+    }
+
+    /**
+     * Honour the order shown in the media workspace, including old and newly
+     * selected photos. Ignore IDs from another gallery or unavailable media.
+     */
+    private function syncGalleryOrder(Request $request, Gallery $gallery): void
+    {
+        $order = collect($request->input('gallery_order', []))->filter()->unique()->values();
+        if ($order->isEmpty()) {
+            return;
+        }
+
+        $images = $gallery->images()->orderBy('sort_order')->orderBy('id')->get();
+        $byId = $images->keyBy(fn (GalleryImage $image) => (string) $image->id);
+        $byPath = $images->keyBy('image');
+        $mediaIds = $order->filter(fn ($item) => str_starts_with($item, 'media:'))
+            ->map(fn ($item) => substr($item, 6))->all();
+        $mediaPaths = Media::query()->whereIn('id', $mediaIds)->images()->pluck('path', 'id');
+        $seen = [];
+        $ordered = [];
+
+        foreach ($order as $entry) {
+            [$kind, $id] = explode(':', $entry, 2);
+            $image = $kind === 'existing'
+                ? $byId->get($id)
+                : $byPath->get($mediaPaths->get($id));
+            if ($image && ! isset($seen[$image->id])) {
+                $seen[$image->id] = true;
+                $ordered[] = $image;
+            }
+        }
+        foreach ($images as $image) {
+            if (! isset($seen[$image->id])) {
+                $ordered[] = $image;
+            }
+        }
+        foreach ($ordered as $index => $image) {
+            $image->update(['sort_order' => ($index + 1) * 10]);
         }
     }
 

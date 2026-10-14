@@ -8,7 +8,7 @@
     <a class="admin-secondary-btn" href="{{ route('admin.galleries.index') }}">بازگشت</a>
 </div>
 
-<form class="admin-panel-card admin-form" action="{{ route('admin.galleries.store') }}" method="POST" enctype="multipart/form-data">
+<form class="admin-panel-card admin-form" data-mm2-gallery-form action="{{ route('admin.galleries.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <div class="row g-3">
         <div class="col-md-6"><label class="form-label" for="title">عنوان</label><input class="form-control" id="title" name="title" value="{{ old('title') }}" required></div>
@@ -27,87 +27,9 @@
             <small class="text-muted d-block mt-1">کلیدواژه‌ها را با ویرگول فارسی یا انگلیسی جدا کنید. اختیاری؛ برای نمایش برچسب‌ها و اطلاعات سئوی همین محتوا.</small>
         </div>
         <div class="col-12"><label class="form-label" for="rejected_reason">دلیل رد</label><textarea class="form-control" id="rejected_reason" name="rejected_reason" rows="2">{{ old('rejected_reason') }}</textarea></div>
-        <div class="col-md-6">
-            <label class="form-label" for="cover_image">تصویر کاور</label>
-            <input class="form-control" id="cover_image" name="cover_image" type="file" accept="image/*" data-skip-media-picker>
-            <button class="admin-secondary-btn mt-2" type="button" data-media-select-target="cover_image_media_id">انتخاب کاور از کتابخانه</button>
-            <select class="d-none" name="cover_image_media_id" id="cover_image_media_id" aria-hidden="true" tabindex="-1">
-                <option value="">بدون کاور جداگانه</option>
-                @foreach ($mediaItems as $media)
-                    <option value="{{ $media->id }}" data-url="{{ $media->url }}" @selected((string) old('cover_image_media_id') === (string) $media->id)>{{ $media->title ?: $media->original_name }}</option>
-                @endforeach
-            </select>
-            <small class="text-muted d-block mt-1">اگر کاور جدا انتخاب نشود، اولین تصویر گالری به‌صورت خودکار کاور می‌شود.</small>
-            <div id="coverMediaPreview" class="mt-2"></div>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label" for="images">تصاویر گالری</label>
-            <input class="form-control" id="images" name="images[]" type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/*" multiple data-skip-media-picker @if(request()->user()->hasPermission('media.upload')) data-gallery-bulk-upload @endif>
-            @if(request()->user()->hasPermission('media.upload'))
-                <small class="text-muted d-block mt-1">می‌توانید یک‌باره ۶۰ تصویر یا بیشتر انتخاب کنید. هر تصویر (حداکثر ۵ مگابایت) جداگانه در کتابخانه آپلود و خودکار به انتخاب‌های گالری اضافه می‌شود.</small>
-                <div class="mt-2" data-gallery-bulk-status role="status" aria-live="polite">هنوز تصویری برای آپلود انتخاب نشده است.</div>
-                <progress class="admin-picker-bulk-progress mt-2" data-gallery-bulk-progress value="0" max="100" hidden style="width:100%;height:12px"></progress>
-                <ul class="text-danger small mt-2" data-gallery-bulk-errors></ul>
-                <button type="button" class="admin-secondary-btn mt-2" data-gallery-bulk-retry hidden>تلاش مجدد برای تصاویر ناموفق</button>
-            @else
-                <small class="text-muted d-block mt-1">انتخاب چند فایل به روش معمول امکان‌پذیر است. آپلود مرحله‌ای به مجوز «آپلود رسانه» نیاز دارد.</small>
-            @endif
-        </div>
-
-        <div class="col-12">
-            <label class="form-label" for="gallery_media_ids">انتخاب از کتابخانه تصاویر</label>
-            <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
-                <button class="admin-secondary-btn" type="button" data-media-select-target="gallery_media_ids" data-media-select-multiple="true">باز کردن کتابخانه و انتخاب با پیش‌نمایش</button>
-                <small class="text-muted">پنجره کتابخانه را باز کنید، تصویرها را به‌صورت بندانگشتی ببینید و چند مورد را انتخاب کنید.</small>
-            </div>
-            <select class="form-control d-none" id="gallery_media_ids" name="gallery_media_ids[]" multiple size="8" aria-hidden="true">
-                @foreach ($mediaItems as $media)
-                    <option value="{{ $media->id }}" data-url="{{ $media->url }}">{{ $media->title ?: $media->original_name }}</option>
-                @endforeach
-            </select>
-            <small class="text-muted">برای افزودن تصاویر موجود در کتابخانه، یک یا چند تصویر را انتخاب کنید.</small>
-            <div class="row g-2 mt-2" id="galleryMediaPreview"></div>
-        </div>
+        @include('admin.galleries.partials.media-manager')
     </div>
     <div class="mt-3 d-flex gap-2"><button class="admin-primary-btn" type="submit">ذخیره گالری</button><a class="admin-secondary-btn" href="{{ route('admin.galleries.index') }}">انصراف</a></div>
 </form>
 @endsection
 
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const gallerySelect = document.getElementById('gallery_media_ids');
-    const galleryPreview = document.getElementById('galleryMediaPreview');
-    if (!gallerySelect || !galleryPreview) return;
-    const renderPreview = () => {
-        galleryPreview.innerHTML = '';
-        Array.from(gallerySelect.selectedOptions || []).forEach((option) => {
-            const item = document.createElement('div');
-            item.className = 'col-6 col-md-3';
-            const img = document.createElement('img');
-            img.src = option.dataset.url || '';
-            img.alt = option.textContent || 'تصویر انتخاب‌شده';
-            img.className = 'img-fluid rounded';
-            img.style.cssText = 'height:90px;width:100%;object-fit:cover';
-            item.appendChild(img);
-            galleryPreview.appendChild(item);
-        });
-    };
-    gallerySelect.addEventListener('change', renderPreview);
-    renderPreview();
-
-    const coverSelect = document.getElementById('cover_image_media_id');
-    const coverPreview = document.getElementById('coverMediaPreview');
-    const renderCover = () => {
-        const option = coverSelect?.selectedOptions?.[0];
-        const url = option?.dataset?.url;
-        if (!coverPreview) return;
-        if (url) {
-            coverPreview.innerHTML = '<img src="' + url + '" alt="پیش‌نمایش کاور" class="rounded" style="width:100%;max-width:320px;height:160px;object-fit:cover">';
-        }
-    };
-    coverSelect?.addEventListener('change', renderCover);
-    renderCover();
-});
-</script>
-@endpush

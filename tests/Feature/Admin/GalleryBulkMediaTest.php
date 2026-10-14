@@ -109,19 +109,68 @@ class GalleryBulkMediaTest extends TestCase
     public function test_gallery_and_library_views_expose_bulk_upload_and_multi_select_controls(): void
     {
         $this->get(route('admin.galleries.create'))->assertOk()
-            ->assertSee('data-gallery-bulk-upload', false)
-            ->assertSee('data-gallery-bulk-progress', false)
+            ->assertSee('data-mm2-gallery-form', false)
+            ->assertSee('data-mm2-workspace', false)
             ->assertSee('data-media-select-multiple="true"', false);
         $gallery = Gallery::query()->create([
             'title' => 'آزمایش', 'slug' => 'bulk-edit', 'status' => 'draft',
         ]);
         $this->get(route('admin.galleries.edit', $gallery))->assertOk()
-            ->assertSee('data-gallery-bulk-upload', false)
-            ->assertSee('data-gallery-bulk-progress', false);
+            ->assertSee('data-mm2-gallery-form', false)
+            ->assertSee('data-mm2-workspace', false);
         $this->get(route('admin.media.index'))->assertOk()
             ->assertSee('data-media-dropzone', false)
             ->assertSee('data-media-bulk-progress', false)
             ->assertSee('multiple', false);
+    }
+
+    public function test_repeated_upload_receipt_does_not_create_duplicate_media(): void
+    {
+        $token = (string) \Illuminate\Support\Str::uuid();
+        $first = $this->postJson(route('admin.media.store'), [
+            'files' => [UploadedFile::fake()->image('photo.jpg', 120, 80)],
+            'upload_token' => $token,
+        ])->assertCreated();
+
+        $repeated = $this->postJson(route('admin.media.store'), [
+            'files' => [UploadedFile::fake()->image('photo.jpg', 120, 80)],
+            'upload_token' => $token,
+        ])->assertOk();
+
+        $this->assertSame($first->json('items.0.id'), $repeated->json('items.0.id'));
+        $this->assertSame(1, Media::query()->count());
+    }
+
+    public function test_gallery_can_reorder_existing_and_new_library_images_in_one_sequence(): void
+    {
+        $ids = collect(range(1, 3))->map(function ($index) {
+            return Media::query()->create([
+                'file_name' => "media-{$index}.jpg", 'original_name' => "media-{$index}.jpg",
+                'path' => "media/media-{$index}.jpg", 'disk' => 'public',
+                'mime_type' => 'image/jpeg', 'extension' => 'jpg', 'size' => 500,
+            ])->id;
+        })->all();
+
+        $gallery = Gallery::query()->create([
+            'title' => 'گالری مرتب‌شده', 'slug' => 'ordered-gallery-v2',
+            'status' => 'draft', 'is_active' => true,
+        ]);
+        $existing = $gallery->images()->create([
+            'image' => Media::findOrFail($ids[0])->path, 'sort_order' => 10,
+        ]);
+
+        $this->put(route('admin.galleries.update', $gallery), [
+            'title' => $gallery->title, 'slug' => $gallery->slug,
+            'status' => 'draft', 'display_location' => 'both', 'is_active' => '1',
+            'gallery_media_ids' => [$ids[1], $ids[2]],
+            'gallery_order' => ["media:{$ids[2]}", "existing:{$existing->id}", "media:{$ids[1]}"],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $this->assertSame([
+            Media::findOrFail($ids[2])->path,
+            Media::findOrFail($ids[0])->path,
+            Media::findOrFail($ids[1])->path,
+        ], $gallery->images()->orderBy('sort_order')->pluck('image')->all());
     }
 
     public function test_media_upload_permissions_and_safe_image_validation_still_apply(): void
