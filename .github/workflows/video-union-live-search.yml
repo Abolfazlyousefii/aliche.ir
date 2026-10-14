@@ -1,0 +1,68 @@
+name: Video union live search checks
+
+on:
+  pull_request:
+    paths:
+      - 'resources/views/admin/videos/**'
+      - 'resources/views/admin/layouts/app.blade.php'
+      - 'public/assets/admin/js/video-union-search.js'
+      - 'public_html/assets/admin/js/video-union-search.js'
+      - 'public/assets/admin/css/video-union-search.css'
+      - 'public_html/assets/admin/css/video-union-search.css'
+      - 'tests/Feature/Admin/VideoUnionLiveSearchTest.php'
+      - 'tests/js/video-union-search.test.cjs'
+      - '.github/workflows/video-union-live-search.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'resources/views/admin/videos/**'
+      - 'resources/views/admin/layouts/app.blade.php'
+      - 'public/assets/admin/js/video-union-search.js'
+      - 'public/assets/admin/css/video-union-search.css'
+      - '.github/workflows/video-union-live-search.yml'
+  workflow_dispatch:
+
+jobs:
+  video-union-search:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, gd, fileinfo, xml, zip
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Initialize isolated test environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+          mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache
+      - name: Check syntax and public asset copies
+        run: |
+          php -l tests/Feature/Admin/VideoUnionLiveSearchTest.php
+          node --check public/assets/admin/js/video-union-search.js
+          cmp public/assets/admin/js/video-union-search.js public_html/assets/admin/js/video-union-search.js
+          cmp public/assets/admin/css/video-union-search.css public_html/assets/admin/css/video-union-search.css
+      - name: Test live filter and keyboard controls
+        run: node --test tests/js/video-union-search.test.cjs
+      - name: Test create/edit forms with isolated SQLite
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+          CACHE_STORE: array
+          SESSION_DRIVER: array
+          QUEUE_CONNECTION: sync
+        run: vendor/bin/phpunit tests/Feature/Admin/VideoUnionLiveSearchTest.php
+      - name: Compile Blade templates
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
+        run: php artisan view:cache
