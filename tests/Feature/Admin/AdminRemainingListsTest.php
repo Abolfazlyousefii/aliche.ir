@@ -118,8 +118,8 @@ class AdminRemainingListsTest extends TestCase
             ->assertSee('data-admin-media-grid', false)
             ->assertSee('admin-wp-media-readonly', false)
             ->assertSee('list-workspace.js')
-            ->assertDontSee('action="'.route('admin.media.store').'"', false)
-            ->assertDontSee('data-media-dropzone', false);
+            ->assertDontSee('data-ml3-upload', false)
+            ->assertDontSee('data-ml3-delete-one', false);
 
         $this->assertFalse($user->hasPermission('media.upload'));
         $this->assertFalse($user->hasPermission('media.delete'));
@@ -132,7 +132,7 @@ class AdminRemainingListsTest extends TestCase
         $this->get(route('admin.media.index'))
             ->assertOk()
             ->assertSee(route('admin.media.store'))
-            ->assertSee('data-media-dropzone', false);
+            ->assertSee('data-ml3-upload', false);
 
         $this->get(route('admin.chamber_members.index'))
             ->assertOk()
