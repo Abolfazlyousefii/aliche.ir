@@ -42,7 +42,7 @@ class HomeSectionVisibilityTest extends TestCase
             ->assertSee('statuses['.$inactive->id.']', false);
 
         $html = $response->getContent();
-        $this->assertSame(2, substr_count($html, 'data-section-row'));
+        $this->assertSame(2, substr_count($html, '<tr data-section-row'));
         $this->assertStringContainsString('value="0"', $html);
     }
 
