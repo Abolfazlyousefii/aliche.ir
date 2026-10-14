@@ -233,6 +233,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::post('media', [AdminMediaController::class, 'store'])->middleware('permission:media.upload')->name('media.store');
     Route::put('media/{medium}', [AdminMediaController::class, 'update'])->middleware('permission:media.edit')->name('media.update');
     Route::patch('media/{medium}', [AdminMediaController::class, 'update'])->middleware('permission:media.edit');
+    Route::delete('media/bulk-delete', [AdminMediaController::class, 'bulkDestroy'])->middleware('permission:media.delete')->name('media.bulk_destroy');
     Route::delete('media/{medium}', [AdminMediaController::class, 'destroy'])->middleware('permission:media.delete')->name('media.destroy');
     Route::get('posts', [AdminPostController::class, 'index'])->middleware('permission:posts.view')->name('posts.index');
     Route::get('posts/create', [AdminPostController::class, 'create'])->middleware('permission:posts.create')->name('posts.create');
