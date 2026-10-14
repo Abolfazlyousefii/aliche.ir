@@ -68,6 +68,107 @@ class MediaManagerDeletionTest extends TestCase
         Storage::disk('public')->assertExists($media->path);
     }
 
+    public function test_single_delete_from_current_gallery_detaches_photo_and_clears_last_cover(): void
+    {
+        $media = $this->medium('owned-by-current-gallery');
+        $gallery = Gallery::query()->create([
+            'title' => 'گالری تک تصویر', 'slug' => 'only-one-photo',
+            'cover_image' => $media->path, 'status' => 'draft', 'is_active' => true,
+        ]);
+        $image = $gallery->images()->create(['image' => $media->path, 'sort_order' => 10]);
+
+        $this->deleteJson(route('admin.media.destroy', $media).'?gallery_id='.$gallery->id)
+            ->assertOk()->assertJsonPath('status', 'deleted')
+            ->assertJsonPath('detached_gallery_image_ids.0', $image->id);
+
+        $this->assertDatabaseMissing('media', ['id' => $media->id]);
+        $this->assertDatabaseMissing('gallery_images', ['id' => $image->id]);
+        $this->assertNull($gallery->fresh()->cover_image);
+        Storage::disk('public')->assertMissing($media->path);
+    }
+
+    public function test_bulk_delete_detaches_current_gallery_and_replaces_cover_with_remaining_image(): void
+    {
+        $cover = $this->medium('cover-to-delete');
+        $other = $this->medium('gallery-to-delete');
+        $remaining = $this->medium('gallery-remains');
+        $gallery = Gallery::query()->create([
+            'title' => 'گالری اصلی', 'slug' => 'delete-photos-from-current',
+            'cover_image' => $cover->path, 'status' => 'draft', 'is_active' => true,
+        ]);
+        $first = $gallery->images()->create(['image' => $cover->path, 'sort_order' => 10]);
+        $second = $gallery->images()->create(['image' => $other->path, 'sort_order' => 20]);
+        $third = $gallery->images()->create(['image' => $remaining->path, 'sort_order' => 30]);
+
+        $this->deleteJson(route('admin.media.bulk_destroy'), [
+            'ids' => [$cover->id, $other->id],
+            'gallery_id' => $gallery->id,
+        ])->assertOk()
+            ->assertJsonPath('deleted.0', $cover->id)
+            ->assertJsonPath('deleted.1', $other->id);
+
+        $this->assertDatabaseMissing('gallery_images', ['id' => $first->id]);
+        $this->assertDatabaseMissing('gallery_images', ['id' => $second->id]);
+        $this->assertDatabaseHas('gallery_images', ['id' => $third->id]);
+        $this->assertSame($remaining->path, $gallery->fresh()->cover_image);
+        Storage::disk('public')->assertExists($remaining->path);
+        Storage::disk('public')->assertMissing($cover->path);
+        Storage::disk('public')->assertMissing($other->path);
+    }
+
+    public function test_other_gallery_references_block_delete_even_when_current_gallery_is_given(): void
+    {
+        $media = $this->medium('shared-between-galleries');
+        $current = Gallery::query()->create([
+            'title' => 'گالری فعلی', 'slug' => 'current-media-gallery',
+            'cover_image' => $media->path, 'status' => 'draft',
+        ]);
+        $other = Gallery::query()->create([
+            'title' => 'گالری دوم', 'slug' => 'another-media-gallery',
+            'status' => 'draft',
+        ]);
+        $currentImage = $current->images()->create(['image' => $media->path, 'sort_order' => 10]);
+        $other->images()->create(['image' => $media->path, 'sort_order' => 10]);
+
+        $this->deleteJson(route('admin.media.destroy', $media).'?gallery_id='.$current->id)
+            ->assertStatus(409)->assertJsonPath('status', 'blocked');
+
+        $this->assertDatabaseHas('gallery_images', ['id' => $currentImage->id]);
+        $this->assertSame($media->path, $current->fresh()->cover_image);
+        $this->assertDatabaseHas('media', ['id' => $media->id]);
+        Storage::disk('public')->assertExists($media->path);
+    }
+
+    public function test_gallery_scoped_delete_requires_both_delete_and_gallery_edit_permissions(): void
+    {
+        $role = Role::query()->create(['name' => 'only-media-deletion', 'label' => 'حذف رسانه']);
+        foreach (['media.delete', 'media.view'] as $name) {
+            $permission = Permission::query()->firstOrCreate(
+                ['name' => $name], ['label' => $name, 'group' => 'media']
+            );
+            $role->permissions()->syncWithoutDetaching([$permission->id]);
+        }
+        $user = User::factory()->create(['is_active' => true]);
+        $user->roles()->sync([$role->id]);
+        $media = $this->medium('gallery-needs-edit-permission');
+        $gallery = Gallery::query()->create([
+            'title' => 'گالری محدود', 'slug' => 'scope-needs-edit',
+            'status' => 'draft',
+        ]);
+        $image = $gallery->images()->create(['image' => $media->path, 'sort_order' => 10]);
+
+        $this->actingAs($user)
+            ->deleteJson(route('admin.media.destroy', $media).'?gallery_id='.$gallery->id)
+            ->assertForbidden();
+        $this->deleteJson(route('admin.media.bulk_destroy'), [
+            'ids' => [$media->id], 'gallery_id' => $gallery->id,
+        ])->assertForbidden();
+
+        $this->assertDatabaseHas('media', ['id' => $media->id]);
+        $this->assertDatabaseHas('gallery_images', ['id' => $image->id]);
+        Storage::disk('public')->assertExists($media->path);
+    }
+
     public function test_bulk_delete_preserves_used_and_external_files_but_deletes_free_images(): void
     {
         $freeOne = $this->medium('free-one');
