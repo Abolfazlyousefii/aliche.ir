@@ -7,6 +7,8 @@ use App\Models\HomeSection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class HomeSectionController extends Controller
@@ -64,16 +66,52 @@ class HomeSectionController extends Controller
     public function sort(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'sections' => ['required', 'array'],
-            'sections.*' => ['integer', 'exists:home_sections,id'],
+            'sections' => ['required', 'array', 'min:1'],
+            'sections.*' => ['required', 'integer', 'distinct', 'exists:home_sections,id'],
+            // Optional for backwards compatibility with older sort-only clients.
+            'statuses' => ['sometimes', 'required', 'array'],
+            'statuses.*' => ['required', Rule::in(['0', '1'])],
         ], [], [
             'sections' => 'ترتیب سکشن‌ها',
+            'statuses' => 'وضعیت نمایش سکشن‌ها',
         ]);
 
-        foreach ($validated['sections'] as $index => $sectionId) {
-            HomeSection::query()->whereKey($sectionId)->update(['sort_order' => ($index + 1) * 10]);
+        $sectionIds = array_map('intval', $validated['sections']);
+        $existingIds = HomeSection::query()->pluck('id')->map(fn ($id) => (int) $id)->all();
+        sort($existingIds);
+        $submittedIds = $sectionIds;
+        sort($submittedIds);
+        if ($submittedIds !== $existingIds) {
+            throw ValidationException::withMessages([
+                'sections' => 'فهرست سکشن‌ها تغییر کرده است. لطفاً صفحه را تازه‌سازی و دوباره ذخیره کنید.',
+            ]);
         }
 
-        return redirect()->route('admin.home_sections.index')->with('success', 'ترتیب سکشن‌های صفحه اصلی ذخیره شد.');
+        $statuses = $validated['statuses'] ?? null;
+        if ($statuses !== null) {
+            $statusIds = array_map('intval', array_keys($statuses));
+            sort($statusIds);
+            if ($statusIds !== $existingIds) {
+                throw ValidationException::withMessages([
+                    'statuses' => 'وضعیت همه سکشن‌ها باید ارسال شود. صفحه را دوباره بارگذاری کنید.',
+                ]);
+            }
+        }
+
+        DB::transaction(function () use ($sectionIds, $statuses): void {
+            foreach ($sectionIds as $index => $sectionId) {
+                $attributes = ['sort_order' => ($index + 1) * 10];
+                if ($statuses !== null) {
+                    $attributes['is_active'] = (bool) $statuses[$sectionId];
+                }
+                HomeSection::query()->whereKey($sectionId)->update($attributes);
+            }
+        });
+
+        return redirect()->route('admin.home_sections.index')->with('success',
+            $statuses === null
+                ? 'ترتیب سکشن‌های صفحه اصلی ذخیره شد.'
+                : 'ترتیب و وضعیت نمایش سکشن‌های صفحه اصلی ذخیره شد.'
+        );
     }
 }
