@@ -14,7 +14,7 @@
     data-delete-many-url="{{ route('admin.media.bulk_destroy') }}"
     data-upload-url="{{ route('admin.media.store') }}"
     data-can-delete="{{ $canDelete ? '1' : '0' }}"
-    data-can-upload="{{ $canUpload ? '1' : '0' }}">
+    data-can-upload="{{ $canUpload ? '1' : '0' }}" data-user-id="{{ request()->user()->id }}">
     <header class="ml3-heading">
         <div>
             <p class="admin-eyebrow">Media Library</p>
