@@ -9,7 +9,7 @@
     $canEdit = request()->user()->hasPermission('media.edit');
 @endphp
 
-<section class="ml3" data-media-library-v3
+<section class="ml3 {{ $canUpload ? '' : 'admin-wp-media-readonly' }}" data-media-library-v3
     data-delete-one-url="{{ route('admin.media.destroy', ['medium' => '__MEDIA_ID__']) }}"
     data-delete-many-url="{{ route('admin.media.bulk_destroy') }}"
     data-upload-url="{{ route('admin.media.store') }}"
@@ -21,9 +21,15 @@
             <h1>کتابخانه رسانه</h1>
             <p>مدیریت تصاویر، آپلود گروهی، و حذف دائمی امن از فضای سایت</p>
         </div>
-        <div class="ml3-heading-stats" aria-label="تعداد تصاویر">
+        <div class="ml3-heading-actions">
+            <div class="ml3-view-controls" role="group" aria-label="حالت نمایش رسانه">
+                <button type="button" data-admin-media-view="grid" aria-pressed="true" class="is-active">شبکه‌ای</button>
+                <button type="button" data-admin-media-view="list" aria-pressed="false">فهرستی</button>
+            </div>
+            <div class="ml3-heading-stats" aria-label="تعداد تصاویر">
             <strong>{{ number_format($media->total()) }}</strong>
             <span>رسانه در نتایج فعلی</span>
+            </div>
         </div>
     </header>
 
@@ -112,7 +118,7 @@
 
             <div class="ml3-result-message" data-ml3-result role="status" aria-live="polite" hidden></div>
 
-            <div class="ml3-grid" data-ml3-grid>
+            <div class="ml3-grid" data-ml3-grid data-admin-media-grid>
                 @forelse($media as $item)
                     <article class="ml3-tile" data-ml3-item="{{ $item->id }}">
                         <button type="button" class="ml3-image-button" data-ml3-details aria-label="نمایش جزئیات {{ $item->title ?: $item->original_name }}">
