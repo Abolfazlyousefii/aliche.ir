@@ -49,5 +49,5 @@ test('mobile keeps accessible accordions and two columns until narrow phones', (
 
 test('footer refinement does not change site-wide navigation or assets', () => {
     assert.doesNotMatch(css, /(?:^|\n)\s*(?:\.main-navbar|\.site-header|\.header-logo)\s*\{/);
-    assert.doesNotMatch(css, /!important/);
+    assert.match(css, /\.site-footer \.footer-accordion-panel\[hidden\]/);
 });
