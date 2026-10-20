@@ -12,6 +12,7 @@
         <div>
             <h3 class="h5 mb-1" id="union-board-title">هیئت‌مدیرهٔ این اتحادیه</h3>
             <p class="small text-muted mb-0">این فهرست فقط به {{ $union->display_title }} تعلق دارد؛ ثبت عضو مستقل از ذخیره اطلاعات اصلی اتحادیه است.</p>
+            <p class="small text-muted mb-0">نمایش در سایت با گزینهٔ «نمایش اعضای هیئت مدیره» در تنظیمات صفحه اتحادیه کنترل می‌شود.</p>
         </div>
         <span class="text-muted small">{{ fa_number($union->members->count()) }} عضو ثبت‌شده</span>
     </div>

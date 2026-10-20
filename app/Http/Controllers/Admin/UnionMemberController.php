@@ -67,7 +67,7 @@ class UnionMemberController extends Controller
         $member = UnionMember::create($data);
 
         if ($request->boolean('board_editor')) {
-            return redirect()->to(route('admin.unions.edit', $member->union_id).'#union-board-management')
+            return redirect()->to(route('admin.unions.edit', $member->union).'#union-board-management')
                 ->with('success', 'عضو هیئت‌مدیره ثبت شد.');
         }
 
@@ -111,7 +111,7 @@ class UnionMemberController extends Controller
         $unionMember->update($data);
 
         if ($request->boolean('board_editor')) {
-            return redirect()->to(route('admin.unions.edit', $unionMember->union_id).'#union-board-management')
+            return redirect()->to(route('admin.unions.edit', $unionMember->union).'#union-board-management')
                 ->with('success', 'عضو هیئت‌مدیره به‌روزرسانی شد.');
         }
 
@@ -129,7 +129,7 @@ class UnionMemberController extends Controller
         $unionMember->delete();
 
         if ($request->boolean('board_editor')) {
-            return redirect()->to(route('admin.unions.edit', $unionMember->union_id).'#union-board-management')
+            return redirect()->to(route('admin.unions.edit', $unionMember->union).'#union-board-management')
                 ->with('success', 'عضو هیئت‌مدیره حذف شد.');
         }
 

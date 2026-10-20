@@ -33,7 +33,8 @@
     $showFullIntroduction = filled(plain_text($fullIntroduction));
     $showPresidentBiography = $showManager && filled($union->manager_description);
     $showAbout = $showFullIntroduction || $showPresidentBiography;
-    $showMembers = $union->members_enabled && $union->isSectionEnabled('show_board_members', true) && $union->members->isNotEmpty();
+    // The page setting is authoritative; the old switch is a fallback only.
+    $showMembers = $union->isSectionEnabled('show_board_members', (bool) $union->members_enabled) && $union->members->isNotEmpty();
     $showCommissions = $union->isSectionEnabled('show_commissions', true) && $union->commissions->isNotEmpty();
     $showRules = $union->isSectionEnabled('show_rules', true) && $union->rules->isNotEmpty();
     // show_news is the current setting; show_news_slider remains a legacy fallback
