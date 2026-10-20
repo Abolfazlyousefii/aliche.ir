@@ -414,19 +414,34 @@ class HomeController extends Controller
 
     private function tourismPanelsByCategory(Collection $categories, int $limit): Collection
     {
-        $panels = $categories->mapWithKeys(fn (Category $category) => [
-            'tourism-category-'.$category->id => [
-                'label' => $category->title,
-                'items' => TourismPlace::query()
-                    ->published()
-                    ->where('category_id', $category->id)
-                    ->with('category')
-                    ->orderBy('sort_order')
-                    ->latest('published_at')
-                    ->take($limit)
-                    ->get(),
-            ],
-        ])->filter(fn (array $panel) => $panel['items']->isNotEmpty());
+        $panels = $categories->mapWithKeys(function (Category $category) use ($limit) {
+            // Older attractions have only tourism_type. Resolve those into
+            // their canonical category without overriding an explicit category.
+            $legacyType = collect(TourismPlace::TYPES)->first(
+                fn (string $type) => $category->slug === 'tourism-'.$type
+            );
+
+            return [
+                'tourism-category-'.$category->id => [
+                    'label' => $category->title,
+                    'items' => TourismPlace::query()
+                        ->published()
+                        ->where(function ($query) use ($category, $legacyType) {
+                            $query->where('category_id', $category->id);
+                            if ($legacyType !== null) {
+                                $query->orWhere(fn ($legacy) => $legacy
+                                    ->whereDoesntHave('category')
+                                    ->where('tourism_type', $legacyType));
+                            }
+                        })
+                        ->with('category')
+                        ->orderBy('sort_order')
+                        ->latest('published_at')
+                        ->take($limit)
+                        ->get(),
+                ],
+            ];
+        })->filter(fn (array $panel) => $panel['items']->isNotEmpty());
 
         if ($panels->isNotEmpty()) {
             return $panels;
