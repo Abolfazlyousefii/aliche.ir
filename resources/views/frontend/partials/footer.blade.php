@@ -20,7 +20,7 @@
     $address = $settings->get('site.address', 'گرگان، خیابان مطهری جنوبی، روبروی پمپ بنزین، ساختمان اتاق اصناف');
     $email = $settings->get('site.email', 'info@asnaf-gorgan.ir');
     $copyright = $settings->get('footer.copyright_text', $settings->get('footer.copyright', 'تمام حقوق مادی و معنوی این وبسایت متعلق به اتاق اصناف مرکز استان گلستان می‌باشد'));
-    $socials = collect($settings->get('footer.footer_social_links', $settings->get('site.social_links', [])));
+    $socials = \App\Support\SiteSocialLinks::items($settings);
     $columns = collect($settings->get('footer.footer_columns', []));
     $contactInfo = collect($settings->get('footer.footer_contact_info', []));
     $quickFallbacks = collect([
@@ -63,8 +63,6 @@
         ? collect([['title' => $footerGroups->first()['title'] ?? 'دسترسی سریع', 'links' => $allFooterLinks]])
         : collect();
 
-    $validSocials = $socials->map(fn ($social, $key) => is_array($social) ? array_merge(['title' => $key], $social) : ['title' => $key, 'url' => $social])
-        ->filter(fn ($social) => filled($social['url'] ?? null));
 @endphp
 <footer class="site-footer">
 <div class="site-container">
@@ -112,13 +110,7 @@
 </div>
 <div class="footer-divider"></div>
 <div class="footer-bottom">
-@if($validSocials->isNotEmpty())
-<div class="footer-social">
-@foreach($validSocials as $social)
-<a href="{{ $social['url'] }}" aria-label="{{ $social['title'] }}" target="{{ $social['target'] ?? '_blank' }}" rel="noopener"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 12a4 4 0 0 0 4 4h4a4 4 0 0 0 0-8h-2M16 12a4 4 0 0 0-4-4H8a4 4 0 0 0 0 8h2"/></svg></a>
-@endforeach
-</div>
-@endif
+<x-chamber-social-links :links="$socials" />
 <div class="footer-copy">
     <span>{{ fa_number($copyright) }}</span>
     <span class="footer-development-credit">طراحی و توسعه با <a class="footer-development-link" href="https://jaheshweb.com/" target="_blank" rel="noopener noreferrer">تیم جهش</a></span>

@@ -337,6 +337,14 @@ $hasResponseHours = $isMeaningfulValue($responseHours);
                         @endif
                     </section>
 
+                    @php($chamberSocials = \App\Support\SiteSocialLinks::items($settings))
+                    @if(count($chamberSocials))
+                    <section class="contact-info-card" aria-labelledby="contact-social-title">
+                        <h2 class="chamber-social-heading" id="contact-social-title">شبکه‌های اجتماعی اتاق</h2>
+                        <x-chamber-social-links :links="$chamberSocials" />
+                    </section>
+                    @endif
+
                     <section class="contact-support-card">
                         <span class="contact-support-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24">
