@@ -50,12 +50,13 @@
         </div>
         <div class="col-md-4">
             <label class="form-label" for="union_id">اتحادیه مرتبط</label>
-            <select class="form-control js-union-select" id="union_id" name="union_id" data-placeholder="خبر عمومی / بدون اتحادیه">
+            <select class="form-control js-union-select" id="union_id" name="union_id" data-placeholder="خبر عمومی / بدون اتحادیه" data-union-options-url="{{ route('admin.posts.union_options') }}">
                 <option value="">خبر عمومی / بدون اتحادیه</option>
                 @foreach ($unions as $union)
                     <option value="{{ $union->id }}" @selected((string) old('union_id', $post?->union_id) === (string) $union->id)>{{ $union->display_title }}{{ $union->is_active ? '' : ' — غیرفعال' }}</option>
                 @endforeach
             </select>
+            <small class="text-muted d-block" data-union-options-status aria-live="polite"></small>
         </div>
         <div class="col-md-4">
             <label class="form-label" for="type">نوع محتوا</label>
@@ -277,4 +278,5 @@ const renderGalleryPreview = () => {
 gallerySelect?.addEventListener('change', renderGalleryPreview);
 renderGalleryPreview();
 </script>
+@include('admin.posts.partials.union-options-sync')
 @endpush

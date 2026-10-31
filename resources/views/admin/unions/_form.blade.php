@@ -38,8 +38,9 @@
 <div class="admin-panel-card admin-workspace-panel"><div class="row g-3">
         <div class="col-12"><h3 class="h6 mb-0">هویت اتحادیه</h3></div>
         <div class="col-md-8">
-            <label class="form-label" for="title">عنوان اتحادیه</label>
-            <input class="form-control" id="title" name="title" value="{{ old('title', $union?->display_title) }}" required>
+            <label class="form-label" for="title">عنوان اتحادیه (نام نمایشی)</label>
+            <input class="form-control" id="title" name="title" value="{{ old('title', $union?->display_title) }}" required aria-describedby="unionDisplayNameHelp">
+            <small class="text-muted" id="unionDisplayNameHelp">این نام در صفحه اتحادیه و فهرست انتخاب اتحادیه در خبرها نمایش داده می‌شود.</small>
         </div>
         <div class="col-md-4">
             <label class="form-label" for="slug">اسلاگ</label>
@@ -300,7 +301,7 @@
             </select>
         </div>
         <div class="col-md-4"><label class="form-label" for="sort_order">ترتیب نمایش</label><input class="form-control" id="sort_order" name="sort_order" type="number" min="0" value="{{ old('sort_order', $union?->sort_order ?? 0) }}"></div>
-        <div class="col-md-4"><label class="form-label" for="meta_title">عنوان متا</label><input class="form-control" id="meta_title" name="meta_title" value="{{ old('meta_title', $union?->meta_title) }}"></div>
+        <div class="col-md-4"><label class="form-label" for="meta_title">عنوان متا (سئو و تب مرورگر)</label><input class="form-control" id="meta_title" name="meta_title" value="{{ old('meta_title', $union?->meta_title) }}" aria-describedby="unionSeoTitleHelp"><small class="text-muted" id="unionSeoTitleHelp">تغییر این فیلد نام نمایشی را عوض نمی‌کند؛ برای تغییر نام، «عنوان اتحادیه» در بخش هویت اتحادیه را ویرایش کنید.</small></div>
         <div class="col-md-6"><label class="form-label" for="meta_description">توضیحات متا</label><input class="form-control" id="meta_description" name="meta_description" value="{{ old('meta_description', $union?->meta_description) }}"></div>
         <div class="col-md-6"><label class="form-label" for="meta_keywords">کلیدواژه‌های متا</label><input class="form-control" id="meta_keywords" name="meta_keywords" value="{{ old('meta_keywords', $union?->meta_keywords) }}"></div>
     </div>

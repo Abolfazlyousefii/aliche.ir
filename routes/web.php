@@ -236,6 +236,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::delete('media/bulk-delete', [AdminMediaController::class, 'bulkDestroy'])->middleware('permission:media.delete')->name('media.bulk_destroy');
     Route::delete('media/{medium}', [AdminMediaController::class, 'destroy'])->middleware('permission:media.delete')->name('media.destroy');
     Route::get('posts', [AdminPostController::class, 'index'])->middleware('permission:posts.view')->name('posts.index');
+    Route::get('post-union-options', \App\Http\Controllers\Admin\PostUnionOptionsController::class)->name('posts.union_options');
     Route::get('posts/create', [AdminPostController::class, 'create'])->middleware('permission:posts.create')->name('posts.create');
     Route::post('posts', [AdminPostController::class, 'store'])->middleware('permission:posts.create')->name('posts.store');
     Route::get('posts/{post}', [AdminPostController::class, 'show'])->middleware('permission:posts.view')->name('posts.show');
